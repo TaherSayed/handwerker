@@ -1,21 +1,22 @@
+// Import env config FIRST to ensure environment variables are loaded
+import './config/env.js';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
 import contactsRoutes from './routes/contacts.routes.js';
 import formsRoutes from './routes/forms.routes.js';
 import visitsRoutes from './routes/visits.routes.js';
 import googleRoutes from './routes/google.routes.js';
 import userRoutes from './routes/user.routes.js';
-
-dotenv.config();
+import { env } from './config/env.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(env.PORT, 10);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: env.CLIENT_URL,
   credentials: true
 }));
 app.use(express.json());
