@@ -1,5 +1,10 @@
 import { supabase } from './supabase.service.js';
-import type { AuthResponse, User } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
+
+export interface AuthResponse {
+  user: User | null;
+  session: Session | null;
+}
 
 export class AuthService {
   /**
@@ -28,7 +33,10 @@ export class AuthService {
     });
 
     if (error) throw error;
-    return data;
+    return {
+      user: data.user,
+      session: data.session,
+    };
   }
 
   /**
@@ -41,7 +49,10 @@ export class AuthService {
     });
 
     if (error) throw error;
-    return data;
+    return {
+      user: data.user,
+      session: data.session,
+    };
   }
 
   /**
