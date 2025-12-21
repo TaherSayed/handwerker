@@ -20,13 +20,11 @@ pubspec.lock
 .idea/
 
 # The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code which you may wish to be included in version control, so this line is
+# commented out by default.
 #.vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Flutter/Dart/Pub related (legacy - project converted to React/Node.js)
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -34,21 +32,36 @@ pubspec.lock
 .pub/
 /build/
 /web/
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-android/app/.cxx
+/windows/
+/android/
+/ios/
+/lib/
 
 # Environment variables - DO NOT COMMIT
 env.json
 *.env
 .env.local
 .env.*.local
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Server
+server/dist/
+server/.env
+
+# Client
+client/dist/
+client/.env
+client/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
