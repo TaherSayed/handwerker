@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function SplashScreen() {
   const navigate = useNavigate();
-  const { user, loading, initialize } = useAuthStore();
+  const [searchParams] = useSearchParams();
+  const { user, loading, initialize, importGoogleContacts } = useAuthStore();
 
   useEffect(() => {
     initialize();
@@ -13,12 +14,23 @@ export default function SplashScreen() {
   useEffect(() => {
     if (!loading) {
       if (user) {
+        // Check if this is an OAuth callback (has code or access_token in URL)
+        const code = searchParams.get('code');
+        const accessToken = searchParams.get('access_token');
+        
+        if ((code || accessToken) && user) {
+          // User just signed in via OAuth, try to import contacts
+          setTimeout(() => {
+            importGoogleContacts();
+          }, 1500);
+        }
+        
         navigate('/dashboard');
       } else {
         navigate('/google-sign-in');
       }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchParams, importGoogleContacts]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">

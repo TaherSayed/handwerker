@@ -13,7 +13,7 @@ interface Contact {
 
 export default function ContactSelection() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, importGoogleContacts, importingContacts } = useAuthStore();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function ContactSelection() {
       return;
     }
     loadContacts();
-  }, [user, navigate]);
+  }, [user, navigate, searchQuery]);
 
   const loadContacts = async () => {
     try {
@@ -39,9 +39,12 @@ export default function ContactSelection() {
   };
 
   const handleImportGoogleContacts = async () => {
-    // This will trigger Google Sign-In with contacts scope
-    // Implementation depends on frontend Google Sign-In setup
-    alert('Google Contacts import - to be implemented');
+    try {
+      await importGoogleContacts();
+      loadContacts(); // Refresh contacts after import
+    } catch (error) {
+      alert('Fehler beim Importieren der Kontakte');
+    }
   };
 
   const handleSelectContact = (contact: Contact) => {
@@ -56,9 +59,11 @@ export default function ContactSelection() {
           <h1 className="text-2xl font-semibold" style={{ color: '#0F172A', fontWeight: 600 }}>Kontakt auswählen</h1>
           <button
             onClick={handleImportGoogleContacts}
+            disabled={importingContacts}
             className="btn-primary"
+            style={{ opacity: importingContacts ? 0.6 : 1 }}
           >
-            Google Kontakte importieren
+            {importingContacts ? 'Importiere...' : 'Google Kontakte importieren'}
           </button>
         </div>
 

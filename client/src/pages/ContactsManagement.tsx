@@ -14,7 +14,7 @@ interface Contact {
 
 export default function ContactsManagement() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, importGoogleContacts, importingContacts } = useAuthStore();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,12 +56,29 @@ export default function ContactsManagement() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-2xl font-semibold" style={{ color: '#0F172A', fontWeight: 600 }}>Kontaktverwaltung</h1>
-          <button
-            onClick={() => navigate('/contact-selection')}
-            className="btn-primary"
-          >
-            Neuer Kontakt
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  await importGoogleContacts();
+                  loadContacts(); // Refresh contacts after import
+                } catch (error) {
+                  alert('Fehler beim Importieren der Kontakte');
+                }
+              }}
+              disabled={importingContacts}
+              className="btn-outlined"
+              style={{ opacity: importingContacts ? 0.6 : 1 }}
+            >
+              {importingContacts ? 'Importiere...' : 'Google Kontakte importieren'}
+            </button>
+            <button
+              onClick={() => navigate('/contact-selection')}
+              className="btn-primary"
+            >
+              Neuer Kontakt
+            </button>
+          </div>
         </div>
 
         <div className="mb-4">
