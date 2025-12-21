@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -18,41 +17,20 @@ class ContactCardWidget extends StatelessWidget {
     super.key,
     required this.contact,
     required this.isSelected,
-    required this.isFavorite,
     required this.onTap,
     required this.onLongPress,
-    required this.onFavoriteToggle,
   });
 
   final Map<String, dynamic> contact;
   final bool isSelected;
-  final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final VoidCallback onFavoriteToggle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Slidable(
-      key: ValueKey(contact['id']),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => onFavoriteToggle(),
-            backgroundColor: isFavorite
-                ? theme.colorScheme.error
-                : theme.colorScheme.tertiary,
-            foregroundColor: theme.colorScheme.onPrimary,
-            icon: isFavorite ? Icons.star : Icons.star_border,
-            label: isFavorite ? 'Unfavorite' : 'Favorite',
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ],
-      ),
-      child: GestureDetector(
+    return GestureDetector(
         onTap: onTap,
         onLongPress: onLongPress,
         child: Container(
@@ -121,15 +99,6 @@ class ContactCardWidget extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isFavorite)
-                          Padding(
-                            padding: EdgeInsets.only(left: 2.w),
-                            child: CustomIconWidget(
-                              iconName: 'star',
-                              size: 16,
-                              color: theme.colorScheme.tertiary,
-                            ),
-                          ),
                       ],
                     ),
                     SizedBox(height: 0.5.h),
@@ -193,7 +162,6 @@ class ContactCardWidget extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

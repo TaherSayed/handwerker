@@ -42,12 +42,7 @@ class _FormBuilderState extends State<FormBuilder> {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'type': fieldType,
         'label': _getDefaultLabel(fieldType),
-        'required': false,
-        'placeholder': '',
-        'options': fieldType == 'dropdown' || fieldType == 'checkbox'
-            ? ['Option 1', 'Option 2']
-            : [],
-        'validation': {},
+        'options': fieldType == 'dropdown' ? ['Option 1', 'Option 2'] : [],
       });
       _selectedFieldIndex = _formFields.length - 1;
     });
@@ -73,6 +68,8 @@ class _FormBuilderState extends State<FormBuilder> {
         return 'Zeit';
       case 'notes':
         return 'Notizen';
+      case 'signature':
+        return 'Unterschrift';
       default:
         return 'Neues Feld';
     }

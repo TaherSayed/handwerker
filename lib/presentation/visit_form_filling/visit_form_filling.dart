@@ -29,7 +29,6 @@ class _VisitFormFillingState extends State<VisitFormFilling>
     with TickerProviderStateMixin {
   // Form state management
   final Map<String, dynamic> _formData = {};
-  final Map<String, bool> _fieldErrors = {};
   final ScrollController _scrollController = ScrollController();
   final FocusNode _currentFocusNode = FocusNode();
 
@@ -73,14 +72,12 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'inspection_date',
         'type': 'date',
         'label': 'Inspection Date',
-        'required': true,
         'value': DateTime.now(),
       },
       {
         'id': 'site_location',
         'type': 'text',
         'label': 'Site Location',
-        'required': true,
         'value': '',
         'placeholder': 'Enter site address',
       },
@@ -88,7 +85,6 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'inspection_type',
         'type': 'dropdown',
         'label': 'Inspection Type',
-        'required': true,
         'value': '',
         'options': [
           'Initial Assessment',
@@ -101,21 +97,18 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'site_accessible',
         'type': 'toggle',
         'label': 'Site Accessible',
-        'required': true,
         'value': true,
       },
       {
         'id': 'safety_equipment',
         'type': 'checkbox',
         'label': 'Safety Equipment Required',
-        'required': false,
         'value': false,
       },
       {
         'id': 'temperature',
         'type': 'number',
         'label': 'Temperature (°F)',
-        'required': false,
         'value': '',
         'placeholder': 'Enter temperature',
       },
@@ -123,7 +116,6 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'weather_conditions',
         'type': 'dropdown',
         'label': 'Weather Conditions',
-        'required': false,
         'value': '',
         'options': ['Clear', 'Cloudy', 'Rainy', 'Snowy', 'Windy'],
       },
@@ -131,7 +123,6 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'inspection_notes',
         'type': 'notes',
         'label': 'Inspection Notes',
-        'required': true,
         'value': '',
         'placeholder': 'Enter detailed inspection notes...',
         'maxLength': 500,
@@ -140,14 +131,12 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'issues_found',
         'type': 'checkbox',
         'label': 'Issues Found',
-        'required': false,
         'value': false,
       },
       {
         'id': 'issue_description',
         'type': 'notes',
         'label': 'Issue Description',
-        'required': false,
         'value': '',
         'placeholder': 'Describe any issues found...',
         'maxLength': 300,
@@ -156,14 +145,12 @@ class _VisitFormFillingState extends State<VisitFormFilling>
         'id': 'follow_up_required',
         'type': 'toggle',
         'label': 'Follow-up Required',
-        'required': false,
         'value': false,
       },
       {
         'id': 'estimated_completion',
         'type': 'date',
         'label': 'Estimated Completion Date',
-        'required': false,
         'value': null,
       },
     ];
@@ -203,82 +190,30 @@ class _VisitFormFillingState extends State<VisitFormFilling>
 
   void _calculateProgress() {
     int completed = 0;
-    int required = 0;
+    int total = _formFields.length;
 
     for (var field in _formFields) {
-      if (field['required'] == true) {
-        required++;
-        final value = _formData[field['id']] ?? field['value'];
-        if (_isFieldCompleted(field['type'], value)) {
-          completed++;
-        }
+      final value = _formData[field['id']] ?? field['value'];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        completed++;
       }
     }
 
     setState(() {
-      _completedFields =
-          required > 0 ? ((completed / required) * 100).round() : 0;
+      _completedFields = total > 0 ? ((completed / total) * 100).round() : 0;
     });
-  }
-
-  bool _isFieldCompleted(String type, dynamic value) {
-    switch (type) {
-      case 'text':
-      case 'notes':
-        return value != null && value.toString().trim().isNotEmpty;
-      case 'number':
-        return value != null && value.toString().isNotEmpty;
-      case 'dropdown':
-        return value != null && value.toString().isNotEmpty;
-      case 'date':
-        return value != null;
-      case 'checkbox':
-      case 'toggle':
-        return true; // Boolean fields are always considered complete
-      default:
-        return false;
-    }
   }
 
   void _onFieldChanged(String fieldId, dynamic value) {
     setState(() {
       _formData[fieldId] = value;
-      _fieldErrors[fieldId] = false;
     });
 
     _calculateProgress();
     _autoSaveForm();
   }
 
-  bool _validateForm() {
-    bool isValid = true;
-
-    for (var field in _formFields) {
-      if (field['required'] == true) {
-        final value = _formData[field['id']] ?? field['value'];
-        if (!_isFieldCompleted(field['type'], value)) {
-          setState(() {
-            _fieldErrors[field['id']] = true;
-          });
-          isValid = false;
-        }
-      }
-    }
-
-    return isValid;
-  }
-
   void _completeVisit() {
-    if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Bitte füllen Sie alle erforderlichen Felder aus'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
 
     // Navigate to PDF preview
     Navigator.pushNamed(
@@ -468,7 +403,7 @@ class _VisitFormFillingState extends State<VisitFormFilling>
                         child: FormFieldWidget(
                           field: field,
                           value: _formData[field['id']] ?? field['value'],
-                          hasError: _fieldErrors[field['id']] ?? false,
+                          hasError: false,
                           onChanged: (value) =>
                               _onFieldChanged(field['id'], value),
                         ),

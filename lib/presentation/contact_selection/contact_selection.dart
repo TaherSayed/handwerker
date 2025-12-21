@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/custom_app_bar.dart';
+import '../../services/database_service.dart';
+import '../../services/supabase_service.dart';
+import '../../services/google_contacts_service.dart';
 import './widgets/contact_card_widget.dart';
 import './widgets/empty_state_widget.dart';
 import './widgets/search_bar_widget.dart';
@@ -37,7 +42,6 @@ class _ContactSelectionState extends State<ContactSelection> {
   String? _selectedContactId;
   List<Map<String, dynamic>> _allContacts = [];
   List<Map<String, dynamic>> _filteredContacts = [];
-  Set<String> _favoriteContacts = {};
 
   @override
   void initState() {
@@ -47,148 +51,204 @@ class _ContactSelectionState extends State<ContactSelection> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload contacts when screen becomes visible (e.g., after Google Sign-In)
+    if (_allContacts.isEmpty && !_isLoading) {
+      _loadContacts();
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  /// Load contacts from Google Contacts API with offline fallback
+  /// Load contacts from Supabase database
   Future<void> _loadContacts() async {
     setState(() => _isLoading = true);
 
-    // Simulate API call - Replace with actual Google Contacts API integration
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Check if Supabase is configured
+      if (!SupabaseService.isConfigured) {
+        setState(() {
+          _allContacts = [];
+          _filteredContacts = [];
+          _isLoading = false;
+          _isOffline = true;
+        });
+        return;
+      }
 
-    // Mock contact data
-    final contacts = [
-      {
-        "id": "1",
-        "name": "Michael Rodriguez",
-        "company": "Rodriguez Construction",
-        "phone": "+1 (555) 123-4567",
-        "email": "michael@rodriguezconst.com",
-        "address": "123 Oak Street, Springfield, IL 62701",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_1e13bc62a-1763294059113.png",
-        "semanticLabel":
-            "Profile photo of a man with short brown hair and a beard, wearing a dark t-shirt",
-        "initials": "MR",
-        "alternatePhones": ["+1 (555) 123-4568", "+1 (555) 123-4569"],
-        "alternateEmails": ["m.rodriguez@gmail.com"],
-      },
-      {
-        "id": "2",
-        "name": "Sarah Chen",
-        "company": "Chen Plumbing Services",
-        "phone": "+1 (555) 234-5678",
-        "email": "sarah@chenplumbing.com",
-        "address": "456 Maple Avenue, Chicago, IL 60601",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_16413c03b-1763301411406.png",
-        "semanticLabel":
-            "Profile photo of a woman with long black hair, wearing glasses and a blue blouse",
-        "initials": "SC",
-        "alternatePhones": ["+1 (555) 234-5679"],
-        "alternateEmails": ["sarah.chen@yahoo.com"],
-      },
-      {
-        "id": "3",
-        "name": "David Thompson",
-        "company": "Thompson Electric",
-        "phone": "+1 (555) 345-6789",
-        "email": "david@thompsonelectric.com",
-        "address": "789 Pine Road, Boston, MA 02101",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_17fea9682-1764690565935.png",
-        "semanticLabel":
-            "Profile photo of a man with gray hair and glasses, wearing a white shirt",
-        "initials": "DT",
-        "alternatePhones": [],
-        "alternateEmails": ["d.thompson@outlook.com"],
-      },
-      {
-        "id": "4",
-        "name": "Emily Johnson",
-        "company": "Johnson HVAC Solutions",
-        "phone": "+1 (555) 456-7890",
-        "email": "emily@johnsonhvac.com",
-        "address": "321 Cedar Lane, Seattle, WA 98101",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_1c2d4d37e-1763298686580.png",
-        "semanticLabel":
-            "Profile photo of a woman with blonde hair in a ponytail, wearing a red jacket",
-        "initials": "EJ",
-        "alternatePhones": ["+1 (555) 456-7891"],
-        "alternateEmails": [],
-      },
-      {
-        "id": "5",
-        "name": "James Wilson",
-        "company": "Wilson Carpentry",
-        "phone": "+1 (555) 567-8901",
-        "email": "james@wilsoncarpentry.com",
-        "address": "654 Birch Street, Portland, OR 97201",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_10e32363d-1763295001957.png",
-        "semanticLabel":
-            "Profile photo of a man with short black hair, wearing a plaid shirt",
-        "initials": "JW",
-        "alternatePhones": [],
-        "alternateEmails": ["j.wilson@gmail.com"],
-      },
-      {
-        "id": "6",
-        "name": "Amanda Martinez",
-        "company": "Martinez Painting Co",
-        "phone": "+1 (555) 678-9012",
-        "email": "amanda@martinezpainting.com",
-        "address": "987 Elm Drive, Denver, CO 80201",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_14fbbc1e3-1765215925472.png",
-        "semanticLabel":
-            "Profile photo of a woman with curly brown hair, wearing a green sweater",
-        "initials": "AM",
-        "alternatePhones": ["+1 (555) 678-9013"],
-        "alternateEmails": [],
-      },
-      {
-        "id": "7",
-        "name": "Robert Anderson",
-        "company": "Anderson Roofing",
-        "phone": "+1 (555) 789-0123",
-        "email": "robert@andersonroofing.com",
-        "address": "147 Spruce Court, Phoenix, AZ 85001",
-        "avatar":
-            "https://img.rocket.new/generatedImages/rocket_gen_img_11c451189-1764791200984.png",
-        "semanticLabel":
-            "Profile photo of a man with bald head and mustache, wearing a blue polo shirt",
-        "initials": "RA",
-        "alternatePhones": [],
-        "alternateEmails": ["r.anderson@hotmail.com"],
-      },
-      {
-        "id": "8",
-        "name": "Lisa Brown",
-        "company": "Brown Landscaping",
-        "phone": "+1 (555) 890-1234",
-        "email": "lisa@brownlandscaping.com",
-        "address": "258 Willow Way, Austin, TX 78701",
-        "avatar":
-            "https://images.unsplash.com/photo-1730509408253-91968c9aa483",
-        "semanticLabel":
-            "Profile photo of a woman with short red hair, wearing sunglasses and a yellow shirt",
-        "initials": "LB",
-        "alternatePhones": ["+1 (555) 890-1235"],
-        "alternateEmails": ["lisa.brown@gmail.com"],
-      },
-    ];
+      // Load contacts from database
+      final dbService = DatabaseService.instance;
+      final dbContacts = await dbService.getContacts();
 
-    setState(() {
-      _allContacts = contacts;
-      _filteredContacts = contacts;
-      _isLoading = false;
-    });
+      // Transform database format to UI format
+      final contacts = dbContacts.map((contact) {
+        final fullName = contact['full_name']?.toString() ?? 'Unbekannt';
+        final nameParts = fullName.split(' ');
+        final initials = nameParts.length >= 2
+            ? '${nameParts[0][0]}${nameParts[1][0]}'
+            : fullName.isNotEmpty
+                ? fullName[0]
+                : '?';
+
+        return {
+          'id': contact['id']?.toString() ?? '',
+          'name': fullName,
+          'company': contact['company']?.toString() ?? '',
+          'phone': contact['phone']?.toString() ?? '',
+          'email': contact['email']?.toString() ?? '',
+          'avatar': contact['avatar_url']?.toString(),
+          'initials': initials.toUpperCase(),
+          'semanticLabel': 'Profile photo of $fullName',
+        };
+      }).toList();
+
+      setState(() {
+        _allContacts = contacts;
+        _filteredContacts = contacts;
+        _isLoading = false;
+        _isOffline = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Error loading contacts: $e');
+      setState(() {
+        _allContacts = [];
+        _filteredContacts = [];
+        _isLoading = false;
+        _isOffline = true;
+      });
+    }
+  }
+
+  /// Import Google Contacts manually
+  Future<void> _importGoogleContacts() async {
+    if (!SupabaseService.isConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Supabase ist nicht konfiguriert'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      if (kIsWeb) {
+        // For web, use Google Sign-In directly to get access token for contacts
+        const webClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
+        if (webClientId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('GOOGLE_WEB_CLIENT_ID nicht konfiguriert'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        // Use Google Sign-In for web to get contacts access token
+        final googleSignIn = GoogleSignIn(
+          clientId: webClientId,
+          scopes: [
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/contacts.readonly',
+          ],
+        );
+
+        // Try to sign in silently first (if already signed in)
+        var googleAccount = await googleSignIn.signInSilently();
+        
+        // If silent sign-in fails, show sign-in dialog
+        googleAccount ??= await googleSignIn.signIn();
+
+        if (googleAccount == null) {
+          setState(() => _isLoading = false);
+          return; // User cancelled
+        }
+
+        // Import contacts using the Google account
+        final contactsService = GoogleContactsService.instance;
+        await contactsService.importGoogleContacts(googleAccount: googleAccount);
+
+        // Reload contacts from database
+        await _loadContacts();
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Kontakte erfolgreich importiert'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        return;
+      }
+
+      // For mobile: Use Google Sign-In to get access token
+      const webClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
+      if (webClientId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('GOOGLE_WEB_CLIENT_ID nicht konfiguriert'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final googleSignIn = GoogleSignIn(
+        serverClientId: webClientId,
+        scopes: [
+          'email',
+          'profile',
+          'https://www.googleapis.com/auth/contacts.readonly',
+        ],
+      );
+
+      final googleAccount = await googleSignIn.signIn();
+      if (googleAccount == null) {
+        setState(() => _isLoading = false);
+        return; // User cancelled
+      }
+
+      // Import contacts
+      final contactsService = GoogleContactsService.instance;
+      await contactsService.importGoogleContacts(googleAccount: googleAccount);
+
+      // Reload contacts from database
+      await _loadContacts();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kontakte erfolgreich importiert'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error importing contacts: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Importieren: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   /// Handle search input with debouncing
@@ -206,16 +266,6 @@ class _ContactSelectionState extends State<ContactSelection> {
     });
   }
 
-  /// Toggle favorite status for a contact
-  void _toggleFavorite(String contactId) {
-    setState(() {
-      if (_favoriteContacts.contains(contactId)) {
-        _favoriteContacts.remove(contactId);
-      } else {
-        _favoriteContacts.add(contactId);
-      }
-    });
-  }
 
   /// Show contact preview on long press
   void _showContactPreview(Map<String, dynamic> contact) {
@@ -429,16 +479,6 @@ class _ContactSelectionState extends State<ContactSelection> {
     );
   }
 
-  /// Navigate to manual contact addition
-  void _addManualContact() {
-    // Navigate to manual contact entry screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Manuelle Kontakthinzufügung demnächst verfügbar'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 
   /// Continue with selected contact
   void _continueWithSelection() {
@@ -461,8 +501,11 @@ class _ContactSelectionState extends State<ContactSelection> {
     final grouped = <String, List<Map<String, dynamic>>>{};
 
     for (final contact in _filteredContacts) {
-      final firstLetter = (contact['name'] as String)[0].toUpperCase();
-      grouped.putIfAbsent(firstLetter, () => []).add(contact);
+      final name = contact['name']?.toString() ?? '';
+      if (name.isNotEmpty) {
+        final firstLetter = name[0].toUpperCase();
+        grouped.putIfAbsent(firstLetter, () => []).add(contact);
+      }
     }
 
     return Map.fromEntries(
@@ -502,7 +545,7 @@ class _ContactSelectionState extends State<ContactSelection> {
                 ? _buildSkeletonLoader(theme)
                 : _filteredContacts.isEmpty
                     ? EmptyStateWidget(
-                        onImportContacts: _loadContacts,
+                        onImportContacts: _importGoogleContacts,
                       )
                     : ListView.builder(
                         controller: _scrollController,
@@ -527,16 +570,12 @@ class _ContactSelectionState extends State<ContactSelection> {
                                   contact: contact,
                                   isSelected:
                                       _selectedContactId == contact['id'],
-                                  isFavorite:
-                                      _favoriteContacts.contains(contact['id']),
                                   onTap: () => setState(() {
                                     _selectedContactId =
                                         contact['id'] as String;
                                   }),
                                   onLongPress: () =>
                                       _showContactPreview(contact),
-                                  onFavoriteToggle: () =>
-                                      _toggleFavorite(contact['id'] as String),
                                 );
                               }).toList(),
                             );
@@ -545,23 +584,6 @@ class _ContactSelectionState extends State<ContactSelection> {
                       ),
           ),
 
-          // Add manual contact button
-          if (!_isLoading && _filteredContacts.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-              child: OutlinedButton.icon(
-                onPressed: _addManualContact,
-                icon: CustomIconWidget(
-                  iconName: 'person_add',
-                  size: 20,
-                  color: theme.colorScheme.primary,
-                ),
-                label: const Text('Manuellen Kontakt hinzufügen'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 6.h),
-                ),
-              ),
-            ),
 
           // Continue button
           if (_selectedContactId != null)

@@ -1,554 +1,397 @@
-# OnSite - Handwerker Besuchsmanagement App
+# OnSite - First Contact Visit App
 
-Eine moderne Flutter-basierte mobile Anwendung für Handwerksbetriebe zur Verwaltung von Kundenbesuchen, Formularen und Berichten.
+A simple, mobile-first Flutter application for craftsmen and service professionals to document first customer visits, fill out custom visit forms, and generate professional PDFs on-site.
 
-**Status:** ✅ **PRODUKTIONSBEREIT** - Alle kritischen Probleme behoben, vollständig funktionsfähig
+## Focus
 
----
+**Customer → Visit → Form → PDF**
 
-## 📋 Voraussetzungen
+## OnSite is intentionally NOT:
 
-- Flutter SDK (^3.6.0)
-- Dart SDK (≥3.6.0)
-- Android Studio / VS Code mit Flutter-Erweiterungen
-- Android SDK / Xcode (für iOS-Entwicklung)
-- Supabase Account (für Backend-Integration)
-- Google Cloud Console Account (für Google OAuth & Contacts)
+- ❌ a CRM
+- ❌ a dashboard
+- ❌ a business management system
+- ❌ a statistics platform
+- ❌ an admin panel
 
----
+## 🎯 Product Purpose
 
-## 🚀 Funktionen
+OnSite is used during the **first customer visit**.
 
-### 🔐 Authentifizierung
-- ✅ **E-Mail/Passwort-Anmeldung** - Vollständige Sign-Up und Sign-In Funktionalität
-- ✅ **Google OAuth-Integration** - Web (OAuth Redirect) & Mobile (Native Sign-In)
-- ✅ **Automatische Profilsynchronisation** - Benutzerdaten werden automatisch synchronisiert
-- ✅ **Sichere Sitzungsverwaltung** - Automatische Session-Verwaltung mit Supabase
-- ✅ **Google Contacts Import** - Automatischer Import von Google Kontakten nach Login
+### Typical workflow:
 
-### 👥 Kontaktverwaltung
-- ✅ **Kontakte erstellen, bearbeiten und löschen** - Vollständige CRUD-Operationen
-- ✅ **Favoriten-System** - Kontakte als Favoriten markieren
-- ✅ **Google Contacts Synchronisation** - Automatischer Import nach Google Sign-In
-- ✅ **Suchfunktion** - Echtzeit-Suche nach Name, E-Mail oder Firma
-- ✅ **Offline-Support** - Kontakte auch offline verfügbar
+1. Open the app
+2. Log in with Google
+3. Select customer from Google Contacts
+4. Fill out a custom visit form
+5. Export a professional PDF
 
-### 📝 Formularverwaltung
-- ✅ **Drag-and-Drop Formular-Builder** - Visueller Formular-Editor
-- ✅ **Mehrere Feldtypen** - Text, Zahl, Datum, Dropdown, Checkbox, Notizen, Signatur
-- ✅ **Wiederverwendbare Vorlagen** - Formularvorlagen speichern und wiederverwenden
-- ✅ **Feldkonfiguration** - Label, Help-Text, Required/Optional, Validierung
-- ✅ **Supabase-Integration** - Formulare werden direkt in Supabase gespeichert
-- ✅ **Echtzeit-Vorschau** - Sofortige Vorschau während der Erstellung
+**That's it.**
 
-### 🏠 Besuchsworkflow
-- ✅ **Offline-fähige Besuchserfassung** - Funktioniert auch ohne Internet
-- ✅ **Auto-Speicherung** - Automatisches Speichern alle 30 Sekunden
-- ✅ **Signatur-Erfassung** - Digitale Signatur-Erfassung
-- ✅ **Foto-Anhänge** - Mehrere Fotos pro Besuch
-- ✅ **Fortschrittsanzeige** - Visueller Fortschritt der Formularausfüllung
-- ✅ **Feldvalidierung** - Automatische Validierung von Pflichtfeldern
-
-### 📊 Dashboard & Berichte
-- ✅ **Besuchsstatistiken** - Übersicht über alle Besuche
-- ✅ **Kürzliche Besuche** - Schnellzugriff auf letzte Besuche
-- ✅ **PDF-Generierung** - Professionelle PDF-Berichte erstellen
-- ✅ **PDF-Sharing** - Berichte per E-Mail, WhatsApp, etc. teilen
-- ✅ **Synchronisationsstatus** - Anzeige des Sync-Status
-
-### 👤 Benutzerprofil
-- ✅ **Profilverwaltung** - Benutzerdaten anzeigen und bearbeiten
-- ✅ **Firmeninformationen** - Firmendaten verwalten
-- ✅ **Einstellungen** - App-Einstellungen konfigurieren
-- ✅ **Datenexport** - Daten exportieren
-- ✅ **Account-Verwaltung** - Sign Out, Account löschen
+No statistics.  
+No reports overview.  
+No admin panels.
 
 ---
 
-## 🛠️ Installation
+## 🚀 Core Features
 
-### 1. Repository klonen
+### 🔐 Authentication
+
+- Google Sign-In via Supabase Auth
+- Secure session handling
+- One account = one craftsman / company
+- No roles, no managers, no complexity
+
+### 👥 Customer Selection
+
+- Import customers from Google Contacts
+- Auto-fill:
+  - Name
+  - Phone
+  - Email
+  - Address
+- Manual editing always possible
+- Selected customer data cached locally for offline usage
+
+### 📝 Custom Form Builder (CORE FEATURE)
+
+Each user creates their own visit forms.
+
+- Unlimited form templates
+- Drag & drop field ordering
+- Supported field types:
+  - Text
+  - Number
+  - Checkbox
+  - Yes / No toggle
+  - Dropdown
+  - Date / Time
+  - Notes
+  - Signature
+- No hardcoded fields
+- No predefined industry logic
+- **The user decides what information is collected.**
+
+### 🏠 Visit Workflow
+
+1. Select customer
+2. Select form template
+3. Fill out the form on-site
+4. Auto-save while working
+5. Go back and correct entries at any time
+6. Fully functional offline
+
+### 📄 PDF Generation (Final Output)
+
+Each visit ends with a professional PDF.
+
+**PDF includes:**
+- Company name and logo
+- Customer details
+- All filled form fields
+- Date and visit ID
+- Optional signature
+
+**Features:**
+- PDF preview
+- Re-generate after edits
+- Share via Email / WhatsApp
+- Stored securely in Supabase Storage
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- Flutter SDK (3.0 or higher)
+- Dart SDK (3.0 or higher)
+- Supabase account
+- Google Cloud Console account
+
+### 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd onsite
 ```
 
-### 2. Abhängigkeiten installieren
+### 2. Install dependencies
+
 ```bash
 flutter pub get
 ```
 
-### 3. Supabase-Konfiguration
+### 3. Configure Supabase
 
-#### 3.1 Supabase-Projekt erstellen
-1. Gehen Sie zu [supabase.com](https://supabase.com)
-2. Erstellen Sie ein neues Projekt
-3. Notieren Sie sich:
-   - **Project URL**: `https://xxxx.supabase.co`
-   - **Anon/Public Key**: `eyJxxx...`
+#### 3.1 Create Supabase project
 
-#### 3.2 Umgebungsvariablen konfigurieren
+1. Go to [Supabase Dashboard](https://app.supabase.com/)
+2. Create a new project
+3. Note your **Project URL** and **anon/public key**
 
-Erstellen Sie eine `env.json`-Datei im Projektstamm:
+#### 3.2 Run database migration
 
-```json
-{
-  "SUPABASE_URL": "https://ihre-projekt-url.supabase.co",
-  "SUPABASE_ANON_KEY": "ihr-anon-key-hier"
-}
-```
+1. In Supabase Dashboard, go to **SQL Editor**
+2. Copy the contents of `supabase/migrations/20251214174447_onsite_complete_schema.sql`
+3. Paste and execute it
 
-**Wichtig:** Diese Datei wird NICHT ins Repository eingecheckt (.gitignore)
+The migration creates:
+- ✅ User profiles
+- ✅ Contacts table
+- ✅ Form templates table
+- ✅ Visits table with status tracking
+- ✅ Photo attachments table
+- ✅ PDF reports table
+- ✅ Row-Level Security (RLS) policies
+- ✅ Automatic triggers for timestamps
 
-#### 3.3 Datenbank-Migration ausführen
+#### 3.3 Configure Supabase Redirect URLs
 
-1. Öffnen Sie Ihr Supabase-Dashboard
-2. Gehen Sie zum SQL-Editor
-3. Kopieren Sie den Inhalt von `supabase/migrations/20251214174447_onsite_complete_schema.sql`
-4. Fügen Sie ihn ein und führen Sie ihn aus
+For Google OAuth on Web:
 
-Die Migration erstellt:
-- ✅ Benutzerprofile mit Rollen
-- ✅ Kontakte-Tabelle
-- ✅ Formularvorlagen-Tabelle
-- ✅ Besuche-Tabelle mit Statusverfolgung
-- ✅ Foto-Anhänge-Tabelle
-- ✅ PDF-Berichte-Tabelle
-- ✅ Row-Level Security (RLS) Richtlinien
-- ✅ Automatische Trigger für Zeitstempel
-- ✅ Test-Daten für sofortiges Testen
+1. Go to Supabase Dashboard → **Authentication** → **URL Configuration**
+2. Add the following Redirect URLs:
+   - `http://localhost:8080/**` (for local development - **fixed port**)
+   - `http://localhost:*/**` (alternative: wildcard for any port)
+   - Your production URL (e.g. `https://your-app.com/**`)
 
-#### 3.4 Supabase Redirect URLs konfigurieren
+**⚠️ IMPORTANT:** The app uses a **fixed port 8080** by default. If you use a different port, update the Supabase Redirect URLs accordingly.
 
-Für Google OAuth auf Web:
-
-1. Gehen Sie zu Supabase Dashboard → Authentication → URL Configuration
-2. Fügen Sie folgende Redirect URLs hinzu:
-   - `http://localhost:*/**` (für lokale Entwicklung)
-   - `https://preview.builtwithrocket.new/**` (für Rocket Preview)
-   - Ihre Produktions-URL (z.B. `https://ihre-app.com/**`)
-
-### 4. Google Cloud Console Konfiguration
+### 4. Google Cloud Console Configuration
 
 #### 4.1 Google OAuth Setup
 
-1. Gehen Sie zu [Google Cloud Console](https://console.cloud.google.com)
-2. Erstellen Sie ein neues Projekt oder wählen Sie ein bestehendes
-3. Aktivieren Sie die **Google+ API**
-4. Gehen Sie zu **Credentials** → **Create Credentials** → **OAuth client ID**
-5. Wählen Sie **Web application** für Web
-6. Fügen Sie folgende **Authorized redirect URIs** hinzu:
-   - `https://[IHR-SUPABASE-PROJEKT].supabase.co/auth/v1/callback`
-7. Notieren Sie sich die **Client ID** und **Client Secret**
-8. Gehen Sie zu Supabase Dashboard → Authentication → Providers → Google
-9. Aktivieren Sie Google Provider
-10. Fügen Sie **Client ID** und **Client Secret** hinzu
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the **Google+ API**
+4. Go to **Credentials** → **Create Credentials** → **OAuth client ID**
+5. Select **Web application** for Web
+6. Add the following **Authorized redirect URIs**:
+   - `https://[YOUR-SUPABASE-PROJECT].supabase.co/auth/v1/callback`
+7. Note your **Client ID** and **Client Secret**
+8. Go to Supabase Dashboard → **Authentication** → **Providers** → **Google**
+9. Enable Google Provider
+10. Add **Client ID** and **Client Secret**
 
-#### 4.2 Google Contacts API Setup (Optional, für Kontakt-Import)
+#### 4.2 Google Contacts API Setup (Optional, for Contact Import)
 
 1. In Google Cloud Console → **APIs & Services** → **Library**
-2. Suchen Sie nach **People API** und aktivieren Sie sie
-3. Gehen Sie zurück zu **Credentials**
-4. Bearbeiten Sie Ihre OAuth 2.0 Client ID
-5. Fügen Sie folgenden **Scope** hinzu:
+2. Search for **People API** and enable it
+3. Go back to **Credentials**
+4. Edit your OAuth 2.0 Client ID
+5. Add the following **Scope**:
    - `https://www.googleapis.com/auth/contacts.readonly`
-6. Speichern Sie die Änderungen
+6. Save changes
 
-**Detaillierte Anleitung:** Siehe `GOOGLE_OAUTH_FIX_DE.md` und `GOOGLE_CONTACTS_IMPORT_DE.md`
+#### 4.3 Google OAuth Test-Mode Fix (IMPORTANT!)
 
-### 5. App ausführen
+If you see **"Error 403: access_denied"** or **"App is being tested"**:
 
-#### Mit Umgebungsvariablen (Empfohlen)
+**⚡ Quick Fix (3 steps, 5 minutes):**
 
-**Windows (PowerShell):**
-```powershell
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **OAuth consent screen**
+2. Scroll to **"Test users"** → Click **"+ ADD USERS"** → Add your email (e.g. `tahersayed1606@gmail.com`) → Click **"SAVE"**
+3. Wait 2-3 minutes, then try again
+
+**📖 Detailed guides:**
+- Quick fix: `QUICK_FIX_GOOGLE_OAUTH.md` (3 steps)
+- Complete guide: `GOOGLE_OAUTH_TEST_MODE_FIX.md` (detailed)
+
+**Detailed guides:** See `GOOGLE_OAUTH_FIX_DE.md` and `GOOGLE_CONTACTS_IMPORT.md`
+
+### 5. Environment Variables
+
+Create an `env.json` file in the project root:
+
+```json
+{
+  "SUPABASE_URL": "https://your-project.supabase.co",
+  "SUPABASE_ANON_KEY": "your-anon-key",
+  "GOOGLE_WEB_CLIENT_ID": "your-google-web-client-id.apps.googleusercontent.com"
+}
+```
+
+**⚠️ IMPORTANT:** Add `env.json` to `.gitignore` to keep your credentials secure!
+
+### 6. Run the app
+
+#### Option 1: Using environment file (Recommended)
+
+```bash
 flutter run --dart-define-from-file=env.json
 ```
 
-**Windows (Batch):**
-```batch
+#### Option 2: Using command-line arguments
+
+```bash
+flutter run \
+  --dart-define=SUPABASE_URL=your-url \
+  --dart-define=SUPABASE_ANON_KEY=your-key \
+  --dart-define=GOOGLE_WEB_CLIENT_ID=your-client-id
+```
+
+#### Option 3: Using fixed port scripts (Recommended for Web)
+
+**Windows:**
+```bash
+START_APP_FIXED_PORT.bat
+```
+
+**PowerShell:**
+```powershell
+.\START_APP_FIXED_PORT.ps1
+```
+
+**⚠️ NOTE:** These scripts use a fixed port (8080) to prevent Supabase Redirect URL issues.
+
+#### Option 4: Using regular scripts (Any port)
+
+**Windows:**
+```bash
 START_APP.bat
 ```
 
-**Windows (PowerShell Script):**
+**PowerShell:**
 ```powershell
 .\START_APP.ps1
 ```
 
-**Linux/Mac:**
-```bash
-flutter run --dart-define-from-file=env.json
-```
-
-#### Alternative: VSCode Konfiguration
-
-Fügen Sie zu `.vscode/launch.json` hinzu:
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Launch",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": [
-        "--dart-define-from-file",
-        "env.json"
-      ]
-    }
-  ]
-}
-```
-
-#### Alternative: Android Studio / IntelliJ
-
-1. Run → Edit Configurations
-2. Fügen Sie zu "Additional arguments" hinzu:
-   ```
-   --dart-define-from-file=env.json
-   ```
+**⚠️ NOTE:** These may use random ports. For web development, use the fixed port scripts above.
 
 ---
 
-## 📱 App-Struktur
-
-### Screens (Presentation Layer)
-
-1. **Splash Screen** (`/`) - Initialisierung und Auth-Check
-2. **Google Sign-In Screen** (`/google-sign-in-screen`) - Authentifizierung
-3. **Dashboard** (`/dashboard`) - Hauptbildschirm mit Statistiken
-4. **Contacts Management** (`/contacts-management`) - Kontakt-Verwaltung
-5. **Contact Selection** (`/contact-selection`) - Kontakt-Auswahl für Besuche
-6. **Form Template Selection** (`/form-template-selection`) - Formular-Vorlagen
-7. **Form Builder** (`/form-builder`) - Formular-Erstellung
-8. **Visit Form Filling** (`/visit-form-filling`) - Besuchsformular ausfüllen
-9. **PDF Preview** (`/pdf-preview`) - PDF-Bericht Vorschau & Sharing
-10. **User Profile** (`/user-profile`) - Benutzer-Profil & Einstellungen
-
-### Services (Backend)
-
-- **SupabaseService** - Supabase Initialisierung und Konfiguration
-- **AuthService** - Google & Email/Password Authentifizierung
-- **DatabaseService** - CRUD-Operationen für alle Daten
-- **GoogleContactsService** - Google Contacts Import
-
-### Projektstruktur
+## 🏗️ Project Structure
 
 ```
-onsite/
-├── android/              # Android-spezifische Konfiguration
-├── ios/                  # iOS-spezifische Konfiguration
-├── web/                  # Web-spezifische Konfiguration
-├── lib/
-│   ├── core/            # Kern-Utilities und Exports
-│   │   └── app_export.dart
-│   ├── presentation/    # UI-Bildschirme
-│   │   ├── dashboard/
-│   │   ├── form_builder/
-│   │   ├── visit_form_filling/
-│   │   ├── contacts_management/
-│   │   ├── contact_selection/
-│   │   ├── form_template_selection/
-│   │   ├── pdf_preview/
-│   │   ├── user_profile/
-│   │   ├── google_sign_in_screen/
-│   │   └── splash_screen/
-│   ├── services/        # Backend-Services
-│   │   ├── supabase_service.dart
-│   │   ├── auth_service.dart
-│   │   ├── database_service.dart
-│   │   └── google_contacts_service.dart
-│   ├── routes/          # App-Routing
-│   │   └── app_routes.dart
-│   ├── theme/           # Theme-Konfiguration
-│   │   └── app_theme.dart
-│   ├── widgets/         # Wiederverwendbare UI-Komponenten
-│   │   ├── custom_app_bar.dart
-│   │   ├── custom_bottom_bar.dart
-│   │   ├── custom_icon_widget.dart
-│   │   ├── custom_image_widget.dart
-│   │   └── custom_error_widget.dart
-│   └── main.dart        # App-Einstiegspunkt
-├── supabase/
-│   └── migrations/      # Datenbank-Migrationen
-│       └── 20251214174447_onsite_complete_schema.sql
-├── assets/              # Statische Assets
-│   └── images/
-├── env.json             # Umgebungsvariablen (nicht im Git)
-├── START_APP.bat        # Windows Batch Start-Script
-├── START_APP.ps1        # Windows PowerShell Start-Script
-├── pubspec.yaml         # Projekt-Abhängigkeiten
-└── README.md           # Projektdokumentation
+lib/
+├── core/
+│   └── app_export.dart          # Centralized exports
+├── services/
+│   ├── supabase_service.dart    # Supabase initialization
+│   ├── auth_service.dart        # Google Sign-In
+│   ├── database_service.dart    # Database operations
+│   └── google_contacts_service.dart  # Google Contacts import
+├── presentation/
+│   ├── splash_screen/           # Initial screen
+│   ├── google_sign_in_screen/   # Authentication
+│   ├── contact_selection/       # Customer selection
+│   ├── form_template_selection/ # Form template selection
+│   ├── form_builder/            # Create/edit forms
+│   ├── visit_form_filling/      # Fill out visit form
+│   └── pdf_preview/             # PDF preview & share
+├── widgets/
+│   ├── custom_app_bar.dart      # App bar component
+│   ├── custom_icon_widget.dart  # Icon component
+│   └── custom_image_widget.dart # Image component
+└── main.dart                    # App entry point
 ```
 
 ---
 
-## 🔧 Hauptabhängigkeiten
+## 🔄 App Flow
 
-| Kategorie | Paket | Version | Verwendung |
-|-----------|-------|---------|------------|
-| **Backend** | supabase_flutter | ^2.9.0 | Supabase-Integration |
-| **Auth** | google_sign_in | ^6.2.1 | Google OAuth |
-| **UI** | sizer | ^2.0.15 | Responsive Layouts |
-| **Storage** | shared_preferences | ^2.2.2 | Lokale Datenspeicherung |
-| **Networking** | http | ^1.2.0 | HTTP-Client (Google Contacts API) |
-| **Charts** | fl_chart | ^0.65.0 | Datenvisualisierung |
-| **Typography** | google_fonts | ^6.1.0 | Schriftarten |
-| **PDF** | pdf | ^3.11.1 | PDF-Generierung |
-| **Sharing** | share_plus | ^12.0.1 | Datei-Sharing |
-| **Images** | cached_network_image | ^3.3.1 | Bild-Caching |
-| **Connectivity** | connectivity_plus | ^6.1.4 | Netzwerk-Status |
-| **Signature** | signature | ^5.5.0 | Signatur-Erfassung |
-| **Image Picker** | image_picker | ^1.0.4 | Foto-Auswahl |
-
----
-
-## 📊 Datenbankschema
-
-### Haupttabellen
-
-1. **user_profiles** - Benutzerprofile
-   - Verbunden mit `auth.users`
-   - Enthält Firmeninformationen und Rollen
-   - Automatische Erstellung bei Registrierung
-
-2. **contacts** - Kundenkontakte
-   - Vollständige Kontaktinformationen (Name, E-Mail, Telefon, Firma)
-   - Favoriten-System
-   - Google Sync Support
-   - Avatar-URLs
-
-3. **form_templates** - Formularvorlagen
-   - JSONB-basierte Felddefinitionen
-   - Wiederverwendbare Strukturen
-   - System- und Benutzervorlagen
-   - Beschreibungen und Metadaten
-
-4. **visits** - Kundenbesuche
-   - Status-Tracking (Entwurf/Abgeschlossen/Synchronisiert)
-   - JSONB-Formulardaten
-   - Signatur-Support
-   - Besuchsdatum und -zeit
-
-5. **visit_photos** - Foto-Anhänge
-   - Mehrere Fotos pro Besuch
-   - Reihenfolge und Beschriftungen
-   - URL-Speicherung
-
-6. **pdf_reports** - Generierte Berichte
-   - PDF-Speicherung
-   - Metadaten (Erstellungsdatum, Besuch-ID)
-   - Download-Links
-
----
-
-## 🎨 Theming
-
-Die App enthält ein umfassendes Theme-System mit hellen und dunklen Themes:
-
-```dart
-// Zugriff auf das aktuelle Theme
-ThemeData theme = Theme.of(context);
-
-// Theme-Farben verwenden
-Color primaryColor = theme.colorScheme.primary;
 ```
-
-Das Theme umfasst:
-- Farbschemata für helle und dunkle Modi
-- Typografie-Stile
-- Button-Themes
-- Input-Decoration-Themes
-- Card- und Dialog-Themes
-
----
-
-## 📱 Responsive Design
-
-Die App ist mit responsivem Design unter Verwendung des Sizer-Pakets gebaut:
-
-```dart
-// Beispiel für responsive Größenanpassung
-Container(
-  width: 50.w, // 50% der Bildschirmbreite
-  height: 20.h, // 20% der Bildschirmhöhe
-  child: Text('Responsiver Container'),
-)
+Splash Screen
+    ↓
+Google Sign-In
+    ↓
+Contact Selection (from Google Contacts)
+    ↓
+Form Template Selection
+    ↓
+Visit Form Filling
+    ↓
+PDF Preview & Share
 ```
 
 ---
 
-## 🔒 Sicherheit
+## 🛠️ Development
 
-- **Row Level Security (RLS)**: Alle Tabellen sind durch RLS-Richtlinien geschützt
-- **Authentifizierung**: Sichere E-Mail/Passwort und OAuth-Flows
-- **Datenisolierung**: Benutzer können nur ihre eigenen Daten sehen
-- **Sichere Speicherung**: Passwörter werden mit bcrypt gehasht
-- **HTTPS**: Alle API-Kommunikation über HTTPS
+### Running tests
 
----
-
-## 🔐 Demo-Anmeldedaten
-
-Nach Ausführung der Migration stehen folgende Test-Accounts zur Verfügung:
-
-| Rolle | E-Mail | Passwort |
-|-------|--------|----------|
-| Handwerker | max@mustermann.de | handwerk123 |
-| Manager | lisa@schmidt.de | manager123 |
-
-Diese werden auch im Anmeldebildschirm angezeigt.
-
----
-
-## 🧪 Testen
-
-### Unit-Tests ausführen
 ```bash
 flutter test
 ```
 
-### Integration-Tests
+### Building for production
+
+#### Android
+
 ```bash
-flutter test integration_test
+flutter build apk --dart-define-from-file=env.json
 ```
 
-### Code-Analyse
+#### iOS
+
 ```bash
-flutter analyze
+flutter build ios --dart-define-from-file=env.json
 ```
 
-**Aktueller Status:**
-- ✅ **Fehler (Errors):** 0
-- ✅ **Warnungen (Warnings):** 0
-- ℹ️ **Info-Hinweise:** 21 (nur Style-Hinweise, keine funktionalen Probleme)
+#### Web
 
----
-
-## 📦 Bereitstellung
-
-### Android APK erstellen
 ```bash
-flutter build apk --release --dart-define-from-file=env.json
-```
-
-### Android App Bundle (für Play Store)
-```bash
-flutter build appbundle --release --dart-define-from-file=env.json
-```
-
-### iOS Build
-```bash
-flutter build ios --release --dart-define-from-file=env.json
-```
-
-### Web Build
-```bash
-flutter build web --release --dart-define-from-file=env.json
+flutter build web --dart-define-from-file=env.json
 ```
 
 ---
 
-## 🐛 Fehlerbehebung
+## 📚 Additional Documentation
 
-### Supabase-Verbindungsfehler
-- ✅ Überprüfen Sie `env.json` auf korrekte URL und Key
-- ✅ Stellen Sie sicher, dass die Migration ausgeführt wurde
-- ✅ Überprüfen Sie die Internetverbindung
-- ✅ Prüfen Sie Supabase Dashboard → Logs
-
-### Authentifizierungsprobleme
-- ✅ Überprüfen Sie E-Mail-Bestätigungseinstellungen in Supabase
-- ✅ Stellen Sie sicher, dass RLS-Richtlinien korrekt sind
-- ✅ Prüfen Sie Supabase Auth-Logs im Dashboard
-- ✅ Überprüfen Sie Google Cloud Console OAuth-Konfiguration
-- ✅ Siehe `GOOGLE_OAUTH_CHECKLIST.md` für detaillierte Anleitung
-
-### Google Contacts Import funktioniert nicht
-- ✅ Überprüfen Sie, ob People API in Google Cloud Console aktiviert ist
-- ✅ Stellen Sie sicher, dass `contacts.readonly` Scope hinzugefügt wurde
-- ✅ Siehe `GOOGLE_CONTACTS_IMPORT_DE.md` für detaillierte Anleitung
-
-### Build-Fehler
-```bash
-flutter clean
-flutter pub get
-flutter run --dart-define-from-file=env.json
-```
-
-### Layout-Overflow Fehler
-- ✅ Alle Layout-Probleme wurden behoben
-- ✅ Form Builder verwendet jetzt optimierte Layouts
-- ✅ Responsive Design mit Sizer implementiert
+- `GOOGLE_OAUTH_TEST_MODE_FIX.md` - Fix Google OAuth test mode issues
+- `GOOGLE_OAUTH_CHECKLIST.md` - Complete OAuth setup checklist
+- `GOOGLE_CONTACTS_IMPORT.md` - Google Contacts import guide
+- `GOOGLE_OAUTH_EXAKTE_ANLEITUNG.md` - Detailed OAuth setup (German)
 
 ---
 
-## 📚 Zusätzliche Dokumentation
+## 🐛 Troubleshooting
 
-- **`GOOGLE_OAUTH_FIX_DE.md`** - Detaillierte Anleitung für Google OAuth Setup
-- **`GOOGLE_OAUTH_CHECKLIST.md`** - Checkliste für OAuth-Konfiguration
-- **`GOOGLE_CONTACTS_IMPORT_DE.md`** - Anleitung für Google Contacts Import
-- **`APP_FULL_CHECK_REPORT.md`** - Vollständige App-Überprüfung
-- **`QUICK_START.md`** - Schnellstart-Anleitung
+### Problem: "Supabase is not configured"
 
----
+**Solution:**
+- Make sure `env.json` exists in the project root
+- Check that `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set correctly
+- Run the app with `--dart-define-from-file=env.json`
 
-## 🎯 Features im Detail
+### Problem: "Error 403: access_denied" on Google Sign-In
 
-### Form Builder
-- **Drag-and-Drop**: Felder per Drag-and-Drop sortieren
-- **Feldtypen**: Text, Zahl, Datum, Dropdown, Checkbox, Notizen, Signatur
-- **Einstellungen**: Label, Help-Text, Required/Optional, Validierung
-- **Speicherung**: Direkt in Supabase gespeichert
-- **Vorschau**: Echtzeit-Vorschau während der Erstellung
+**Solution:**
+- See `GOOGLE_OAUTH_TEST_MODE_FIX.md`
+- Add your email as a test user in Google Cloud Console
 
-### Google Contacts Import
-- **Automatisch**: Importiert automatisch nach Google Sign-In
-- **Deduplizierung**: Verhindert doppelte Kontakte
-- **Vollständig**: Name, E-Mail, Telefon, Firma, Avatar
-- **Optional**: Funktioniert auch ohne Google Contacts
+### Problem: No contacts from Google
 
-### Offline-Support
-- **Besuche**: Besuche können offline erstellt werden
-- **Auto-Sync**: Automatische Synchronisation bei Internet-Verbindung
-- **Lokale Speicherung**: SharedPreferences für Offline-Daten
+**Solution:**
+- See `GOOGLE_CONTACTS_IMPORT.md`
+- Use the manual import button in the contact selection screen
+- Make sure People API is enabled in Google Cloud Console
 
----
+### Problem: App crashes on startup
 
-## 📝 Changelog
-
-### Version 1.0.0 (Aktuell)
-- ✅ Vollständige Authentifizierung (Google & Email/Password)
-- ✅ Google Contacts Import
-- ✅ Form Builder mit Drag-and-Drop
-- ✅ Offline-fähige Besuchserfassung
-- ✅ PDF-Generierung und Sharing
-- ✅ Vollständige Kontaktverwaltung
-- ✅ Dashboard mit Statistiken
-- ✅ Benutzerprofil-Verwaltung
-- ✅ Alle Layout-Probleme behoben
-- ✅ BuildContext async gaps behoben
-- ✅ Code-Qualität optimiert
+**Solution:**
+- Check that all environment variables are set
+- Verify Supabase project is active
+- Check Flutter console for detailed error messages
 
 ---
 
-## 📝 Lizenz
+## 📄 License
 
-Dieses Projekt wurde mit [Rocket.new](https://rocket.new) erstellt.
-
----
-
-## 🙏 Danksagungen
-
-- Gebaut mit [Rocket.new](https://rocket.new)
-- Unterstützt von [Flutter](https://flutter.dev) & [Dart](https://dart.dev)
-- Backend von [Supabase](https://supabase.com)
-- Gestaltet mit Material Design 3
-- Icons von Material Icons
+[Your License Here]
 
 ---
 
-**Gebaut mit ❤️ auf Rocket.new**
+## 👤 Author
 
-**Status:** ✅ **PRODUKTIONSBEREIT** - Alle Funktionen implementiert und getestet
+[Your Name/Company]
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [Flutter](https://flutter.dev/)
+- Backend powered by [Supabase](https://supabase.com/)
+- Authentication via [Google Sign-In](https://developers.google.com/identity)

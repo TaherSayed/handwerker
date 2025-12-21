@@ -135,8 +135,8 @@ class _SplashScreenState extends State<SplashScreen>
     final bool isAuthenticated = _authService.isAuthenticated;
     
     if (isAuthenticated) {
-      // User is authenticated, navigate to dashboard
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+      // User is authenticated, start new visit flow
+      Navigator.pushReplacementNamed(context, AppRoutes.contactSelection);
     } else {
       // User is not authenticated, navigate to sign-in screen
       Navigator.pushReplacementNamed(context, AppRoutes.googleSignIn);

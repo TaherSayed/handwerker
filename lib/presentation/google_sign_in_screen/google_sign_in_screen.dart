@@ -29,14 +29,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   String? _errorMessage;
   late final AuthService _authService;
 
-  // Email/Password form state
-  bool _showEmailForm = false;
-  bool _isSignUp = false;
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _obscurePassword = true;
 
   // Track if navigation is in progress to prevent multiple navigations
   bool _isNavigating = false;
@@ -205,9 +197,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _nameController.dispose();
     super.dispose();
   }
 
@@ -221,7 +210,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!_isNavigating && mounted) {
             _isNavigating = true;
-            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+            Navigator.pushReplacementNamed(context, AppRoutes.contactSelection);
           }
         });
       }
@@ -254,7 +243,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
           Future.microtask(() {
             if (mounted && !_isNavigating) {
               _isNavigating = true;
-              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+              Navigator.pushReplacementNamed(context, AppRoutes.contactSelection);
             }
           });
         }
@@ -274,36 +263,61 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   /// Import Google Contacts after successful sign-in
   Future<void> _importGoogleContactsAfterSignIn() async {
     try {
-      // Only import on mobile (native Google Sign-In)
-      if (kIsWeb) {
-        debugPrint('📇 Google Contacts import skipped on web (OAuth flow)');
-        return;
-      }
-
-      // Get Google Sign-In account
       const webClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
       if (webClientId.isEmpty) {
         debugPrint('⚠️ GOOGLE_WEB_CLIENT_ID not configured, skipping contacts import');
         return;
       }
 
-      final googleSignIn = GoogleSignIn(
-        serverClientId: webClientId,
-        scopes: [
-          'email',
-          'profile',
-          'https://www.googleapis.com/auth/contacts.readonly',
-        ],
-      );
+      if (kIsWeb) {
+        // On web, after Supabase OAuth, we need to sign in with Google Sign-In
+        // to get an access token with contacts scope
+        debugPrint('📇 Attempting to import Google Contacts on web...');
+        
+        final googleSignIn = GoogleSignIn(
+          clientId: webClientId,
+          scopes: [
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/contacts.readonly',
+          ],
+        );
 
-      final googleAccount = await googleSignIn.signInSilently();
-      if (googleAccount != null) {
-        debugPrint('📇 Importing Google Contacts...');
-        final contactsService = GoogleContactsService.instance;
-        await contactsService.importGoogleContacts(googleAccount: googleAccount);
-        debugPrint('✅ Google Contacts imported successfully');
+        // Try silent sign-in first (might work if user just signed in)
+        var googleAccount = await googleSignIn.signInSilently();
+        
+        // If silent sign-in fails, try regular sign-in
+        // This should be quick since user is already authenticated with Google
+        googleAccount ??= await googleSignIn.signIn();
+        
+        if (googleAccount != null) {
+          debugPrint('📇 Importing Google Contacts...');
+          final contactsService = GoogleContactsService.instance;
+          await contactsService.importGoogleContacts(googleAccount: googleAccount);
+          debugPrint('✅ Google Contacts imported successfully');
+        } else {
+          debugPrint('⚠️ Could not get Google account for contacts import');
+        }
       } else {
-        debugPrint('⚠️ No Google account found for contacts import');
+        // Mobile: Use server client ID
+        final googleSignIn = GoogleSignIn(
+          serverClientId: webClientId,
+          scopes: [
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/contacts.readonly',
+          ],
+        );
+
+        final googleAccount = await googleSignIn.signInSilently();
+        if (googleAccount != null) {
+          debugPrint('📇 Importing Google Contacts...');
+          final contactsService = GoogleContactsService.instance;
+          await contactsService.importGoogleContacts(googleAccount: googleAccount);
+          debugPrint('✅ Google Contacts imported successfully');
+        } else {
+          debugPrint('⚠️ No Google account found for contacts import');
+        }
       }
     } catch (e) {
       // Don't show error to user - contacts import is non-critical
@@ -385,11 +399,8 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
                 SizedBox(height: 4.h),
 
-                // Authentication section (Google or Email/Password)
-                if (!_showEmailForm)
-                  _buildSignInSection(theme)
-                else
-                  _buildEmailPasswordForm(theme),
+                // Authentication section (Google only)
+                _buildSignInSection(theme),
 
                 SizedBox(height: 2.h),
 
@@ -514,61 +525,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
         SizedBox(height: 3.h),
 
-        // Divider with "ODER"
-        Row(
-          children: [
-            Expanded(child: Divider(color: theme.colorScheme.outline)),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 3.w),
-              child: Text(
-                'ODER',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(child: Divider(color: theme.colorScheme.outline)),
-          ],
-        ),
-
-        SizedBox(height: 3.h),
-
-        // Email/Password Button
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _isLoading
-                ? null
-                : () {
-                    setState(() {
-                      _showEmailForm = true;
-                      _errorMessage = null;
-                    });
-                  },
-            icon: CustomIconWidget(
-              iconName: 'email',
-              color: theme.colorScheme.primary,
-              size: 5.w,
-            ),
-            label: Text(
-              'Mit E-Mail anmelden',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 3.h),
-              side: BorderSide(color: theme.colorScheme.primary, width: 2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2.w),
-              ),
-            ),
-          ),
-        ),
-
-        SizedBox(height: 3.h),
-
         // Privacy notice
         Container(
           padding: EdgeInsets.all(4.w),
@@ -623,230 +579,10 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
     );
   }
 
-  /// Builds the email/password authentication form
+  // DEPRECATED: Email/password authentication removed - Google Sign-In only
+  @Deprecated('Email/password authentication removed')
   Widget _buildEmailPasswordForm(ThemeData theme) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Back button
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _showEmailForm = false;
-                _errorMessage = null;
-                _passwordController.clear();
-                _nameController.clear();
-                // Keep email pre-filled
-              });
-            },
-            icon: CustomIconWidget(
-              iconName: 'arrow_back',
-              color: theme.colorScheme.primary,
-              size: 5.w,
-            ),
-            label: Text(
-              'Zurück zu Google-Anmeldung',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-
-          SizedBox(height: 2.h),
-
-          // Form title
-          Text(
-            _isSignUp ? 'Konto erstellen' : 'Mit E-Mail anmelden',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-
-          SizedBox(height: 3.h),
-
-          // Error message
-          if (_errorMessage != null) ...[
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(3.w),
-              margin: EdgeInsets.only(bottom: 3.h),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(2.w),
-                border: Border.all(
-                  color: theme.colorScheme.error.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  CustomIconWidget(
-                    iconName: 'error_outline',
-                    color: theme.colorScheme.error,
-                    size: 5.w,
-                  ),
-                  SizedBox(width: 2.w),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Name field (only for sign up)
-          if (_isSignUp) ...[
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Vollständiger Name',
-                hintText: 'Max Mustermann',
-                prefixIcon: Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              validator: (value) {
-                if (_isSignUp && (value == null || value.trim().isEmpty)) {
-                  return 'Bitte geben Sie Ihren Namen ein';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 2.h),
-          ],
-
-          // Email field - Pre-filled with user's email
-          TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: 'E-Mail-Adresse',
-              hintText: 'ihre@email.de',
-              prefixIcon: Icon(Icons.email_outlined),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(2.w),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Bitte geben Sie Ihre E-Mail ein';
-              }
-              if (!RegExp(
-                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-              ).hasMatch(value)) {
-                return 'Bitte geben Sie eine gültige E-Mail ein';
-              }
-              return null;
-            },
-          ),
-
-          SizedBox(height: 2.h),
-
-          // Password field
-          TextFormField(
-            controller: _passwordController,
-            obscureText: _obscurePassword,
-            decoration: InputDecoration(
-              labelText: 'Passwort',
-              hintText: _isSignUp ? 'Mindestens 6 Zeichen' : '••••••••',
-              prefixIcon: Icon(Icons.lock_outline),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(2.w),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Bitte geben Sie ein Passwort ein';
-              }
-              if (_isSignUp && value.length < 6) {
-                return 'Passwort muss mindestens 6 Zeichen lang sein';
-              }
-              return null;
-            },
-          ),
-
-          SizedBox(height: 3.h),
-
-          // Submit button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleEmailPasswordAuth,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 3.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              child: Text(
-                _isSignUp ? 'Registrieren' : 'Anmelden',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onPrimary,
-                ),
-              ),
-            ),
-          ),
-
-          SizedBox(height: 2.h),
-
-          // Toggle sign up/sign in
-          Center(
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  _isSignUp = !_isSignUp;
-                  _errorMessage = null;
-                });
-              },
-              child: Text(
-                _isSignUp
-                    ? 'Haben Sie bereits ein Konto? Anmelden'
-                    : 'Noch kein Konto? Registrieren',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-
-          // Forgot password (only for sign in)
-          if (!_isSignUp)
-            Center(
-              child: TextButton(
-                onPressed: _handleForgotPassword,
-                child: Text(
-                  'Passwort vergessen?',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink(); // Removed email/password form
   }
 
   /// Builds the footer section with terms and data handling
@@ -921,7 +657,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
       setState(() {
         _errorMessage = 'Supabase ist nicht konfiguriert. '
             'Bitte starten Sie die App mit --dart-define-from-file=env.json';
-        _showEmailForm = true;
       });
       return;
     }
@@ -932,8 +667,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
     if (_signInAttempts >= _maxSignInAttempts) {
       setState(() {
         _errorMessage = 'Zu viele fehlgeschlagene Versuche. '
-            'Bitte verwenden Sie die E-Mail-Anmeldung oder versuchen Sie es später erneut.';
-        _showEmailForm = true;
+            'Bitte versuchen Sie es später erneut.';
       });
       return;
     }
@@ -978,245 +712,29 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
           _isNavigating = false;
         });
 
-        // If Google Sign-In not available or failed, suggest email form
-        if (errorMsg.contains('Web') || 
-            errorMsg.contains('nicht verfügbar') ||
-            errorMsg.contains('GOOGLE_WEB_CLIENT_ID')) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() {
-                _showEmailForm = true;
-              });
-            }
-          });
-        }
       }
     }
   }
 
 
-  /// Handles email/password authentication (sign in or sign up)
+  // DEPRECATED: Email/password authentication removed
+  @Deprecated('Email/password authentication removed')
   Future<void> _handleEmailPasswordAuth() async {
-    if (!_formKey.currentState!.validate() || _isNavigating || _isLoading) {
-      return;
-    }
-
-    // Check Supabase configuration
-    if (!SupabaseService.isConfigured) {
-      setState(() {
-        _errorMessage = 'Supabase ist nicht konfiguriert. '
-            'Bitte starten Sie die App mit --dart-define-from-file=env.json';
-        _isLoading = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      if (_isSignUp) {
-        // Sign up flow
-        final response = await _authService.signUpWithEmail(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          fullName: _nameController.text.trim().isNotEmpty
-              ? _nameController.text.trim()
-              : null,
-        );
-
-        if (mounted) {
-          // Check if we have a session (user might need email confirmation)
-          if (response.session != null && response.user != null) {
-            // User is automatically logged in
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Registrierung erfolgreich!'),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-
-            setState(() {
-              _isNavigating = true;
-              _isLoading = false;
-            });
-
-            await Future.delayed(const Duration(milliseconds: 1000));
-
-            if (mounted) {
-              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-            }
-          } else {
-            // User needs to confirm email
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                  'Registrierung erfolgreich!\n'
-                  'Bitte überprüfen Sie Ihre E-Mail für die Bestätigung.',
-                ),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-
-            // Switch to sign in mode
-            setState(() {
-              _isSignUp = false;
-              _isLoading = false;
-              _passwordController.clear();
-            });
-          }
-        }
-      } else {
-        // Sign in flow
-        final response = await _authService.signInWithEmail(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
-
-        // Verify we got a valid session
-        if (response.session == null || response.user == null) {
-          throw Exception('Keine gültige Sitzung erhalten');
-        }
-
-        if (mounted && !_isNavigating) {
-          setState(() {
-            _isNavigating = true;
-            _isLoading = false;
-          });
-
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Anmeldung erfolgreich!'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-
-          // Navigate to dashboard
-          await Future.delayed(const Duration(milliseconds: 1000));
-
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        final errorMessage = _getErrorMessage(e.toString());
-
-        setState(() {
-          _errorMessage = errorMessage;
-          _isLoading = false;
-          _isNavigating = false;
-        });
-
-        // Log error for debugging
-        debugPrint('❌ Authentication error: ${e.toString()}');
-
-        // If sign-in failed with "invalid credentials", guide user to registration
-        if (!_isSignUp && errorMessage.contains('Ungültige Anmeldedaten')) {
-          // Show dialog to guide user
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              _showRegistrationPromptDialog();
-            }
-          });
-        }
-      }
-    }
+    return; // Email/password authentication removed
   }
 
   /// Shows dialog prompting user to register
+  // DEPRECATED: Email/password authentication removed
+  @Deprecated('Email/password authentication removed')
   void _showRegistrationPromptDialog() {
-    final theme = Theme.of(context);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.person_add_outlined, color: theme.colorScheme.primary),
-            SizedBox(width: 2.w),
-            Expanded(
-              child: Text(
-                'Konto erstellen?',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Es sieht so aus, als hätten Sie noch kein Konto.\n\n'
-          'Möchten Sie sich jetzt registrieren?',
-          style: theme.textTheme.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Abbrechen'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _isSignUp = true;
-                _errorMessage = null;
-                _passwordController.clear();
-              });
-            },
-            child: Text('Registrieren'),
-          ),
-        ],
-      ),
-    );
+    return; // Email/password authentication removed
   }
 
   /// Handles forgot password flow
+  // DEPRECATED: Email/password authentication removed
+  @Deprecated('Email/password authentication removed')
   Future<void> _handleForgotPassword() async {
-    if (_emailController.text.trim().isEmpty) {
-      setState(() {
-        _errorMessage =
-            'Bitte geben Sie Ihre E-Mail-Adresse ein, um Ihr Passwort zurückzusetzen.';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      await _authService.resetPassword(email: _emailController.text.trim());
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Passwort-Reset-Link wurde an Ihre E-Mail gesendet. Bitte überprüfen Sie Ihren Posteingang.',
-            ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = _getErrorMessage(e.toString());
-          _isLoading = false;
-        });
-      }
-    }
+    return; // Email/password authentication removed
   }
 
   /// Converts technical errors to user-friendly German messages

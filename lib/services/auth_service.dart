@@ -81,11 +81,12 @@ class AuthService {
       debugPrint('⚠️ WICHTIG: Diese URL muss in Google Cloud Console eingetragen sein!');
 
       // Use Supabase's OAuth flow for web
-      // This will redirect the user to Google, then back to the app
+      // Request contacts scope for Google Contacts import
       final bool initiated = await _getClient.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
         authScreenLaunchMode: LaunchMode.externalApplication,
+        scopes: 'email profile https://www.googleapis.com/auth/contacts.readonly',
       );
 
       if (!initiated) {

@@ -37,6 +37,7 @@ class FieldTypeSelectorWidget extends StatelessWidget {
       {'type': 'date', 'icon': 'calendar_today', 'label': 'Date'},
       {'type': 'time', 'icon': 'access_time', 'label': 'Time'},
       {'type': 'notes', 'icon': 'notes', 'label': 'Notes'},
+      {'type': 'signature', 'icon': 'edit', 'label': 'Signature'},
     ];
 
     return SizedBox(

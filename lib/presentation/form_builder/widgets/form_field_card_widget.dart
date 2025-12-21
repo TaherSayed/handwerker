@@ -184,20 +184,6 @@ class _FormFieldCardWidgetState extends State<FormFieldCardWidget> {
                     ),
                   ),
                   SizedBox(width: 2.w),
-                  // Required Toggle - Compact version
-                  Tooltip(
-                    message: widget.field['required'] as bool ? 'Pflichtfeld' : 'Optional',
-                    child: Switch(
-                      value: widget.field['required'] as bool,
-                      onChanged: (value) {
-                        final updatedField =
-                            Map<String, dynamic>.from(widget.field);
-                        updatedField['required'] = value;
-                        widget.onUpdate(updatedField);
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 1.w),
                   // Settings Icon
                   IconButton(
                     icon: CustomIconWidget(

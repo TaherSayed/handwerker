@@ -62,7 +62,21 @@ class _DashboardState extends State<Dashboard> {
     try {
       final authService = AuthService();
       final userName = authService.userName ?? authService.userEmail ?? "Benutzer";
-      final companyName = "Ihr Unternehmen"; // TODO: Load from user profile
+      
+      // Load company name from user profile
+      String companyName = "Ihr Unternehmen"; // Default fallback
+      if (SupabaseService.isConfigured) {
+        try {
+          final dbService = DatabaseService.instance;
+          final userProfile = await dbService.getUserProfile();
+          if (userProfile['company_name'] != null) {
+            companyName = userProfile['company_name'].toString();
+          }
+        } catch (e) {
+          // User profile might not exist yet, use default
+          debugPrint('Company name not found in profile, using default: $e');
+        }
+      }
       
       if (mounted) {
         setState(() {

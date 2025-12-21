@@ -31,11 +31,6 @@ class FieldSettingsPanelWidget extends StatefulWidget {
 class _FieldSettingsPanelWidgetState extends State<FieldSettingsPanelWidget> {
   late Map<String, dynamic> _editedField;
   late TextEditingController _labelController;
-  late TextEditingController _helpTextController;
-  late TextEditingController _minLengthController;
-  late TextEditingController _maxLengthController;
-  late TextEditingController _minValueController;
-  late TextEditingController _maxValueController;
 
   @override
   void initState() {
@@ -43,38 +38,11 @@ class _FieldSettingsPanelWidgetState extends State<FieldSettingsPanelWidget> {
     _editedField = Map<String, dynamic>.from(widget.field);
     _labelController =
         TextEditingController(text: _editedField['label'] as String);
-    _helpTextController =
-        TextEditingController(text: _editedField['helpText'] as String);
-    _minLengthController = TextEditingController(
-      text: (_editedField['validation'] as Map<String, dynamic>?)?['minLength']
-              ?.toString() ??
-          '',
-    );
-    _maxLengthController = TextEditingController(
-      text: (_editedField['validation'] as Map<String, dynamic>?)?['maxLength']
-              ?.toString() ??
-          '',
-    );
-    _minValueController = TextEditingController(
-      text: (_editedField['validation'] as Map<String, dynamic>?)?['minValue']
-              ?.toString() ??
-          '',
-    );
-    _maxValueController = TextEditingController(
-      text: (_editedField['validation'] as Map<String, dynamic>?)?['maxValue']
-              ?.toString() ??
-          '',
-    );
   }
 
   @override
   void dispose() {
     _labelController.dispose();
-    _helpTextController.dispose();
-    _minLengthController.dispose();
-    _maxLengthController.dispose();
-    _minValueController.dispose();
-    _maxValueController.dispose();
     super.dispose();
   }
 
@@ -134,39 +102,7 @@ class _FieldSettingsPanelWidgetState extends State<FieldSettingsPanelWidget> {
                     },
                   ),
                   SizedBox(height: 2.h),
-                  // Help Text
-                  TextField(
-                    controller: _helpTextController,
-                    decoration: InputDecoration(
-                      labelText: 'Help Text (Optional)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(2.w),
-                      ),
-                    ),
-                    maxLines: 2,
-                    onChanged: (value) {
-                      _editedField['helpText'] = value;
-                    },
-                  ),
-                  SizedBox(height: 2.h),
-                  // Required Toggle
-                  SwitchListTile(
-                    title: Text('Pflichtfeld'),
-                    subtitle: Text('Benutzer muss dieses Feld ausfüllen'),
-                    value: _editedField['required'] as bool,
-                    onChanged: (value) {
-                      setState(() {
-                        _editedField['required'] = value;
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SizedBox(height: 2.h),
                   // Type-specific settings
-                  if (_editedField['type'] == 'text')
-                    ..._buildTextSettings(theme),
-                  if (_editedField['type'] == 'number')
-                    ..._buildNumberSettings(theme),
                   if (_editedField['type'] == 'dropdown')
                     ..._buildDropdownSettings(theme),
                 ],
@@ -198,111 +134,6 @@ class _FieldSettingsPanelWidgetState extends State<FieldSettingsPanelWidget> {
     );
   }
 
-  List<Widget> _buildTextSettings(ThemeData theme) {
-    return [
-      Text(
-        'Validation Rules',
-        style: theme.textTheme.titleMedium,
-      ),
-      SizedBox(height: 1.h),
-      Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _minLengthController,
-              decoration: InputDecoration(
-                labelText: 'Min Length',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                final validation = Map<String, dynamic>.from(
-                  (_editedField['validation'] as Map<String, dynamic>?) ?? {},
-                );
-                validation['minLength'] = int.tryParse(value);
-                _editedField['validation'] = validation;
-              },
-            ),
-          ),
-          SizedBox(width: 2.w),
-          Expanded(
-            child: TextField(
-              controller: _maxLengthController,
-              decoration: InputDecoration(
-                labelText: 'Max Length',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                final validation = Map<String, dynamic>.from(
-                  (_editedField['validation'] as Map<String, dynamic>?) ?? {},
-                );
-                validation['maxLength'] = int.tryParse(value);
-                _editedField['validation'] = validation;
-              },
-            ),
-          ),
-        ],
-      ),
-    ];
-  }
-
-  List<Widget> _buildNumberSettings(ThemeData theme) {
-    return [
-      Text(
-        'Validation Rules',
-        style: theme.textTheme.titleMedium,
-      ),
-      SizedBox(height: 1.h),
-      Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _minValueController,
-              decoration: InputDecoration(
-                labelText: 'Min Value',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                final validation = Map<String, dynamic>.from(
-                  (_editedField['validation'] as Map<String, dynamic>?) ?? {},
-                );
-                validation['minValue'] = double.tryParse(value);
-                _editedField['validation'] = validation;
-              },
-            ),
-          ),
-          SizedBox(width: 2.w),
-          Expanded(
-            child: TextField(
-              controller: _maxValueController,
-              decoration: InputDecoration(
-                labelText: 'Max Value',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2.w),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                final validation = Map<String, dynamic>.from(
-                  (_editedField['validation'] as Map<String, dynamic>?) ?? {},
-                );
-                validation['maxValue'] = double.tryParse(value);
-                _editedField['validation'] = validation;
-              },
-            ),
-          ),
-        ],
-      ),
-    ];
-  }
 
   List<Widget> _buildDropdownSettings(ThemeData theme) {
     return [

@@ -71,6 +71,12 @@ class AddFieldBottomSheetWidget extends StatelessWidget {
         'label': 'Notizen',
         'description': 'Mehrzeiliger Textbereich'
       },
+      {
+        'type': 'signature',
+        'icon': 'edit',
+        'label': 'Unterschrift',
+        'description': 'Digitale Unterschrift'
+      },
     ];
 
     return Container(
