@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import Layout from './components/Layout';
 import SplashScreen from './pages/SplashScreen';
 import GoogleSignInScreen from './pages/GoogleSignInScreen';
 import Dashboard from './pages/Dashboard';
@@ -23,18 +24,16 @@ function App() {
       <Route path="/" element={<SplashScreen />} />
       <Route path="/google-sign-in" element={<GoogleSignInScreen />} />
       
-      {/* Allow dashboard access for development */}
-      <Route path="/dashboard" element={<Dashboard />} />
-      
       {user ? (
         <>
-          <Route path="/contact-selection" element={<ContactSelection />} />
-          <Route path="/form-template-selection" element={<FormTemplateSelection />} />
-          <Route path="/visit-form-filling" element={<VisitFormFilling />} />
-          <Route path="/pdf-preview" element={<PdfPreview />} />
-          <Route path="/form-builder" element={<FormBuilder />} />
-          <Route path="/contacts-management" element={<ContactsManagement />} />
-          <Route path="/user-profile" element={<UserProfile />} />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/contact-selection" element={<Layout><ContactSelection /></Layout>} />
+          <Route path="/form-template-selection" element={<Layout><FormTemplateSelection /></Layout>} />
+          <Route path="/visit-form-filling" element={<Layout><VisitFormFilling /></Layout>} />
+          <Route path="/pdf-preview" element={<Layout><PdfPreview /></Layout>} />
+          <Route path="/form-builder" element={<Layout><FormBuilder /></Layout>} />
+          <Route path="/contacts-management" element={<Layout><ContactsManagement /></Layout>} />
+          <Route path="/user-profile" element={<Layout><UserProfile /></Layout>} />
         </>
       ) : (
         <Route path="*" element={<Navigate to="/google-sign-in" replace />} />
