@@ -18,7 +18,6 @@ export default function PdfPreview() {
     if (!pdfRef.current) return;
 
     const pdf = new jsPDF();
-    const element = pdfRef.current;
 
     // Simple PDF generation - you might want to use html2canvas for better rendering
     pdf.text('OnSite - Besuchsbericht', 20, 20);
