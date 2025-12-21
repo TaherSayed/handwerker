@@ -9,9 +9,18 @@ interface Statistics {
   syncStatus: string;
 }
 
+interface GoogleContact {
+  resourceName: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  company: string;
+  avatar_url: string;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, session } = useAuthStore();
   const [statistics, setStatistics] = useState<Statistics>({
     recentVisits: 0,
     pendingReports: 0,
@@ -19,12 +28,80 @@ export default function Dashboard() {
   });
   const [userName, setUserName] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [googleContacts, setGoogleContacts] = useState<GoogleContact[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
+  const [loadingGoogleContacts, setLoadingGoogleContacts] = useState(false);
+  const [importingContacts, setImportingContacts] = useState(false);
+  const [showGoogleContacts, setShowGoogleContacts] = useState(false);
 
   useEffect(() => {
     // Allow viewing dashboard even without auth for development
     loadUserData();
     loadStatistics();
   }, []);
+
+  const loadGoogleContacts = async () => {
+    if (!session?.provider_token) {
+      alert('Bitte melden Sie sich zuerst mit Google an, um Kontakte zu sehen');
+      return;
+    }
+
+    try {
+      setLoadingGoogleContacts(true);
+      const response = await axios.get(`/api/google/contacts/list?accessToken=${session.provider_token}`);
+      setGoogleContacts(response.data || []);
+      setShowGoogleContacts(true);
+    } catch (error: any) {
+      console.error('Failed to load Google contacts:', error);
+      alert('Fehler beim Laden der Google Kontakte: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoadingGoogleContacts(false);
+    }
+  };
+
+  const handleToggleContact = (resourceName: string) => {
+    setSelectedContacts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(resourceName)) {
+        newSet.delete(resourceName);
+      } else {
+        newSet.add(resourceName);
+      }
+      return newSet;
+    });
+  };
+
+  const handleImportSelected = async () => {
+    if (selectedContacts.size === 0) {
+      alert('Bitte wählen Sie mindestens einen Kontakt aus');
+      return;
+    }
+
+    if (!session?.provider_token || !user?.id) {
+      alert('Fehler: Keine Berechtigung');
+      return;
+    }
+
+    try {
+      setImportingContacts(true);
+      const response = await axios.post('/api/google/contacts/import-selected', {
+        accessToken: session.provider_token,
+        userId: user.id,
+        resourceNames: Array.from(selectedContacts),
+      });
+      
+      alert(`✅ ${response.data?.length || 0} Kontakt(e) erfolgreich importiert`);
+      setSelectedContacts(new Set());
+      setShowGoogleContacts(false);
+      // Refresh statistics to show updated contact count
+      loadStatistics();
+    } catch (error: any) {
+      console.error('Failed to import contacts:', error);
+      alert('Fehler beim Importieren: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setImportingContacts(false);
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -157,6 +234,107 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold mb-2" style={{ color: '#2563EB' }}>Formular erstellen</h2>
             <p className="text-sm" style={{ color: '#475569' }}>Erstellen Sie eine neue Formularvorlage</p>
           </button>
+        </div>
+
+        {/* Google Contacts Section */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold" style={{ color: '#0F172A' }}>Google Kontakte</h2>
+            {!showGoogleContacts ? (
+              <button
+                onClick={loadGoogleContacts}
+                disabled={loadingGoogleContacts || !session?.provider_token}
+                className="btn-outlined text-sm"
+                style={{ opacity: (!session?.provider_token || loadingGoogleContacts) ? 0.5 : 1 }}
+              >
+                {loadingGoogleContacts ? 'Laden...' : 'Kontakte anzeigen'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowGoogleContacts(false)}
+                className="text-sm font-medium"
+                style={{ color: '#475569' }}
+              >
+                Ausblenden
+              </button>
+            )}
+          </div>
+
+          {showGoogleContacts && (
+            <div className="card p-6">
+              {googleContacts.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm" style={{ color: '#475569' }}>Keine Google Kontakte gefunden</p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-sm" style={{ color: '#475569' }}>
+                      {selectedContacts.size} von {googleContacts.length} ausgewählt
+                    </p>
+                    {selectedContacts.size > 0 && (
+                      <button
+                        onClick={handleImportSelected}
+                        disabled={importingContacts}
+                        className="btn-primary text-sm"
+                        style={{ opacity: importingContacts ? 0.6 : 1 }}
+                      >
+                        {importingContacts ? 'Importiere...' : `Ausgewählte importieren (${selectedContacts.size})`}
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="max-h-96 overflow-y-auto space-y-2">
+                    {googleContacts.map((contact) => {
+                      const isSelected = selectedContacts.has(contact.resourceName);
+                      return (
+                        <div
+                          key={contact.resourceName}
+                          onClick={() => handleToggleContact(contact.resourceName)}
+                          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition ${
+                            isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          }`}
+                          style={{ border: isSelected ? '2px solid #2563EB' : '1px solid #E2E8F0' }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleContact(contact.resourceName)}
+                            className="w-5 h-5 rounded"
+                            style={{ accentColor: '#2563EB' }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          {contact.avatar_url ? (
+                            <img
+                              src={contact.avatar_url}
+                              alt={contact.full_name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white" style={{ backgroundColor: '#2563EB' }}>
+                              {contact.full_name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm" style={{ color: '#0F172A' }}>{contact.full_name}</p>
+                            {contact.email && (
+                              <p className="text-xs truncate" style={{ color: '#475569' }}>{contact.email}</p>
+                            )}
+                            {contact.phone && (
+                              <p className="text-xs" style={{ color: '#475569' }}>{contact.phone}</p>
+                            )}
+                            {contact.company && (
+                              <p className="text-xs" style={{ color: '#64748B' }}>{contact.company}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Recent Visits Section */}

@@ -1,8 +1,20 @@
 import { google } from 'googleapis';
 import { databaseService } from './database.service.js';
 
+interface GoogleContact {
+  resourceName: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  company: string;
+  avatar_url: string;
+}
+
 export class GoogleContactsService {
-  async importContacts(accessToken: string, userId: string) {
+  /**
+   * Get list of Google contacts without importing them
+   */
+  async getContactsList(accessToken: string): Promise<GoogleContact[]> {
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -15,7 +27,7 @@ export class GoogleContactsService {
     });
 
     const connections = response.data.connections || [];
-    const contacts = [];
+    const contacts: GoogleContact[] = [];
 
     for (const connection of connections) {
       const names = connection.names || [];
@@ -37,25 +49,72 @@ export class GoogleContactsService {
       const primaryOrg = orgs.find(o => o.metadata?.primary) || orgs[0];
       const primaryPhoto = photos.find(p => p.metadata?.primary) || photos[0];
 
-      const contact = {
+      contacts.push({
+        resourceName: connection.resourceName || '',
         full_name: fullName,
         email: primaryEmail?.value || '',
         phone: primaryPhone?.value || '',
         company: primaryOrg?.name || '',
         avatar_url: primaryPhoto?.url || '',
-        is_favorite: false,
-      };
-
-      try {
-        await databaseService.createContact(userId, contact);
-        contacts.push(contact);
-      } catch (error) {
-        // Contact might already exist, skip
-        console.log(`Skipping duplicate contact: ${fullName}`);
-      }
+      });
     }
 
     return contacts;
+  }
+
+  /**
+   * Import selected Google contacts
+   */
+  async importSelectedContacts(accessToken: string, userId: string, resourceNames: string[]) {
+    const allContacts = await this.getContactsList(accessToken);
+    const selectedContacts = allContacts.filter(c => resourceNames.includes(c.resourceName));
+    const imported = [];
+
+    for (const contact of selectedContacts) {
+      try {
+        await databaseService.createContact(userId, {
+          full_name: contact.full_name,
+          email: contact.email,
+          phone: contact.phone,
+          company: contact.company,
+          avatar_url: contact.avatar_url,
+          is_favorite: false,
+        });
+        imported.push(contact);
+      } catch (error) {
+        // Contact might already exist, skip
+        console.log(`Skipping duplicate contact: ${contact.full_name}`);
+      }
+    }
+
+    return imported;
+  }
+
+  /**
+   * Import all Google contacts (legacy method)
+   */
+  async importContacts(accessToken: string, userId: string) {
+    const contacts = await this.getContactsList(accessToken);
+    const imported = [];
+
+    for (const contact of contacts) {
+      try {
+        await databaseService.createContact(userId, {
+          full_name: contact.full_name,
+          email: contact.email,
+          phone: contact.phone,
+          company: contact.company,
+          avatar_url: contact.avatar_url,
+          is_favorite: false,
+        });
+        imported.push(contact);
+      } catch (error) {
+        // Contact might already exist, skip
+        console.log(`Skipping duplicate contact: ${contact.full_name}`);
+      }
+    }
+
+    return imported;
   }
 }
 
