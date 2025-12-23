@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import { config } from './config/env.js';
 import userRoutes from './routes/user.routes.js';
 import templatesRoutes from './routes/templates.routes.js';
@@ -31,12 +32,27 @@ app.use('/api/uploads', uploadsRoutes);
 
 // Serve static files from React build
 const clientBuildPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientBuildPath));
+console.log(`📁 Looking for client build at: ${clientBuildPath}`);
 
-// Handle client-side routing - serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+// Check if client build exists
+if (existsSync(clientBuildPath)) {
+  console.log('✅ Client build directory found');
+  app.use(express.static(clientBuildPath));
+  
+  // Handle client-side routing - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+} else {
+  console.warn('⚠️ Client build directory not found, serving API only');
+  app.get('*', (req, res) => {
+    res.json({ 
+      error: 'Client build not found',
+      message: 'API is running but web interface is unavailable',
+      apiEndpoints: ['/api/user', '/api/templates', '/api/submissions', '/api/uploads']
+    });
+  });
+}
 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
