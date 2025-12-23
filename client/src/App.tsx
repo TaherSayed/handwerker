@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
@@ -22,7 +22,6 @@ function AuthCallback() {
       try {
         // Get the URL hash which contains the auth tokens
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
         const errorParam = hashParams.get('error');
 
         if (errorParam) {
