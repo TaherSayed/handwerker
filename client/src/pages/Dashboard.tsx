@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { FileText, ClipboardList, Plus } from 'lucide-react';
+import { FileText, ClipboardList, Plus, Clock } from 'lucide-react';
+import { supabase } from '../services/supabase';
+import { db, LocalSubmission } from '../services/db.service';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,22 +19,46 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
+
+    // Subscribe to real-time updates
+    const templatesSubscription = supabase
+      .channel('dashboard-templates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'form_templates' }, () => {
+        loadDashboard();
+      })
+      .subscribe();
+
+    const submissionsSubscription = supabase
+      .channel('dashboard-submissions')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'submissions' }, () => {
+        loadDashboard();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(templatesSubscription);
+      supabase.removeChannel(submissionsSubscription);
+    };
   }, []);
 
   const loadDashboard = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const [templates, submissions] = await Promise.all([
+
+      const [templates, submissions, localDrafts] = await Promise.all([
         apiService.getTemplates({ is_archived: false }),
         apiService.getSubmissions({}),
-      ]) as [any[], any[]];
+        db.submissions.filter((s: LocalSubmission) => s.status === 'draft').toArray()
+      ]) as [any[], any[], LocalSubmission[]];
+
+      const submittedSubmissions = submissions?.filter((s: any) => s.status === 'submitted') || [];
+      const remoteDrafts = submissions?.filter((s: any) => s.status === 'draft') || [];
 
       setStats({
         templates: templates?.length || 0,
-        submissions: submissions?.filter((s: any) => s.status === 'submitted').length || 0,
-        drafts: submissions?.filter((s: any) => s.status === 'draft').length || 0,
+        submissions: submittedSubmissions.length || 0,
+        drafts: remoteDrafts.length + (localDrafts?.length || 0),
       });
 
       setRecentTemplates(templates?.slice(0, 5) || []);
@@ -109,10 +135,10 @@ export default function Dashboard() {
             <div>
               <p className="text-sm font-medium text-amber-700 mb-1">Drafts</p>
               <p className="text-4xl font-bold text-gray-900">{stats.drafts}</p>
-              <p className="text-xs text-amber-600 mt-1">In progress</p>
+              <p className="text-xs text-amber-600 mt-1">Local & Remote</p>
             </div>
             <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <FileText className="w-8 h-8 text-white" />
+              <Clock className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
@@ -215,12 +241,10 @@ export default function Dashboard() {
                   onClick={() => navigate(`/submissions/${submission.id}`)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      submission.status === 'submitted' ? 'bg-green-100' : 'bg-amber-100'
-                    }`}>
-                      <ClipboardList className={`w-5 h-5 ${
-                        submission.status === 'submitted' ? 'text-green-600' : 'text-amber-600'
-                      }`} />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${submission.status === 'submitted' ? 'bg-green-100' : 'bg-amber-100'
+                      }`}>
+                      <ClipboardList className={`w-5 h-5 ${submission.status === 'submitted' ? 'text-green-600' : 'text-amber-600'
+                        }`} />
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">
@@ -231,11 +255,10 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className={`badge ${
-                    submission.status === 'submitted'
+                  <span className={`badge ${submission.status === 'submitted'
                       ? 'bg-green-100 text-green-700'
                       : 'bg-amber-100 text-amber-700'
-                  }`}>
+                    }`}>
                     {submission.status}
                   </span>
                 </li>
