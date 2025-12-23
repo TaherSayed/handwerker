@@ -1,99 +1,152 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import jsPDF from 'jspdf';
+import { apiService } from '../services/api.service';
 
 export default function PdfPreview() {
   const location = useLocation();
   const navigate = useNavigate();
   const { visit, contact, template } = location.state || {};
-  const pdfRef = useRef<HTMLDivElement>(null);
+  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     if (!visit || !contact || !template) {
       navigate('/dashboard');
+      return;
     }
+
+    // Auto-generate PDF when page loads
+    generatePDF();
   }, [visit, contact, template, navigate]);
 
-  const generatePDF = () => {
-    if (!pdfRef.current) return;
+  const generatePDF = async () => {
+    if (!visit?.id) {
+      setError('Besuch-ID fehlt');
+      return;
+    }
 
-    const pdf = new jsPDF();
-
-    // Simple PDF generation - you might want to use html2canvas for better rendering
-    pdf.text('OnSite - Besuchsbericht', 20, 20);
-    pdf.text(`Kunde: ${contact.full_name}`, 20, 30);
-    pdf.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 20, 40);
-
-    let yPos = 50;
-    template.fields?.forEach((field: any) => {
-      const value = visit.form_data?.[field.id] || '';
-      pdf.text(`${field.label}: ${value}`, 20, yPos);
-      yPos += 10;
-    });
-
-    pdf.save(`besuch-${contact.full_name}-${Date.now()}.pdf`);
+    try {
+      setGenerating(true);
+      setError('');
+      
+      const result = await apiService.generatePDF(visit.id);
+      setPdfUrl(result.pdfUrl);
+    } catch (err: any) {
+      console.error('Failed to generate PDF:', err);
+      setError(err.response?.data?.error || 'Fehler beim Generieren des PDFs');
+    } finally {
+      setGenerating(false);
+    }
   };
 
-  const handleShare = () => {
-    generatePDF();
-    alert('PDF wurde generiert. Teilen-Funktion wird implementiert.');
+  const handleDownload = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+    }
   };
 
   if (!visit || !contact || !template) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">PDF Vorschau</h1>
-          <div className="flex gap-2">
+    <div className="min-h-screen" style={{ backgroundColor: '#F5F5F7' }}>
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        
+        {/* Header */}
+        <div className="bg-white rounded-2xl p-6 mb-6" style={{ border: '1px solid #E5E5EA' }}>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-semibold" style={{ color: '#1D1D1F', letterSpacing: '-0.02em' }}>
+              PDF Vorschau
+            </h1>
             <button
-              onClick={generatePDF}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+              onClick={() => navigate('/dashboard')}
+              className="text-sm font-medium hover:opacity-70 transition"
+              style={{ color: '#007AFF' }}
             >
-              PDF herunterladen
-            </button>
-            <button
-              onClick={handleShare}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-            >
-              Teilen
+              ← Zurück
             </button>
           </div>
+
+          {/* Status */}
+          {generating && (
+            <div className="flex items-center gap-3 py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: '#007AFF' }}></div>
+              <p className="text-sm" style={{ color: '#86868B' }}>PDF wird generiert...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-700">{error}</p>
+              <button
+                onClick={generatePDF}
+                className="mt-2 text-sm font-medium text-red-600 hover:text-red-700"
+              >
+                Erneut versuchen
+              </button>
+            </div>
+          )}
+
+          {pdfUrl && !generating && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 p-3 rounded-lg" style={{ backgroundColor: '#F5F5F7' }}>
+                <svg className="w-5 h-5" style={{ color: '#34C759' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>PDF erfolgreich erstellt</p>
+              </div>
+
+              <button
+                onClick={handleDownload}
+                className="w-full py-3 rounded-xl font-medium text-white hover:opacity-90 transition"
+                style={{ backgroundColor: '#007AFF' }}
+              >
+                PDF öffnen / herunterladen
+              </button>
+            </div>
+          )}
         </div>
 
-        <div ref={pdfRef} className="bg-white rounded-lg shadow p-8">
-          <h2 className="text-2xl font-bold mb-4">OnSite - Besuchsbericht</h2>
-          <div className="mb-6">
-            <p className="text-gray-600">Kunde: <span className="font-semibold">{contact.full_name}</span></p>
-            {contact.email && <p className="text-gray-600">Email: {contact.email}</p>}
-            {contact.phone && <p className="text-gray-600">Telefon: {contact.phone}</p>}
-            <p className="text-gray-600">Datum: {new Date().toLocaleDateString('de-DE')}</p>
+        {/* Visit Details Preview */}
+        <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid #E5E5EA' }}>
+          <h2 className="text-xl font-semibold mb-4" style={{ color: '#1D1D1F', letterSpacing: '-0.02em' }}>
+            Besuchsbericht
+          </h2>
+          
+          {/* Customer Info */}
+          <div className="mb-6 pb-6 border-b" style={{ borderColor: '#E5E5EA' }}>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: '#86868B' }}>KUNDE</h3>
+            <p className="text-base font-medium mb-1" style={{ color: '#1D1D1F' }}>{contact.full_name}</p>
+            {contact.email && <p className="text-sm" style={{ color: '#86868B' }}>{contact.email}</p>}
+            {contact.phone && <p className="text-sm" style={{ color: '#86868B' }}>{contact.phone}</p>}
+            {contact.address && <p className="text-sm" style={{ color: '#86868B' }}>{contact.address}</p>}
           </div>
 
-          <div className="border-t pt-6 space-y-4">
-            {template.fields?.map((field: any) => {
-              const value = visit.form_data?.[field.id] || '';
-              return (
-                <div key={field.id}>
-                  <h3 className="font-semibold text-gray-900">{field.label}</h3>
-                  <p className="text-gray-700">{String(value)}</p>
-                </div>
-              );
-            })}
+          {/* Form Data */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: '#86868B' }}>FORMULAR DATEN</h3>
+            <div className="space-y-4">
+              {template.fields?.map((field: any) => {
+                const value = visit.form_data?.[field.id] || '-';
+                return (
+                  <div key={field.id}>
+                    <h4 className="text-sm font-medium mb-1" style={{ color: '#86868B' }}>{field.label}</h4>
+                    <p className="text-base" style={{ color: '#1D1D1F' }}>{String(value)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Metadata */}
+          <div className="mt-6 pt-6 border-t" style={{ borderColor: '#E5E5EA' }}>
+            <p className="text-xs" style={{ color: '#86868B' }}>
+              Erstellt am {new Date(visit.created_at || Date.now()).toLocaleString('de-DE')}
+            </p>
           </div>
         </div>
 
-        <div className="mt-6">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700"
-          >
-            Zurück zum Dashboard
-          </button>
-        </div>
       </div>
     </div>
   );
 }
-

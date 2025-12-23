@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 interface Contact {
   id: string;
@@ -30,8 +30,8 @@ export default function ContactsManagement() {
   const loadContacts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/contacts?userId=${user?.id}&search=${searchQuery}`);
-      setContacts(response.data || []);
+      const data = await apiService.getContacts(searchQuery);
+      setContacts(data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
     } finally {
@@ -43,8 +43,9 @@ export default function ContactsManagement() {
     if (!confirm('Kontakt wirklich löschen?')) return;
 
     try {
-      await axios.delete(`/api/contacts/${contactId}`);
-      loadContacts();
+      // Note: Per spec "No manual contact CRUD", but keeping for now
+      // Contacts are primarily from Google Contacts import
+      alert('Kontakte werden über Google Contacts verwaltet');
     } catch (error) {
       console.error('Failed to delete contact:', error);
       alert('Fehler beim Löschen');

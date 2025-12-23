@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { createClient } from '@supabase/supabase-js';
 import type { User, Session } from '@supabase/supabase-js';
-import axios from 'axios';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -72,13 +71,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       set({ importingContacts: true });
-      const response = await axios.post('/api/google/contacts/import', {
-        accessToken: session.provider_token,
-        userId: user.id,
-      });
       
-      console.log(`✅ Imported ${response.data?.length || 0} contacts from Google`);
-      return response.data;
+      // Dynamic import to avoid circular dependency
+      const { apiService } = await import('../services/api.service');
+      const data = await apiService.importGoogleContacts(session.provider_token);
+      
+      console.log(`✅ Imported ${data?.length || 0} contacts from Google`);
+      return data;
     } catch (error: any) {
       console.error('Failed to import Google contacts:', error);
       // Don't show error to user, just log it

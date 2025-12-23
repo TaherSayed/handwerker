@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 export default function VisitFormFilling() {
   const navigate = useNavigate();
@@ -32,11 +32,12 @@ export default function VisitFormFilling() {
         contact_id: contact.id,
         form_template_id: template.id,
         form_data: formData,
+        contact_data: contact,
         status: 'draft',
       };
 
       // Check if visit exists, update or create
-      await axios.post('/api/visits', { ...visitData, userId: user.id });
+      await apiService.createVisit(visitData);
     } catch (error) {
       console.error('Auto-save failed:', error);
     } finally {
@@ -52,11 +53,12 @@ export default function VisitFormFilling() {
         contact_id: contact.id,
         form_template_id: template.id,
         form_data: formData,
+        contact_data: contact,
         status: 'completed',
       };
 
-      const response = await axios.post('/api/visits', { ...visitData, userId: user.id });
-      navigate('/pdf-preview', { state: { visit: response.data, contact, template } });
+      const visit = await apiService.createVisit(visitData);
+      navigate('/pdf-preview', { state: { visit, contact, template } });
     } catch (error) {
       console.error('Failed to save visit:', error);
       alert('Fehler beim Speichern');

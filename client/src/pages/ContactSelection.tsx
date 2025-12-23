@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 interface Contact {
   id: string;
@@ -29,8 +29,8 @@ export default function ContactSelection() {
   const loadContacts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/contacts?userId=${user?.id}&search=${searchQuery}`);
-      setContacts(response.data || []);
+      const data = await apiService.getContacts(searchQuery);
+      setContacts(data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
     } finally {

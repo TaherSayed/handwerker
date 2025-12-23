@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 interface FormField {
   id: string;
@@ -56,8 +56,7 @@ export default function FormBuilder() {
     if (!templateName || fields.length === 0 || !user) return;
 
     try {
-      await axios.post('/api/forms', {
-        userId: user.id,
+      await apiService.createForm({
         name: templateName,
         description: '',
         fields: fields,

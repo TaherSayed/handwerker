@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 interface FormTemplate {
   id: string;
@@ -29,8 +29,8 @@ export default function FormTemplateSelection() {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/forms?userId=${user?.id}`);
-      setTemplates(response.data || []);
+      const data = await apiService.getForms();
+      setTemplates(data || []);
     } catch (error) {
       console.error('Failed to load templates:', error);
     } finally {
