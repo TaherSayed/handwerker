@@ -19,6 +19,7 @@ export default function FormBuilder() {
   const [fields, setFields] = useState<FormField[]>([]);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationError, setValidationError] = useState<string>('');
 
   // Auto-save when fields or template name changes
   useEffect(() => {
@@ -45,6 +46,8 @@ export default function FormBuilder() {
   };
 
   const addField = (type: string) => {
+    setValidationError(''); // Clear error when user makes changes
+    
     const fieldLabels: Record<string, string> = {
       text: 'Textfeld',
       toggle: 'Ja/Nein',
@@ -75,19 +78,79 @@ export default function FormBuilder() {
     setFields(fields.filter(f => f.id !== fieldId));
   };
 
+  // Field type mapping: UI → Backend
+  const normalizeFieldType = (uiType: string): string => {
+    const typeMap: Record<string, string> = {
+      'text': 'text',
+      'toggle': 'boolean',
+      'date': 'date',
+      'dropdown': 'select',
+      'notes': 'textarea',
+      'signature': 'signature'
+    };
+    return typeMap[uiType] || 'text';
+  };
+
+  // Validate form before saving
+  const validateForm = (): string | null => {
+    // Check template name
+    if (!templateName || templateName.trim() === '') {
+      return 'Bitte geben Sie einen Formularnamen ein';
+    }
+
+    // Check at least one field exists
+    if (fields.length === 0) {
+      return 'Fügen Sie mindestens ein Feld hinzu';
+    }
+
+    // Check each field has a label
+    for (const field of fields) {
+      if (!field.label || field.label.trim() === '') {
+        return 'Alle Felder müssen einen Namen haben';
+      }
+    }
+
+    return null;
+  };
+
   const handleFinish = async () => {
-    if (!templateName || fields.length === 0 || !user) return;
+    setValidationError('');
+
+    // Validate
+    const error = validateForm();
+    if (error) {
+      setValidationError(error);
+      return;
+    }
 
     try {
-      await apiService.createForm({
-        name: templateName,
+      // Normalize fields for backend
+      const normalizedFields = fields.map((field, index) => ({
+        id: field.id,
+        label: field.label.trim(),
+        type: normalizeFieldType(field.type),
+        order: index,
+        required: field.required || false,
+        options: field.options || [],
+      }));
+
+      // Create payload
+      const payload = {
+        name: templateName.trim(),
         description: '',
-        fields: fields,
-      });
+        fields: normalizedFields,
+      };
+
+      console.log('Saving form template:', payload);
+
+      await apiService.createForm(payload);
       navigate('/form-template-selection');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save template:', error);
-      alert('Fehler beim Speichern');
+      console.error('Error response:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.error || error.message || 'Unbekannter Fehler';
+      setValidationError(`Speichern fehlgeschlagen: ${errorMessage}`);
     }
   };
 
@@ -116,7 +179,10 @@ export default function FormBuilder() {
           <input
             type="text"
             value={templateName}
-            onChange={(e) => setTemplateName(e.target.value)}
+            onChange={(e) => {
+              setTemplateName(e.target.value);
+              setValidationError(''); // Clear error when user makes changes
+            }}
             placeholder="Formularname..."
             className="w-full px-3 py-3 text-base font-medium rounded-lg focus:outline-none transition"
             style={{
@@ -242,6 +308,15 @@ export default function FormBuilder() {
           <div className="text-center py-8">
             <p className="text-sm" style={{ color: '#86868B' }}>
               Felder hinzufügen ↑
+            </p>
+          </div>
+        )}
+
+        {/* Validation Error */}
+        {validationError && (
+          <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFEBEE', border: '1px solid #FFCDD2' }}>
+            <p className="text-sm font-medium" style={{ color: '#C62828' }}>
+              {validationError}
             </p>
           </div>
         )}
