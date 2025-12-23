@@ -129,6 +129,8 @@ export class PDFService {
         y = 50;
       }
 
+      const value = data.field_values[field.id];
+
       if (field.type === 'section') {
         y += 10;
         doc.fontSize(12).font('Helvetica-Bold').fillColor('#111827').text(field.label.toUpperCase(), margin, y);
@@ -138,7 +140,25 @@ export class PDFService {
         continue;
       }
 
-      const value = data.field_values[field.id];
+      if (field.type === 'photo' && value) {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151').text(field.label, margin, y);
+        y += 15;
+        const photoBuffer = await this.fetchImageBuffer(value);
+        if (photoBuffer) {
+          // Check if photo fits on page
+          if (y > doc.page.height - 220) {
+            doc.addPage();
+            y = 50;
+          }
+          doc.image(photoBuffer, margin + 10, y, { fit: [200, 200] });
+          y += 215;
+        } else {
+          doc.fontSize(10).font('Helvetica').fillColor('#000000').text('Image not available', margin + 10, y);
+          y += 25;
+        }
+        continue;
+      }
+
       const formatted = this.formatValue(field.type, value);
 
       doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151').text(field.label, margin, y);

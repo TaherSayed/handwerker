@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
-import { Save, Upload, User, Building, Mail, Trash2, ShieldCheck, Sparkles } from 'lucide-react';
+import { Save, Upload, User, Building, Mail, Trash2, ShieldCheck, Sparkles, Plus } from 'lucide-react';
 
 export default function Settings() {
   const { profile, refreshProfile } = useAuthStore();
@@ -80,59 +80,74 @@ export default function Settings() {
   };
 
   return (
-    <div className="animate-slide-up space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">Settings</h1>
-        <p className="text-slate-500 font-medium">Customize your workspace and identity.</p>
+    <div className="animate-slide-up space-y-12 pb-32 lg:pb-8">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
+            Settings
+          </h1>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
+            Customise your workspace and identity
+          </p>
+        </div>
       </div>
 
       {/* Messages */}
       {success && (
-        <div className="bg-green-50 border-l-4 border-green-500 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-          <p className="text-green-800 font-bold text-sm">Profile updated successfully!</p>
+        <div className="bg-green-50 border-l-4 border-green-500 rounded-[2rem] p-6 shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-black">✓</div>
+            <p className="text-green-800 font-bold tracking-tight text-sm">Profile updated successfully!</p>
+          </div>
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-          <p className="text-red-800 font-bold text-sm">{error}</p>
+        <div className="bg-red-50 border-l-4 border-red-500 rounded-[2rem] p-6 shadow-xl shadow-red-500/5 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
+            <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Profile Card */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="card space-y-6 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
-            <div className="flex items-center gap-3 px-2">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                <User className="w-5 h-5" />
+        <div className="lg:col-span-8 space-y-10">
+          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
+            <div className="flex items-center gap-4 px-2">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
+                <User className="w-6 h-6" />
               </div>
-              <h2 className="font-black text-slate-900 uppercase text-xs tracking-widest">Personal Info</h2>
+              <div>
+                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Profile Info</h2>
+                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Personal identification</p>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
                 <input
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="input"
+                  className="input px-6 py-4 font-bold placeholder:text-slate-200"
                   placeholder="Your full name"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address (Managed by Google)</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">System Email (Google)</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                   <input
                     type="email"
                     value={profile?.email || ''}
                     disabled
-                    className="input pl-12 bg-slate-50 text-slate-400 cursor-not-allowed border-dashed"
+                    className="input pl-14 pr-12 bg-slate-50 text-slate-400 cursor-not-allowed border-dashed font-bold"
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2">
                     <ShieldCheck className="w-4 h-4 text-green-500" />
                   </div>
                 </div>
@@ -140,58 +155,66 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="card space-y-6 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
-            <div className="flex items-center gap-3 px-2">
-              <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center">
-                <Building className="w-5 h-5" />
+          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
+            <div className="flex items-center gap-4 px-2">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
+                <Building className="w-6 h-6" />
               </div>
-              <h2 className="font-black text-slate-900 uppercase text-xs tracking-widest">Company Branding</h2>
+              <div>
+                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Organisation</h2>
+                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Company & branding details</p>
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
+            <div className="space-y-10">
+              <div className="space-y-2 max-w-xl">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Name</label>
                 <input
                   type="text"
                   value={formData.company_name}
                   onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  className="input"
+                  className="input px-6 py-4 font-bold placeholder:text-slate-200"
                   placeholder="Acme Construction Co."
                 />
-                <p className="text-[10px] text-slate-400 font-bold ml-1">This will be printed on all your PDF reports.</p>
+                <p className="text-[10px] text-slate-400 font-bold ml-1 flex items-center gap-2 opacity-60 uppercase tracking-tighter">
+                  <Sparkles className="w-3 h-3 text-indigo-400" />
+                  Appears on all PDF reports and generated documents
+                </p>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Brand Logo</label>
-                <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200 transition-all hover:bg-white hover:border-violet-300">
+              <div className="space-y-6">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Brand Imagery / Logo</label>
+                <div className="flex flex-col sm:flex-row items-center gap-10 p-10 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200 transition-all hover:bg-white hover:border-indigo-300 group">
                   {formData.company_logo_url ? (
-                    <div className="relative group shrink-0">
+                    <div className="relative group/logo shrink-0">
                       <img
                         src={formData.company_logo_url}
                         alt="Company Logo"
-                        className="h-24 w-24 object-contain rounded-2xl bg-white p-2 shadow-md border border-slate-100"
+                        className="h-32 w-32 object-contain rounded-2xl bg-white p-4 shadow-xl border border-slate-100"
                       />
                       <button
                         onClick={() => setFormData({ ...formData, company_logo_url: '' })}
-                        className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
-                    <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300 shadow-inner">
-                      <Upload className="w-8 h-8" />
+                    <div className="w-32 h-32 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-slate-300 shadow-inner group-hover:bg-indigo-50 transition-colors">
+                      <Upload className="w-10 h-10 group-hover:scale-110 transition-transform duration-500 group-hover:text-indigo-400" />
                     </div>
                   )}
 
-                  <div className="flex-1 space-y-3 text-center sm:text-left">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-sm font-black text-slate-700">Logo Visibility</p>
-                      <p className="text-xs text-slate-500 font-medium">Showcase your brand on every report. SVGs work best.</p>
+                  <div className="flex-1 space-y-5 text-center sm:text-left">
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-xl font-black text-slate-900 leading-none">Global Brand Assets</h4>
+                      <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-sm uppercase tracking-tighter opacity-70">Elevate your reports with a crisp brand identity. SVGs or high-res PNGs recommended.</p>
                     </div>
-                    <label className="btn-secondary py-2.5 px-6 text-xs h-auto cursor-pointer inline-flex w-fit">
-                      <Upload className="w-4 h-4" />
-                      {loading ? 'Processing...' : formData.company_logo_url ? 'Change Logo' : 'Upload Image'}
+                    <label className="flex items-center justify-center sm:justify-start gap-4 cursor-pointer group/upload">
+                      <div className="bg-indigo-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 active:scale-95 flex items-center gap-3">
+                        <Plus className="w-4 h-4" />
+                        {loading ? 'Processing Identity...' : formData.company_logo_url ? 'Replace Identity' : 'Upload Asset'}
+                      </div>
                       <input
                         type="file"
                         accept="image/*"
@@ -208,33 +231,41 @@ export default function Settings() {
         </div>
 
         {/* Action Sidebar */}
-        <div className="space-y-6">
-          <div className="card bg-indigo-900 border-none text-white p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Sparkles className="w-20 h-20 text-white" />
-            </div>
-            <div className="relative z-10 space-y-6">
-              <div>
-                <h3 className="text-lg font-black uppercase text-[10px] tracking-widest text-indigo-300 mb-1">Actions</h3>
-                <p className="text-sm font-medium text-indigo-100">Make sure to save your changes regularly to keep your workspace updated.</p>
+        <div className="lg:col-span-4 space-y-8">
+          <div className="bg-slate-900 rounded-[3rem] p-8 md:p-10 shadow-2xl shadow-slate-900/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[4rem]" />
+            <div className="relative z-10 space-y-8">
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center">
+                  <Save className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none">Guard Changes</h3>
+                <p className="text-sm font-bold text-slate-400 leading-relaxed uppercase tracking-tighter opacity-80">Finalise your workspace configuration by committing your profile updates.</p>
               </div>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full btn-primary bg-white text-indigo-900 hover:bg-slate-100 hover:text-indigo-950 shadow-none border-none py-4 rounded-2xl active:scale-95 transition-all disabled:bg-slate-300 disabled:text-slate-500"
+                className="w-full bg-white text-indigo-950 px-8 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-slate-50 transition-all active:scale-95 disabled:bg-slate-800 disabled:text-slate-600 border-none"
               >
-                <Save className="w-5 h-5" />
-                {saving ? 'Saving...' : 'Save Profile'}
+                {saving ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
+                    <span>Applying...</span>
+                  </div>
+                ) : 'Save Configuration'}
               </button>
             </div>
           </div>
 
-          <div className="p-6 bg-slate-100/50 rounded-3xl border border-slate-100">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Sync Status</h4>
-            <div className="flex items-center gap-2 text-green-600 font-black text-xs">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              All changes synced
+          <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-center justify-between">
+            <div className="flex flex-col gap-1">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Identity Sync</h4>
+              <div className="flex items-center gap-2 text-green-600 font-black text-xs">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Verified & Live
+              </div>
             </div>
+            <ShieldCheck className="w-8 h-8 text-green-500 opacity-20" />
           </div>
         </div>
       </div>
