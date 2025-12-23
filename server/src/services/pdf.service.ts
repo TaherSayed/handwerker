@@ -1,205 +1,157 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import PDFDocument from 'pdfkit';
 import { supabase } from './supabase.service.js';
-import { databaseService } from './database.service.js';
+import { Readable } from 'stream';
 
-interface PDFGenerationResult {
-  publicUrl: string;
-  visitId: string;
+interface SubmissionData {
+  id: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  customer_address?: string;
+  field_values: Record<string, any>;
+  signature_url?: string;
+  created_at: string;
+  submitted_at?: string;
+  template: {
+    name: string;
+    fields: Array<{
+      id: string;
+      type: string;
+      label: string;
+      required?: boolean;
+    }>;
+  };
+  user: {
+    company_name?: string;
+    company_logo_url?: string;
+  };
 }
 
 export class PDFService {
-  /**
-   * Generate a professional PDF for a visit and store it in Supabase Storage
-   */
-  async generateVisitPDF(visitId: string, userId: string): Promise<PDFGenerationResult> {
-    // 1. Fetch visit data
-    const visit = await databaseService.getVisitById(visitId, userId);
-    if (!visit) {
-      throw new Error('Visit not found');
-    }
+  async generateSubmissionPDF(
+    userId: string,
+    submissionData: SubmissionData
+  ): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        const chunks: Buffer[] = [];
 
-    // 2. Generate PDF
-    const pdfBytes = await this.createPDF(visit);
+        doc.on('data', (chunk) => chunks.push(chunk));
+        doc.on('end', async () => {
+          const pdfBuffer = Buffer.concat(chunks);
+          
+          // Upload to Supabase Storage
+          const fileName = `${userId}/${submissionData.id}.pdf`;
+          const { data, error } = await supabase.adminClient.storage
+            .from('submission-pdfs')
+            .upload(fileName, pdfBuffer, {
+              contentType: 'application/pdf',
+              upsert: true,
+            });
 
-    // 3. Upload to Supabase Storage
-    const fileName = `visit_${visitId}_${Date.now()}.pdf`;
-    const { data, error } = await supabase.storage
-      .from('visit-pdfs')
-      .upload(`${userId}/${fileName}`, pdfBytes, {
-        contentType: 'application/pdf',
-        upsert: false
-      });
+          if (error) {
+            reject(error);
+            return;
+          }
 
-    if (error) {
-      throw new Error(`Failed to upload PDF: ${error.message}`);
-    }
+          // Get public URL
+          const { data: urlData } = supabase.adminClient.storage
+            .from('submission-pdfs')
+            .getPublicUrl(fileName);
 
-    // 4. Get public URL
-    const { data: urlData } = supabase.storage
-      .from('visit-pdfs')
-      .getPublicUrl(`${userId}/${fileName}`);
+          resolve(urlData.publicUrl);
+        });
 
-    // 5. Update visit with PDF URL
-    await databaseService.updateVisit(visitId, {
-      pdf_url: urlData.publicUrl,
-      pdf_generated_at: new Date().toISOString()
-    }, userId);
-
-    return {
-      publicUrl: urlData.publicUrl,
-      visitId
-    };
+        // Build PDF content
+        this.buildPDFContent(doc, submissionData);
+        doc.end();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  /**
-   * Create a professional PDF document
-   */
-  private async createPDF(visit: any): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]); // A4 size
-    const { width, height } = page.getSize();
-
-    // Load fonts
-    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-    let yPosition = height - 50;
-    const margin = 50;
-    const lineHeight = 20;
-
-    // Title
-    page.drawText('Besuchsbericht', {
-      x: margin,
-      y: yPosition,
-      size: 24,
-      font: boldFont,
-      color: rgb(0, 0.29, 0.61) // #007AFF
-    });
-
-    yPosition -= 40;
-
-    // Visit Info
-    page.drawText(`Besuch-ID: ${visit.id}`, {
-      x: margin,
-      y: yPosition,
-      size: 10,
-      font: regularFont,
-      color: rgb(0.4, 0.4, 0.4)
-    });
-
-    yPosition -= lineHeight;
-
-    page.drawText(`Datum: ${new Date(visit.created_at).toLocaleDateString('de-DE')}`, {
-      x: margin,
-      y: yPosition,
-      size: 10,
-      font: regularFont,
-      color: rgb(0.4, 0.4, 0.4)
-    });
-
-    yPosition -= 30;
-
-    // Customer Info Section
-    page.drawText('Kunde', {
-      x: margin,
-      y: yPosition,
-      size: 16,
-      font: boldFont,
-      color: rgb(0.1, 0.1, 0.1)
-    });
-
-    yPosition -= lineHeight;
-
-    const customer = visit.contact_data || {};
-    page.drawText(`Name: ${customer.name || 'N/A'}`, {
-      x: margin,
-      y: yPosition,
-      size: 12,
-      font: regularFont
-    });
-
-    yPosition -= lineHeight;
-
-    if (customer.phone) {
-      page.drawText(`Telefon: ${customer.phone}`, {
-        x: margin,
-        y: yPosition,
-        size: 12,
-        font: regularFont
-      });
-      yPosition -= lineHeight;
+  private buildPDFContent(doc: PDFKit.PDFDocument, data: SubmissionData) {
+    // Header - Company Info
+    if (data.user.company_logo_url) {
+      // Logo would be added here if we fetch it
+      doc.fontSize(20).text(data.user.company_name || 'OnSite Forms', 50, 50);
+    } else {
+      doc.fontSize(20).text(data.user.company_name || 'OnSite Forms', 50, 50);
     }
 
-    if (customer.email) {
-      page.drawText(`E-Mail: ${customer.email}`, {
-        x: margin,
-        y: yPosition,
-        size: 12,
-        font: regularFont
-      });
-      yPosition -= lineHeight;
+    doc.moveDown();
+    doc.fontSize(16).text(data.template.name, { underline: true });
+    doc.moveDown();
+
+    // Submission Info
+    doc.fontSize(10).text(`Submission ID: ${data.id}`, { continued: false });
+    doc.text(
+      `Date: ${new Date(data.submitted_at || data.created_at).toLocaleDateString()}`
+    );
+    doc.moveDown();
+
+    // Customer Info
+    if (data.customer_name) {
+      doc.fontSize(12).text('Customer Information', { underline: true });
+      doc.fontSize(10);
+      doc.text(`Name: ${data.customer_name}`);
+      if (data.customer_email) doc.text(`Email: ${data.customer_email}`);
+      if (data.customer_phone) doc.text(`Phone: ${data.customer_phone}`);
+      if (data.customer_address) doc.text(`Address: ${data.customer_address}`);
+      doc.moveDown();
     }
 
-    if (customer.address) {
-      page.drawText(`Adresse: ${customer.address}`, {
-        x: margin,
-        y: yPosition,
-        size: 12,
-        font: regularFont
+    // Form Fields
+    doc.fontSize(12).text('Form Data', { underline: true });
+    doc.moveDown(0.5);
+
+    data.template.fields.forEach((field) => {
+      const value = data.field_values[field.id];
+      doc.fontSize(10).font('Helvetica-Bold').text(`${field.label}:`, {
+        continued: true,
       });
-      yPosition -= lineHeight;
-    }
-
-    yPosition -= 20;
-
-    // Form Data Section
-    page.drawText('Formular Daten', {
-      x: margin,
-      y: yPosition,
-      size: 16,
-      font: boldFont,
-      color: rgb(0.1, 0.1, 0.1)
+      doc.font('Helvetica').text(` ${this.formatValue(field.type, value)}`);
+      doc.moveDown(0.3);
     });
 
-    yPosition -= lineHeight;
-
-    const formData = visit.form_data || {};
-    for (const [key, value] of Object.entries(formData)) {
-      if (yPosition < 80) {
-        // Add new page if we're running out of space
-        const newPage = pdfDoc.addPage([595, 842]);
-        yPosition = height - 50;
-        
-        newPage.drawText(`${key}: ${value}`, {
-          x: margin,
-          y: yPosition,
-          size: 12,
-          font: regularFont
-        });
-      } else {
-        page.drawText(`${key}: ${value}`, {
-          x: margin,
-          y: yPosition,
-          size: 12,
-          font: regularFont
-        });
-      }
-      
-      yPosition -= lineHeight;
+    // Signature
+    if (data.signature_url) {
+      doc.moveDown();
+      doc.fontSize(10).text('Signature:');
+      doc.text('(Signature image URL: ' + data.signature_url + ')');
+      // In production, you'd fetch and embed the actual signature image
     }
 
     // Footer
-    page.drawText(`Erstellt am ${new Date().toLocaleString('de-DE')}`, {
-      x: margin,
-      y: 30,
-      size: 8,
-      font: regularFont,
-      color: rgb(0.5, 0.5, 0.5)
-    });
+    doc
+      .fontSize(8)
+      .text(
+        `Generated on ${new Date().toLocaleString()}`,
+        50,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+  }
 
-    return pdfDoc.save();
+  private formatValue(type: string, value: any): string {
+    if (value === null || value === undefined) return 'N/A';
+
+    switch (type) {
+      case 'checkbox':
+      case 'toggle':
+        return value ? 'Yes' : 'No';
+      case 'date':
+        return new Date(value).toLocaleDateString();
+      case 'datetime':
+        return new Date(value).toLocaleString();
+      case 'photo':
+        return value ? '[Photo attached]' : 'N/A';
+      default:
+        return String(value);
+    }
   }
 }
 
 export const pdfService = new PDFService();
-

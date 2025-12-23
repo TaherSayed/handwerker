@@ -1,138 +1,82 @@
 import { create } from 'zustand';
-import { createClient } from '@supabase/supabase-js';
-import type { User, Session } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
-  console.error('💡 These must be set as environment variables during build time in Coolify');
-  console.error('💡 Add them in Coolify dashboard: Environment Variables → Build Variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '../services/supabase';
+import { User } from '@supabase/supabase-js';
 
 interface AuthState {
   user: User | null;
-  session: Session | null;
+  profile: any | null;
   loading: boolean;
-  importingContacts: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  initialized: boolean;
+  signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
-  importGoogleContacts: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  session: null,
+  profile: null,
   loading: true,
-  importingContacts: false,
+  initialized: false,
 
   initialize: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      set({ user: session?.user ?? null, session, loading: false });
-
-      // Check if this is a Google OAuth callback and import contacts
-      if (session?.provider_token && session?.provider_refresh_token) {
-        // User just signed in with Google, import contacts
-        setTimeout(() => {
-          get().importGoogleContacts();
-        }, 1000); // Small delay to ensure session is fully set
+      
+      if (session?.user) {
+        set({ user: session.user });
+        await get().refreshProfile();
       }
+      
+      set({ loading: false, initialized: true });
 
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        set({ user: session?.user ?? null, session });
-        
-        // If user signed in with Google and we have provider token, import contacts
-        if (session?.provider_token && _event === 'SIGNED_IN') {
-          setTimeout(() => {
-            get().importGoogleContacts();
-          }, 1000);
+      // Listen for auth changes
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          set({ user: session.user });
+          await get().refreshProfile();
+        } else if (event === 'SIGNED_OUT') {
+          set({ user: null, profile: null });
         }
       });
     } catch (error) {
-      console.error('Auth initialization error:', error);
-      set({ loading: false });
+      console.error('Initialize error:', error);
+      set({ loading: false, initialized: true });
     }
   },
 
-  importGoogleContacts: async () => {
-    const { user, session } = get();
-    if (!user || !session?.provider_token) {
-      console.log('No Google access token available');
-      return;
-    }
-
-    try {
-      set({ importingContacts: true });
-      
-      // Dynamic import to avoid circular dependency
-      const { apiService } = await import('../services/api.service');
-      const data = await apiService.importGoogleContacts(session.provider_token);
-      
-      console.log(`✅ Imported ${data?.length || 0} contacts from Google`);
-      return data;
-    } catch (error: any) {
-      console.error('Failed to import Google contacts:', error);
-      // Don't show error to user, just log it
-    } finally {
-      set({ importingContacts: false });
-    }
-  },
-
-  signInWithGoogle: async () => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { data, error } = await supabase.auth.signInWithOAuth({
+  signIn: async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
-        scopes: 'email profile https://www.googleapis.com/auth/contacts.readonly',
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        redirectTo: window.location.origin,
       },
     });
-
     if (error) throw error;
-    if (data.url) {
-      window.location.href = data.url;
-    }
-  },
-
-  signInWithEmail: async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-    set({ user: data.user, session: data.session });
-  },
-
-  signUpWithEmail: async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-    set({ user: data.user, session: data.session });
   },
 
   signOut: async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    set({ user: null, session: null });
+    await supabase.auth.signOut();
+    set({ user: null, profile: null });
+  },
+
+  refreshProfile: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/user/me`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const profile = await response.json();
+        set({ profile });
+      }
+    } catch (error) {
+      console.error('Refresh profile error:', error);
+    }
   },
 }));
-
-// Initialize on load
-useAuthStore.getState().initialize();
-

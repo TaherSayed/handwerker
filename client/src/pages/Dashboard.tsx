@@ -1,89 +1,172 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { apiService } from '../services/api.service';
+import { FileText, ClipboardList, Plus } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [userName, setUserName] = useState('');
+  const [stats, setStats] = useState({
+    templates: 0,
+    submissions: 0,
+    drafts: 0,
+  });
+  const [recentTemplates, setRecentTemplates] = useState<any[]>([]);
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadUserData();
-  }, [user]);
+    loadDashboard();
+  }, []);
 
-  const loadUserData = async () => {
+  const loadDashboard = async () => {
     try {
-      if (user) {
-        const name = user?.user_metadata?.full_name || 
-                     user?.user_metadata?.name || 
-                     user?.email?.split('@')[0] || 
-                     'User';
-        setUserName(name);
-      } else {
-        setUserName('Benutzer');
-      }
+      const [templates, submissions] = await Promise.all([
+        apiService.getTemplates({ is_archived: false }),
+        apiService.getSubmissions({}),
+      ]);
+
+      setStats({
+        templates: templates.length,
+        submissions: submissions.filter((s: any) => s.status === 'submitted').length,
+        drafts: submissions.filter((s: any) => s.status === 'draft').length,
+      });
+
+      setRecentTemplates(templates.slice(0, 5));
+      setRecentSubmissions(submissions.slice(0, 5));
     } catch (error) {
-      console.error('Failed to load user data:', error);
+      console.error('Load dashboard error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getCurrentDate = () => {
-    const now = new Date();
-    const months = [
-      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
-    ];
-    return `${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ 
-      backgroundColor: '#F5F5F7',
-      minHeight: '100vh'
-    }}>
-      {/* Clean Header */}
-      <div className="bg-white border-b" style={{ borderColor: '#D1D1D6' }}>
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-semibold mb-1" style={{ color: '#1D1D1F', fontWeight: 600, letterSpacing: '-0.02em' }}>
-            Hallo, {userName}
-          </h1>
-          <p className="text-sm" style={{ color: '#86868B' }}>
-            {getCurrentDate()}
-          </p>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Welcome to OnSite Forms</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Templates</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.templates}</p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Submissions</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.submissions}</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <ClipboardList className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Drafts</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.drafts}</p>
+            </div>
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Centered Simple Actions */}
-      <div className="max-w-2xl mx-auto px-6 py-16">
-        <div className="space-y-6">
-          
-          {/* Primary Action: New Visit */}
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="flex gap-4">
           <button
-            onClick={() => navigate('/contact-selection')}
-            className="w-full bg-white rounded-3xl p-10 text-left hover:shadow-2xl transition-all group"
-            style={{ 
-              border: '1px solid #E5E5EA',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.06)'
-            }}
+            onClick={() => navigate('/templates/new')}
+            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-3xl font-semibold mb-2" style={{ color: '#1D1D1F', letterSpacing: '-0.02em' }}>
-                  Neuer Besuch
-                </h2>
-                <p className="text-base" style={{ color: '#86868B' }}>
-                  Kunde auswählen und Besuch dokumentieren
-                </p>
-              </div>
-              <div className="w-20 h-20 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform" style={{ backgroundColor: '#007AFF' }}>
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-            </div>
+            <Plus className="w-5 h-5" />
+            New Template
           </button>
+        </div>
+      </div>
 
+      {/* Recent Templates */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Templates</h2>
+          {recentTemplates.length === 0 ? (
+            <p className="text-gray-500 text-sm">No templates yet</p>
+          ) : (
+            <ul className="space-y-3">
+              {recentTemplates.map((template) => (
+                <li
+                  key={template.id}
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  onClick={() => navigate(`/templates/${template.id}/edit`)}
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">{template.name}</p>
+                    <p className="text-sm text-gray-500">{template.description || 'No description'}</p>
+                  </div>
+                  <FileText className="w-5 h-5 text-gray-400" />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
+        {/* Recent Submissions */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Submissions</h2>
+          {recentSubmissions.length === 0 ? (
+            <p className="text-gray-500 text-sm">No submissions yet</p>
+          ) : (
+            <ul className="space-y-3">
+              {recentSubmissions.map((submission) => (
+                <li
+                  key={submission.id}
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  onClick={() => navigate(`/submissions/${submission.id}`)}
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {submission.customer_name || 'Unnamed'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {submission.form_templates?.name || 'Template'}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      submission.status === 'submitted'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                  >
+                    {submission.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

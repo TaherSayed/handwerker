@@ -1,351 +1,294 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Plus, GripVertical, Trash2, Save, X } from 'lucide-react';
 
-interface FormField {
-  id: string;
-  type: string;
-  label: string;
-  required: boolean;
-  placeholder?: string;
-  options?: string[];
-}
+const FIELD_TYPES = [
+  { value: 'text', label: 'Text' },
+  { value: 'number', label: 'Number' },
+  { value: 'checkbox', label: 'Checkbox' },
+  { value: 'toggle', label: 'Yes/No Toggle' },
+  { value: 'dropdown', label: 'Dropdown' },
+  { value: 'date', label: 'Date' },
+  { value: 'datetime', label: 'Date & Time' },
+  { value: 'notes', label: 'Notes' },
+  { value: 'signature', label: 'Signature' },
+  { value: 'photo', label: 'Photo' },
+];
 
 export default function FormBuilder() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [templateName, setTemplateName] = useState('');
-  const [fields, setFields] = useState<FormField[]>([]);
-  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [validationError, setValidationError] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Auto-save when fields or template name changes
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    category: '',
+    tags: [] as string[],
+    fields: [] as any[],
+  });
+
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (templateName && fields.length > 0) {
-        autoSave();
-      }
-    }, 1000);
+    if (id) {
+      loadTemplate();
+    }
+  }, [id]);
 
-    return () => clearTimeout(timeoutId);
-  }, [templateName, fields]);
-
-  const autoSave = async () => {
-    if (!templateName || fields.length === 0 || !user) return;
-    
+  const loadTemplate = async () => {
     try {
-      setIsSaving(true);
-      // Auto-save logic can be added here if needed
+      setLoading(true);
+      const data = await apiService.getTemplate(id!);
+      setFormData({
+        name: data.name,
+        description: data.description || '',
+        category: data.category || '',
+        tags: data.tags || [],
+        fields: data.fields || [],
+      });
     } catch (error) {
-      console.error('Auto-save failed:', error);
+      console.error('Load template error:', error);
+      alert('Failed to load template');
+      navigate('/templates');
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  const addField = (type: string) => {
-    setValidationError(''); // Clear error when user makes changes
-    
-    const fieldLabels: Record<string, string> = {
-      text: 'Textfeld',
-      toggle: 'Ja/Nein',
-      date: 'Datum',
-      dropdown: 'Auswahl',
-      notes: 'Notizen',
-      signature: 'Unterschrift'
-    };
-
-    const newField: FormField = {
-      id: Date.now().toString(),
-      type: type,
-      label: fieldLabels[type] || 'Neues Feld',
-      required: false,
-    };
-
-    setFields([...fields, newField]);
-    setEditingFieldId(newField.id);
-  };
-
-  const updateFieldLabel = (fieldId: string, newLabel: string) => {
-    setFields(fields.map(f => 
-      f.id === fieldId ? { ...f, label: newLabel } : f
-    ));
-  };
-
-  const removeField = (fieldId: string) => {
-    setFields(fields.filter(f => f.id !== fieldId));
-  };
-
-  // Field type mapping: UI → Backend
-  const normalizeFieldType = (uiType: string): string => {
-    const typeMap: Record<string, string> = {
-      'text': 'text',
-      'toggle': 'boolean',
-      'date': 'date',
-      'dropdown': 'select',
-      'notes': 'textarea',
-      'signature': 'signature'
-    };
-    return typeMap[uiType] || 'text';
-  };
-
-  // Validate form before saving
-  const validateForm = (): string | null => {
-    // Check template name
-    if (!templateName || templateName.trim() === '') {
-      return 'Bitte geben Sie einen Formularnamen ein';
-    }
-
-    // Check at least one field exists
-    if (fields.length === 0) {
-      return 'Fügen Sie mindestens ein Feld hinzu';
-    }
-
-    // Check each field has a label
-    for (const field of fields) {
-      if (!field.label || field.label.trim() === '') {
-        return 'Alle Felder müssen einen Namen haben';
-      }
-    }
-
-    return null;
-  };
-
-  const handleFinish = async () => {
-    setValidationError('');
-
-    // Validate
-    const error = validateForm();
-    if (error) {
-      setValidationError(error);
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      alert('Please enter a template name');
       return;
     }
 
     try {
-      // Normalize fields for backend
-      const normalizedFields = fields.map((field, index) => ({
-        id: field.id,
-        label: field.label.trim(),
-        type: normalizeFieldType(field.type),
-        order: index,
-        required: field.required || false,
-        options: field.options || [],
-      }));
-
-      // Create payload
-      const payload = {
-        name: templateName.trim(),
-        description: '',
-        fields: normalizedFields,
-      };
-
-      console.log('Saving form template:', payload);
-
-      await apiService.createForm(payload);
-      navigate('/form-template-selection');
-    } catch (error: any) {
-      console.error('Failed to save template:', error);
-      console.error('Error response:', error.response?.data);
-      
-      const errorMessage = error.response?.data?.error || error.message || 'Unbekannter Fehler';
-      setValidationError(`Speichern fehlgeschlagen: ${errorMessage}`);
+      setSaving(true);
+      if (id) {
+        await apiService.updateTemplate(id, formData);
+      } else {
+        await apiService.createTemplate(formData);
+      }
+      navigate('/templates');
+    } catch (error) {
+      console.error('Save template error:', error);
+      alert('Failed to save template');
+    } finally {
+      setSaving(false);
     }
   };
 
+  const addField = (type: string) => {
+    const newField = {
+      id: `field_${Date.now()}`,
+      type,
+      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      required: false,
+      options: type === 'dropdown' ? ['Option 1', 'Option 2'] : undefined,
+      default_value: undefined,
+    };
+    setFormData({ ...formData, fields: [...formData.fields, newField] });
+  };
+
+  const updateField = (index: number, updates: any) => {
+    const newFields = [...formData.fields];
+    newFields[index] = { ...newFields[index], ...updates };
+    setFormData({ ...formData, fields: newFields });
+  };
+
+  const removeField = (index: number) => {
+    const newFields = formData.fields.filter((_, i) => i !== index);
+    setFormData({ ...formData, fields: newFields });
+  };
+
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+
+    const items = Array.from(formData.fields);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setFormData({ ...formData, fields: items });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F5F5F7' }}>
-      {/* Simple Header */}
-      <div className="bg-white border-b" style={{ borderColor: '#D1D1D6' }}>
-        <div className="px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold" style={{ color: '#1D1D1F' }}>
-            OnSite
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {id ? 'Edit Template' : 'New Template'}
           </h1>
+          <p className="text-gray-600 mt-1">Design your form template</p>
+        </div>
+        <div className="flex gap-3">
           <button
-            onClick={() => navigate(-1)}
-            className="text-sm font-medium"
-            style={{ color: '#007AFF' }}
+            onClick={() => navigate('/templates')}
+            className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            Abbrechen
+            <X className="w-5 h-5" />
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            <Save className="w-5 h-5" />
+            {saving ? 'Saving...' : 'Save Template'}
           </button>
         </div>
       </div>
 
-      <div className="px-4 py-4 max-w-2xl mx-auto">
-        
-        {/* Template Name - Compact */}
-        <div className="mb-5">
-          <input
-            type="text"
-            value={templateName}
-            onChange={(e) => {
-              setTemplateName(e.target.value);
-              setValidationError(''); // Clear error when user makes changes
-            }}
-            placeholder="Formularname..."
-            className="w-full px-3 py-3 text-base font-medium rounded-lg focus:outline-none transition"
-            style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #D1D1D6',
-              color: '#1D1D1F'
-            }}
-          />
-        </div>
-
-        {/* Compact Action Buttons - Add Field Types */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => addField('text')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Text
-            </button>
-            <button
-              onClick={() => addField('toggle')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Ja/Nein
-            </button>
-            <button
-              onClick={() => addField('date')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Datum
-            </button>
-            <button
-              onClick={() => addField('dropdown')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Auswahl
-            </button>
-            <button
-              onClick={() => addField('notes')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Notiz
-            </button>
-            <button
-              onClick={() => addField('signature')}
-              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
-            >
-              + Unterschrift
-            </button>
+      {/* Template Info */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Information</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Template Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g., Site Inspection Form"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="Describe what this form is used for"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g., Inspection, Safety, Maintenance"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Fields List - Clipboard Style */}
-        {fields.length > 0 && (
-          <div className="mb-6">
-            <div className="bg-white rounded-lg" style={{ border: '1px solid #D1D1D6' }}>
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex items-center gap-2 px-3 py-2"
-                  style={{ 
-                    borderBottom: index < fields.length - 1 ? '1px solid #F0F0F0' : 'none'
-                  }}
-                >
-                  
-                  {/* Drag Handle */}
-                  <button
-                    className="flex flex-col gap-0.5 p-1 hover:opacity-50 transition"
-                    style={{ color: '#C7C7CC' }}
-                  >
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                    </div>
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                    </div>
-                  </button>
+      {/* Field Palette */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Fields</h2>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {FIELD_TYPES.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => addField(type.value)}
+              className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {type.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                  {/* Label Input - Inline Editable */}
-                  <input
-                    type="text"
-                    value={field.label}
-                    onChange={(e) => updateFieldLabel(field.id, e.target.value)}
-                    onFocus={() => setEditingFieldId(field.id)}
-                    onBlur={() => setEditingFieldId(null)}
-                    placeholder="Feldname eingeben..."
-                    className="flex-1 px-2 py-1.5 rounded focus:outline-none transition"
-                    style={{
-                      backgroundColor: editingFieldId === field.id ? '#F5F5F7' : 'transparent',
-                      borderBottom: editingFieldId === field.id ? '2px solid #007AFF' : '2px solid transparent',
-                      color: '#1D1D1F',
-                      fontSize: '16px'
-                    }}
-                  />
+      {/* Fields List */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Form Fields</h2>
+        {formData.fields.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">
+            No fields yet. Add fields from the palette above.
+          </p>
+        ) : (
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="fields">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                  {formData.fields.map((field, index) => (
+                    <Draggable key={field.id} draggableId={field.id} index={index}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className="border border-gray-300 rounded-lg p-4"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div {...provided.dragHandleProps} className="pt-2">
+                              <GripVertical className="w-5 h-5 text-gray-400" />
+                            </div>
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="text"
+                                  value={field.label}
+                                  onChange={(e) => updateField(index, { label: e.target.value })}
+                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                                  placeholder="Field label"
+                                />
+                                <span className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded">
+                                  {field.type}
+                                </span>
+                                <label className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={field.required}
+                                    onChange={(e) =>
+                                      updateField(index, { required: e.target.checked })
+                                    }
+                                    className="rounded"
+                                  />
+                                  <span className="text-sm text-gray-700">Required</span>
+                                </label>
+                                <button
+                                  onClick={() => removeField(index)}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => removeField(field.id)}
-                    className="p-1.5 rounded hover:bg-red-50 transition"
-                    style={{ color: '#FF3B30' }}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-
+                              {field.type === 'dropdown' && (
+                                <div>
+                                  <label className="block text-sm text-gray-700 mb-1">
+                                    Options (comma-separated)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={field.options?.join(', ') || ''}
+                                    onChange={(e) =>
+                                      updateField(index, {
+                                        options: e.target.value.split(',').map((o) => o.trim()),
+                                      })
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                    placeholder="Option 1, Option 2, Option 3"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
-
-        {/* Empty State */}
-        {fields.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-sm" style={{ color: '#86868B' }}>
-              Felder hinzufügen ↑
-            </p>
-          </div>
-        )}
-
-        {/* Validation Error */}
-        {validationError && (
-          <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFEBEE', border: '1px solid #FFCDD2' }}>
-            <p className="text-sm font-medium" style={{ color: '#C62828' }}>
-              {validationError}
-            </p>
-          </div>
-        )}
-
-        {/* Primary Action Button - Fixed at bottom on mobile */}
-        {fields.length > 0 && templateName && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t sm:relative sm:border-t-0 sm:p-0 sm:bg-transparent" style={{ borderColor: '#E5E5EA' }}>
-            <button
-              onClick={handleFinish}
-              className="w-full py-4 rounded-xl font-semibold text-white transition hover:opacity-90"
-              style={{ backgroundColor: '#007AFF', fontSize: '17px' }}
-            >
-              Besuch starten
-            </button>
-          </div>
-        )}
-
-        {/* Spacer for fixed button on mobile */}
-        {fields.length > 0 && templateName && (
-          <div className="h-20 sm:hidden"></div>
-        )}
-
-        {/* Auto-save indicator */}
-        {isSaving && (
-          <div className="fixed top-20 right-4 px-3 py-2 rounded-lg text-xs font-medium" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
-            Gespeichert ✓
-          </div>
-        )}
-
       </div>
     </div>
   );

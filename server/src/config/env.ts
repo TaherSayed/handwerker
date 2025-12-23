@@ -1,33 +1,28 @@
 import dotenv from 'dotenv';
-
-// Load environment variables first, before any other imports
 dotenv.config();
 
-// Validate required environment variables
-const requiredEnvVars = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-];
-
-const missingVars = requiredEnvVars.filter(
-  (varName) => !process.env[varName]
-);
-
-if (missingVars.length > 0) {
-  console.error('❌ Missing required environment variables:');
-  missingVars.forEach((varName) => {
-    console.error(`   - ${varName}`);
-  });
-  console.error('\n💡 Please set these variables in Coolify dashboard under Environment Variables');
-  process.exit(1);
-}
-
-// Export validated environment variables
-export const env = {
-  SUPABASE_URL: process.env.SUPABASE_URL!,
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY!,
-  PORT: process.env.PORT || '3001',
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
-  GOOGLE_WEB_CLIENT_ID: process.env.GOOGLE_WEB_CLIENT_ID || '',
+export const config = {
+  port: process.env.PORT || 3000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  
+  supabase: {
+    url: process.env.SUPABASE_URL!,
+    anonKey: process.env.SUPABASE_ANON_KEY!,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  },
+  
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 };
 
+// Validate required env vars
+const required = [
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+];
+
+for (const key of required) {
+  if (!process.env[key]) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+}

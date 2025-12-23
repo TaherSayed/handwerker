@@ -1,51 +1,47 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import SplashScreen from './pages/SplashScreen';
 import GoogleSignInScreen from './pages/GoogleSignInScreen';
-import ContactSelection from './pages/ContactSelection';
-import ManualCustomerEntry from './pages/ManualCustomerEntry';
-import FormTemplateSelection from './pages/FormTemplateSelection';
-import VisitFormFilling from './pages/VisitFormFilling';
-import PdfPreview from './pages/PdfPreview';
+import Dashboard from './pages/Dashboard';
+import FormTemplates from './pages/FormTemplates';
 import FormBuilder from './pages/FormBuilder';
-import UserProfile from './pages/UserProfile';
-import Datenschutz from './pages/Datenschutz';
-import Impressum from './pages/Impressum';
+import Submissions from './pages/Submissions';
+import SubmissionDetail from './pages/SubmissionDetail';
+import Settings from './pages/Settings';
 
 function App() {
-  const { user, loading } = useAuthStore();
+  const { user, loading, initialized, initialize } = useAuthStore();
 
-  if (loading) {
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  if (!initialized || loading) {
     return <SplashScreen />;
   }
 
+  if (!user) {
+    return <GoogleSignInScreen />;
+  }
+
   return (
-    <Routes>
-      <Route path="/" element={<SplashScreen />} />
-      <Route path="/google-sign-in" element={<GoogleSignInScreen />} />
-      
-      {/* Public pages */}
-      <Route path="/datenschutz" element={<Datenschutz />} />
-      <Route path="/impressum" element={<Impressum />} />
-      
-      {user ? (
-        <>
-          <Route path="/contact-selection" element={<ContactSelection />} />
-          <Route path="/manual-customer-entry" element={<ManualCustomerEntry />} />
-          <Route path="/form-template-selection" element={<Layout><FormTemplateSelection /></Layout>} />
-          <Route path="/visit-form-filling" element={<Layout><VisitFormFilling /></Layout>} />
-          <Route path="/pdf-preview" element={<Layout><PdfPreview /></Layout>} />
-          <Route path="/form-builder" element={<FormBuilder />} />
-          <Route path="/user-profile" element={<Layout><UserProfile /></Layout>} />
-          <Route path="*" element={<Navigate to="/contact-selection" replace />} />
-        </>
-      ) : (
-        <Route path="*" element={<Navigate to="/google-sign-in" replace />} />
-      )}
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="templates" element={<FormTemplates />} />
+          <Route path="templates/new" element={<FormBuilder />} />
+          <Route path="templates/:id/edit" element={<FormBuilder />} />
+          <Route path="submissions" element={<Submissions />} />
+          <Route path="submissions/:id" element={<SubmissionDetail />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
 export default App;
-

@@ -1,110 +1,244 @@
-# OnSite - First Contact Visit App
+# OnSite Forms
 
-A modern web application built with React and Node.js for managing customer visits and form templates.
+A GoCanvas-like field forms platform for professionals. Create form templates, fill them offline on mobile, sync data, and generate professional PDFs.
 
-## Tech Stack
+## Stack
 
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
-- **Backend**: Node.js + Express + TypeScript
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth with Google OAuth
-- **State Management**: Zustand
+- **Backend**: Node.js 20 + TypeScript + Express
+- **Database/Auth/Storage**: Supabase (Postgres + RLS + Storage)
+- **Web Admin**: React + Vite + TypeScript + Tailwind CSS
+- **Mobile App**: Flutter (Android + iOS)
+- **PDF Generation**: PDFKit (server-side)
+- **Authentication**: Google OAuth via Supabase
+
+## Features
+
+### Core Functionality
+- ✅ Google OAuth authentication
+- ✅ Multi-tenant architecture (single workspace per user in v1)
+- ✅ Drag-and-drop form template builder
+- ✅ Field types: Text, Number, Checkbox, Toggle, Dropdown, Date/Time, Notes, Signature, Photo
+- ✅ Offline-first mobile submissions
+- ✅ Draft auto-save
+- ✅ Background sync
+- ✅ Professional PDF generation
+- ✅ Supabase Storage integration
+- ✅ Row-level security (RLS)
 
 ## Project Structure
 
 ```
-onsite/
-├── client/          # React frontend application
-├── server/         # Node.js backend API
-└── supabase/       # Database migrations
+onsite-forms/
+├── server/           # Node.js API
+│   ├── src/
+│   │   ├── config/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   └── services/
+│   └── package.json
+├── client/           # React web admin
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── store/
+│   └── package.json
+├── mobile/           # Flutter app
+│   ├── lib/
+│   │   ├── models/
+│   │   ├── providers/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   └── widgets/
+│   └── pubspec.yaml
+└── supabase/
+    └── migrations/
 ```
 
-## Getting Started
+## Setup
 
 ### Prerequisites
+- Node.js 20+
+- Flutter 3.0+
+- Supabase account
 
-- Node.js 18+ and npm
-- Supabase account and project
+### 1. Supabase Setup
 
-### Installation
+1. Create a new Supabase project
+2. Run migrations from `supabase/migrations/`
+3. Enable Google OAuth in Supabase Auth settings
+4. Create storage buckets: `submission-photos`, `submission-pdfs`, `company-logos`
 
-1. Install all dependencies:
+### 2. Backend Setup
+
 ```bash
-npm run install:all
-```
+cd server
+npm install
 
-2. Set up environment variables:
+# Create .env file
+cat > .env << EOF
+PORT=3000
+NODE_ENV=development
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+CORS_ORIGIN=http://localhost:5173
+EOF
 
-**client/.env:**
-```
-VITE_SUPABASE_URL=https://ckargfikgicnflsqbbld.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_tQ1pbrvgVOwtc148R3oq9w_VkjXFyMU
-```
-
-**server/.env:**
-```
-SUPABASE_URL=https://ckargfikgicnflsqbbld.supabase.co
-SUPABASE_ANON_KEY=sb_publishable_tQ1pbrvgVOwtc148R3oq9w_VkjXFyMU
-PORT=3001
-CLIENT_URL=http://localhost:5173
-GOOGLE_WEB_CLIENT_ID=your_google_client_id
-```
-
-### Running the Application
-
-Start both client and server in development mode:
-```bash
+# Run in development
 npm run dev
+
+# Build for production
+npm run build
+npm start
 ```
 
-Or run them separately:
-
-**Server:**
-```bash
-npm run dev:server
-```
-
-**Client:**
-```bash
-npm run dev:client
-```
-
-The application will be available at:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3001
-
-## Building for Production
+### 3. Web Admin Setup
 
 ```bash
+cd client
+npm install
+
+# Create .env file
+cat > .env << EOF
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_URL=http://localhost:3000/api
+EOF
+
+# Run in development
+npm run dev
+
+# Build for production
 npm run build
 ```
 
-This will build both the client and server applications.
+### 4. Mobile App Setup
 
-## Features
+```bash
+cd mobile
+flutter pub get
 
-- 🔐 Google OAuth authentication
-- 📋 Form template management
-- 👥 Contact management with Google Contacts import
-- 📝 Visit form filling with signature capture
-- 📄 PDF report generation
-- 📊 Dashboard with statistics
-- 👤 User profile management
+# Run on device/emulator
+flutter run \
+  --dart-define=SUPABASE_URL=your_url \
+  --dart-define=SUPABASE_ANON_KEY=your_key \
+  --dart-define=API_URL=http://your-api-url/api
+
+# Build for Android
+flutter build apk --release
+
+# Build for iOS
+flutter build ios --release
+```
+
+## API Routes
+
+### Authentication
+- Handled by Supabase OAuth
+
+### User
+- `GET /api/user/me` - Get current user profile
+- `PATCH /api/user/me` - Update user profile
+
+### Templates
+- `GET /api/templates` - List templates
+- `GET /api/templates/:id` - Get template
+- `POST /api/templates` - Create template
+- `PUT /api/templates/:id` - Update template
+- `DELETE /api/templates/:id` - Delete template
+- `POST /api/templates/:id/duplicate` - Duplicate template
+
+### Submissions
+- `GET /api/submissions` - List submissions
+- `GET /api/submissions/:id` - Get submission
+- `POST /api/submissions` - Create submission
+- `PUT /api/submissions/:id` - Update submission
+- `DELETE /api/submissions/:id` - Delete submission
+- `POST /api/submissions/:id/pdf` - Generate PDF
+
+### Uploads
+- `POST /api/uploads/signed-url` - Get signed upload URL
+- `POST /api/uploads/submission-photo` - Upload submission photo
+
+## Database Schema
+
+### Tables
+- `user_profiles` - User information
+- `workspaces` - User workspaces
+- `form_templates` - Form templates with fields
+- `submissions` - Form submissions
+- `submission_photos` - Attached photos
+
+### Storage Buckets
+- `submission-photos` - Photo uploads
+- `submission-pdfs` - Generated PDFs
+- `company-logos` - Company logos
+
+## Security
+
+- Row-level security (RLS) on all tables
+- JWT verification on API routes
+- Signed URLs for storage uploads
+- User can only access their own data
+
+## Deployment
+
+### Backend (Coolify/Docker)
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY server/package*.json ./
+RUN npm ci --production
+COPY server/ .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### Web Admin (Static)
+```bash
+cd client
+npm run build
+# Deploy dist/ folder to any static host
+```
+
+### Mobile App
+- Android: Upload APK to Google Play Store
+- iOS: Upload to App Store Connect
+
+## Development Workflow
+
+1. Create form templates in web admin
+2. Fill forms on mobile (works offline)
+3. Sync when online
+4. Generate PDFs from submissions
+5. View/download PDFs in web admin
 
 ## Environment Variables
 
-### Client (.env)
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
-
-### Server (.env)
+### Server
+- `PORT` - API port (default: 3000)
+- `NODE_ENV` - Environment (development/production)
 - `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_ANON_KEY` - Supabase anonymous key
-- `PORT` - Server port (default: 3001)
-- `CLIENT_URL` - Frontend URL
-- `GOOGLE_WEB_CLIENT_ID` - Google OAuth client ID
+- `SUPABASE_ANON_KEY` - Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- `CORS_ORIGIN` - CORS origin URL
+
+### Web Client
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anon key
+- `VITE_API_URL` - Backend API URL
+
+### Mobile
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anon key
+- `API_URL` - Backend API URL
 
 ## License
 
-ISC
+MIT
 
+## Support
+
+For issues and questions, please open a GitHub issue.

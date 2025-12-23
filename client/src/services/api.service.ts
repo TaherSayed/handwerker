@@ -1,109 +1,139 @@
-import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from './supabase';
 
-// Create axios instance
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const { session } = useAuthStore.getState();
-    
-    if (session?.access_token) {
-      config.headers.Authorization = `Bearer ${session.access_token}`;
+class ApiService {
+  private async getAuthHeader() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
     }
-    
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    };
   }
-);
 
-// Response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - sign out
-      const { signOut } = useAuthStore.getState();
-      await signOut();
-      window.location.href = '/google-sign-in';
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const headers = await this.getAuthHeader();
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...headers,
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
     }
-    
-    return Promise.reject(error);
+
+    if (response.status === 204) {
+      return null as T;
+    }
+
+    return response.json();
   }
-);
 
-// API Service methods
-export const apiService = {
-  // Auth
-  verifyToken: async () => {
-    const response = await api.post('/auth/verify');
-    return response.data;
-  },
+  // User
+  async getMe() {
+    return this.request('/user/me');
+  }
 
-  // Contacts
-  getContacts: async (searchQuery?: string) => {
-    const params = searchQuery ? { search: searchQuery } : {};
-    const response = await api.get('/contacts', { params });
-    return response.data;
-  },
+  async updateProfile(data: any) {
+    return this.request('/user/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
 
-  // Forms
-  createForm: async (formData: any) => {
-    const response = await api.post('/forms', formData);
-    return response.data;
-  },
+  // Templates
+  async getTemplates(params?: { is_archived?: boolean }) {
+    const query = params ? `?${new URLSearchParams(params as any)}` : '';
+    return this.request(`/templates${query}`);
+  }
 
-  getForms: async () => {
-    const response = await api.get('/forms');
-    return response.data;
-  },
+  async getTemplate(id: string) {
+    return this.request(`/templates/${id}`);
+  }
 
-  updateForm: async (formId: string, formData: any) => {
-    const response = await api.put(`/forms/${formId}`, formData);
-    return response.data;
-  },
+  async createTemplate(data: any) {
+    return this.request('/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 
-  deleteForm: async (formId: string) => {
-    const response = await api.delete(`/forms/${formId}`);
-    return response.data;
-  },
+  async updateTemplate(id: string, data: any) {
+    return this.request(`/templates/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 
-  // Visits
-  createVisit: async (visitData: any) => {
-    const response = await api.post('/visits', visitData);
-    return response.data;
-  },
+  async deleteTemplate(id: string) {
+    return this.request(`/templates/${id}`, {
+      method: 'DELETE',
+    });
+  }
 
-  getVisitById: async (visitId: string) => {
-    const response = await api.get(`/visits/${visitId}`);
-    return response.data;
-  },
+  async duplicateTemplate(id: string) {
+    return this.request(`/templates/${id}/duplicate`, {
+      method: 'POST',
+    });
+  }
 
-  updateVisit: async (visitId: string, visitData: any) => {
-    const response = await api.put(`/visits/${visitId}`, visitData);
-    return response.data;
-  },
+  // Submissions
+  async getSubmissions(params?: { status?: string; template_id?: string }) {
+    const query = params ? `?${new URLSearchParams(params as any)}` : '';
+    return this.request(`/submissions${query}`);
+  }
 
-  // PDF
-  generatePDF: async (visitId: string) => {
-    const response = await api.post(`/pdf/${visitId}`);
-    return response.data;
-  },
+  async getSubmission(id: string) {
+    return this.request(`/submissions/${id}`);
+  }
 
-  // Google (legacy endpoints - for importing contacts)
-  importGoogleContacts: async (accessToken: string) => {
-    const response = await api.post('/google/contacts/import', { accessToken });
-    return response.data;
-  },
-};
+  async createSubmission(data: any) {
+    return this.request('/submissions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 
-export default api;
+  async updateSubmission(id: string, data: any) {
+    return this.request(`/submissions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 
+  async deleteSubmission(id: string) {
+    return this.request(`/submissions/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async generatePDF(id: string) {
+    return this.request(`/submissions/${id}/pdf`, {
+      method: 'POST',
+    });
+  }
+
+  // Uploads
+  async getSignedUploadUrl(bucket: string, fileName: string) {
+    return this.request('/uploads/signed-url', {
+      method: 'POST',
+      body: JSON.stringify({ bucket, file_name: fileName }),
+    });
+  }
+
+  async createSubmissionPhoto(data: any) {
+    return this.request('/uploads/submission-photo', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+export const apiService = new ApiService();

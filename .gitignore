@@ -1,67 +1,62 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-pubspec.lock
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line is
-# commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related (legacy - project converted to React/Node.js)
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/web/
-/windows/
-/android/
-/ios/
-/lib/
-
-# Environment variables - DO NOT COMMIT
-env.json
-*.env
+# Environment
+.env
 .env.local
 .env.*.local
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Build outputs
+dist/
+build/
+*.log
 
-# Server
-server/dist/
-server/.env
-
-# Client
-client/dist/
-client/.env
-client/.vite/
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+
+# Android
+*.apk
+*.ap_
+*.aab
+local.properties
+.gradle/
+
+# iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+*.xcworkspace
+!default.xcworkspace
+
+# Testing
+coverage/
+*.lcov
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
+.npm

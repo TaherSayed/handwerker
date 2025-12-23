@@ -1,28 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../services/supabase.service.js';
-import type { User } from '@supabase/supabase-js';
 
-// Extend Express Request to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-      userId?: string;
-    }
-  }
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+  accessToken?: string;
 }
 
-/**
- * Auth middleware - Verify Supabase JWT token
- * Extracts token from Authorization header, verifies it, and attaches user to request
- */
 export async function authMiddleware(
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -30,24 +22,24 @@ export async function authMiddleware(
       return;
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    // Verify token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
+    const token = authHeader.substring(7);
+    
+    const { data: { user }, error } = await supabase.client.auth.getUser(token);
+    
     if (error || !user) {
       res.status(401).json({ error: 'Invalid or expired token' });
       return;
     }
 
-    // Attach user context to request
-    req.user = user;
-    req.userId = user.id;
-
+    req.user = {
+      id: user.id,
+      email: user.email!,
+    };
+    req.accessToken = token;
+    
     next();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(401).json({ error: 'Authentication failed' });
   }
 }
-
