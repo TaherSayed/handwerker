@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import axios from 'axios';
+import { apiService } from '../services/api.service';
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore();
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -234,6 +235,36 @@ export default function UserProfile() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Settings / Actions */}
+      <div className="card p-6">
+        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F172A' }}>Einstellungen</h2>
+        
+        <button
+          onClick={async () => {
+            if (confirm('Möchten Sie sich wirklich abmelden?')) {
+              try {
+                await signOut();
+                navigate('/google-sign-in');
+              } catch (error) {
+                console.error('Logout failed:', error);
+                alert('Fehler beim Abmelden');
+              }
+            }
+          }}
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition hover:opacity-90"
+          style={{ 
+            backgroundColor: '#FFF1F0',
+            color: '#FF3B30',
+            border: '1px solid #FFCCCB'
+          }}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Abmelden
+        </button>
       </div>
 
     </div>

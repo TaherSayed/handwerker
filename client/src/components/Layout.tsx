@@ -68,6 +68,19 @@ export default function Layout({ children }: LayoutProps) {
                           <p className="text-sm mt-1" style={{ color: '#86868B' }}>{user?.email}</p>
                         </div>
                         <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            navigate('/user-profile');
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-base hover:bg-gray-50 transition text-left"
+                          style={{ color: '#1D1D1F' }}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Profil & Einstellungen
+                        </button>
+                        <button
                           onClick={handleSignOut}
                           className="w-full flex items-center gap-3 px-4 py-3 text-base hover:bg-gray-50 transition text-left"
                           style={{ color: '#FF3B30' }}
