@@ -24,7 +24,7 @@ export default function FormTemplates() {
       setTemplates(data || []);
     } catch (error: any) {
       console.error('Load templates error:', error);
-      setError(error.message || 'Failed to load templates. Please try again.');
+      setError(error.message || 'Laden der Vorlagen fehlgeschlagen. Bitte erneut versuchen.');
       setTemplates([]);
     } finally {
       setLoading(false);
@@ -38,7 +38,7 @@ export default function FormTemplates() {
       loadTemplates();
     } catch (error: any) {
       console.error('Duplicate error:', error);
-      setError(error.message || 'Failed to duplicate template');
+      setError(error.message || 'Duplizieren der Vorlage fehlgeschlagen');
     }
   };
 
@@ -49,19 +49,19 @@ export default function FormTemplates() {
       loadTemplates();
     } catch (error: any) {
       console.error('Archive error:', error);
-      setError(error.message || `Failed to ${archive ? 'archive' : 'unarchive'} template`);
+      setError(error.message || `Vorlage konnte nicht ${archive ? 'archiviert' : 'deaktiviert'} werden`);
     }
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm('Sind Sie sicher, dass Sie diese Vorlage endgültig löschen möchten?')) return;
     try {
       await apiService.deleteTemplate(id);
       loadTemplates();
     } catch (error: any) {
       console.error('Delete error:', error);
-      setError(error.message || 'Failed to delete template');
+      setError(error.message || 'Löschen der Vorlage fehlgeschlagen');
     }
   };
 
@@ -71,10 +71,10 @@ export default function FormTemplates() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
-            Form Templates
+            Formularvorlagen
           </h1>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Build and manage your professional service records
+            Erstellen und verwalten Sie Ihre professionellen Einsatz-Formulare
           </p>
         </div>
         <button
@@ -82,7 +82,7 @@ export default function FormTemplates() {
           className="group flex items-center justify-center gap-3 bg-indigo-900 text-white w-full md:w-auto px-8 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100"
         >
           <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          Create New
+          Neu erstellen
         </button>
       </div>
 
@@ -90,16 +90,19 @@ export default function FormTemplates() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         {/* Filter Tabs */}
         <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit">
-          {['active', 'archived'].map((f) => (
+          {[
+            { id: 'active', label: 'Aktiv' },
+            { id: 'archived', label: 'Archiviert' }
+          ].map((f) => (
             <button
-              key={f}
-              onClick={() => setFilter(f as any)}
-              className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f
+              key={f.id}
+              onClick={() => setFilter(f.id as any)}
+              className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f.id
                 ? 'bg-white text-indigo-600 shadow-xl shadow-slate-200'
                 : 'text-slate-400 hover:text-slate-600'
                 }`}
             >
-              {f}
+              {f.label}
             </button>
           ))}
         </div>
@@ -112,7 +115,7 @@ export default function FormTemplates() {
             <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
             <p className="text-red-800 font-bold text-sm tracking-tight">{error}</p>
           </div>
-          <button onClick={loadTemplates} className="text-red-600 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Retry</button>
+          <button onClick={loadTemplates} className="text-red-600 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Wiederholen</button>
         </div>
       )}
 
@@ -128,16 +131,16 @@ export default function FormTemplates() {
           <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-10 transform -rotate-6">
             <FileText className="w-14 h-14" />
           </div>
-          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">No {filter} templates</h3>
+          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">Keine {filter === 'active' ? 'aktiven' : 'archivierten'} Vorlagen</h3>
           <p className="text-slate-400 font-medium max-w-sm mx-auto mb-12 text-lg">
             {filter === 'active'
-              ? "Ready to scale? Build your first professional form template and standardise your workflow."
-              : "Items you archive will appear here for reference."}
+              ? "Bereit für mehr Struktur? Erstellen Sie Ihre erste professionelle Berichts-Vorlage."
+              : "Archivierte Vorlagen werden hier zur Referenz angezeigt."}
           </p>
           {filter === 'active' && (
             <button onClick={() => navigate('/templates/new')} className="btn-primary px-12 py-6 rounded-[2.5rem] bg-indigo-900 text-lg">
               <Plus className="w-6 h-6" />
-              Build One Now
+              Jetzt erstellen
             </button>
           )}
         </div>
@@ -159,14 +162,14 @@ export default function FormTemplates() {
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
                     className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                    title="Edit Structure"
+                    title="Struktur bearbeiten"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={(e) => handleDuplicate(template.id, e)}
                     className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                    title="Copy"
+                    title="Kopieren"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -174,7 +177,7 @@ export default function FormTemplates() {
                     <button
                       onClick={(e) => handleArchive(template.id, true, e)}
                       className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-amber-600 hover:border-amber-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                      title="Archive"
+                      title="Archivieren"
                     >
                       <Archive className="w-4 h-4" />
                     </button>
@@ -182,7 +185,7 @@ export default function FormTemplates() {
                     <button
                       onClick={(e) => handleDelete(template.id, e)}
                       className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-red-600 hover:border-red-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                      title="Delete Permanently"
+                      title="Endgültig löschen"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -200,14 +203,14 @@ export default function FormTemplates() {
                 </div>
                 <h3 className="text-2xl font-black text-slate-900 mb-3 truncate group-hover:text-indigo-600 transition-colors uppercase tracking-tight leading-none">{template.name}</h3>
                 <p className="text-slate-400 text-sm font-bold line-clamp-2 leading-relaxed uppercase tracking-tight opacity-70">
-                  {template.description || 'Professional form ready for use.'}
+                  {template.description || 'Professionelles Formular, bereit für den Einsatz.'}
                 </p>
               </div>
 
               <div className="mt-8 pt-8 border-t-2 border-slate-50/50 flex items-center justify-between relative z-10">
                 <div className="flex items-end gap-2">
                   <span className="text-3xl font-black text-slate-900 leading-none">{template.fields?.length || 0}</span>
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Items</span>
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Felder</span>
                 </div>
                 <div className="flex -space-x-3">
                   {[1, 2].map(i => (
@@ -223,7 +226,7 @@ export default function FormTemplates() {
                   className="w-full flex items-center justify-center gap-4 py-6 bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-3xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/30 transition-all active:scale-95 group/btn"
                 >
                   <Play className="w-4 h-4 fill-current group-hover/btn:translate-x-1 transition-transform" />
-                  Launch Visit
+                  Einsatz starten
                 </button>
               </div>
             </div>

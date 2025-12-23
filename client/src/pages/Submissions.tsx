@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { ClipboardList, FileText, Download, Calendar, ChevronRight, Zap, Clock, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 export default function Submissions() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Submissions() {
       setError(null);
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 10000)
+        setTimeout(() => reject(new Error('Zeitüberschreitung der Anfrage')), 10000)
       );
 
       const params = filter !== 'all' ? { status: filter } : {};
@@ -31,7 +32,7 @@ export default function Submissions() {
       setSubmissions(data || []);
     } catch (error: any) {
       console.error('Load submissions error:', error);
-      setError(error.message || 'Failed to load submissions. Please try again.');
+      setError(error.message || 'Laden des Verlaufs fehlgeschlagen. Bitte versuchen Sie es erneut.');
       setSubmissions([]);
     } finally {
       setLoading(false);
@@ -46,7 +47,7 @@ export default function Submissions() {
       loadSubmissions();
     } catch (error) {
       console.error('Generate PDF error:', error);
-      alert('Failed to generate PDF');
+      alert('PDF konnte nicht erstellt werden');
     }
   };
 
@@ -56,26 +57,30 @@ export default function Submissions() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
-            History
+            Verlauf
           </h1>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Service records & customer submission logs
+            Einsatzberichte & Kundendokumentationen
           </p>
         </div>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit">
-        {['all', 'draft', 'submitted'].map((f) => (
+        {[
+          { id: 'all', label: 'Alle' },
+          { id: 'draft', label: 'Entwürfe' },
+          { id: 'submitted', label: 'Eingereicht' }
+        ].map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f as any)}
-            className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f
+            key={f.id}
+            onClick={() => setFilter(f.id as any)}
+            className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f.id
               ? 'bg-white text-indigo-600 shadow-xl shadow-slate-200'
               : 'text-slate-400 hover:text-slate-600'
               }`}
           >
-            {f}
+            {f.label}
           </button>
         ))}
       </div>
@@ -87,7 +92,7 @@ export default function Submissions() {
             <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
             <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
           </div>
-          <button onClick={loadSubmissions} className="text-red-600 font-black text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Retry</button>
+          <button onClick={loadSubmissions} className="text-red-600 font-black text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Wiederholen</button>
         </div>
       )}
 
@@ -103,9 +108,9 @@ export default function Submissions() {
           <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-10 transform rotate-3">
             <ClipboardList className="w-14 h-14" />
           </div>
-          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">No results found</h3>
+          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">Keine Ergebnisse</h3>
           <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8 text-lg">
-            Try adjusting your filters or complete a form to see it here.
+            Passen Sie Ihre Filter an oder schließen Sie einen Einsatz ab, um ihn hier zu sehen.
           </p>
         </div>
       ) : (
@@ -123,7 +128,7 @@ export default function Submissions() {
                 </div>
                 <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                   }`}>
-                  {sub.status}
+                  {sub.status === 'submitted' ? 'Eingereicht' : 'Entwurf'}
                 </div>
               </div>
 
@@ -131,15 +136,15 @@ export default function Submissions() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-md">
-                      {format(new Date(sub.created_at), 'HH:mm')}
+                      {format(new Date(sub.created_at), 'HH:mm')} Uhr
                     </span>
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate mb-1 uppercase tracking-tight leading-none">
-                    {sub.customer_name || 'Anonymous Record'}
+                    {sub.customer_name || 'Anonymer Einsatz'}
                   </h3>
                   <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-[0.15em] opacity-60">
                     <FileText className="w-3.5 h-3.5" />
-                    {sub.form_templates?.name || 'Form'}
+                    {sub.form_templates?.name || 'Formular'}
                   </div>
                 </div>
 
@@ -152,7 +157,7 @@ export default function Submissions() {
                   )}
                   <div className="flex items-center gap-3 text-xs text-slate-500 font-bold uppercase tracking-tighter">
                     <Calendar className="w-3.5 h-3.5 opacity-30" />
-                    {format(new Date(sub.created_at), 'MMMM do, yyyy')}
+                    {format(new Date(sub.created_at), 'do MMMM yyyy', { locale: de })}
                   </div>
                 </div>
               </div>
@@ -167,7 +172,7 @@ export default function Submissions() {
                     className="flex items-center gap-3 text-indigo-600 hover:text-indigo-700 font-black text-[10px] uppercase tracking-widest group/btn"
                   >
                     <Download className="w-4 h-4 transition-transform group-hover/btn:-translate-y-0.5" />
-                    Archive PDF
+                    PDF Archiv
                   </a>
                 ) : (
                   <button
@@ -175,7 +180,7 @@ export default function Submissions() {
                     className="flex items-center gap-3 text-slate-400 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest transition-colors group/btn"
                   >
                     <RefreshCw className="w-4 h-4 group-hover/btn:rotate-180 transition-transform duration-500" />
-                    Render PDF
+                    PDF Erstellen
                   </button>
                 )}
                 <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all">

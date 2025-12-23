@@ -32,10 +32,10 @@ export default function Layout() {
   };
 
   const navItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
-    { to: '/templates', icon: FileText, label: 'Templates' },
-    { to: '/submissions', icon: ClipboardList, label: 'History' },
-    { to: '/settings', icon: Settings, label: 'Settings' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Übersicht' },
+    { to: '/templates', icon: FileText, label: 'Vorlagen' },
+    { to: '/submissions', icon: ClipboardList, label: 'Verlauf' },
+    { to: '/settings', icon: Settings, label: 'Einstellungen' },
   ];
 
   return (
@@ -54,7 +54,7 @@ export default function Layout() {
             {sidebarOpen && (
               <div className="animate-slide-up">
                 <h1 className="font-bold text-lg leading-tight">OnSite</h1>
-                <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Pro Forms</p>
+                <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Formulare</p>
               </div>
             )}
           </div>
@@ -93,7 +93,7 @@ export default function Layout() {
               </div>
               {sidebarOpen && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">{profile?.full_name || 'User'}</p>
+                  <p className="text-sm font-bold truncate">{profile?.full_name || 'Benutzer'}</p>
                   <p className="text-[10px] text-slate-500 truncate">{profile?.email}</p>
                 </div>
               )}
@@ -104,7 +104,7 @@ export default function Layout() {
                 className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-red-500 hover:bg-white rounded-xl transition-all"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                Abmelden
               </button>
             )}
           </div>
@@ -129,7 +129,10 @@ export default function Layout() {
           <div className="hidden lg:block">
             {/* Desktop breadcrumb or dynamic title */}
             <h2 className="font-bold text-slate-900 capitalize px-2">
-              {location.pathname.split('/')[1] || 'Dashboard'}
+              {location.pathname === '/dashboard' ? 'Übersicht' :
+                location.pathname === '/templates' ? 'Vorlagen' :
+                  location.pathname === '/submissions' ? 'Verlauf' :
+                    location.pathname === '/settings' ? 'Einstellungen' : 'Dashboard'}
             </h2>
           </div>
 

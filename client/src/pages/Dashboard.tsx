@@ -77,7 +77,7 @@ export default function Dashboard() {
           <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
           <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
         </div>
-        <p className="mt-4 text-slate-500 font-medium animate-pulse">Designing your day...</p>
+        <p className="mt-4 text-slate-500 font-medium animate-pulse">Ihr Arbeitstag wird vorbereitet...</p>
       </div>
     );
   }
@@ -92,10 +92,10 @@ export default function Dashboard() {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
-              Ready for a<br />New Visit?
+              Bereit für einen<br />neuen Einsatz?
             </h1>
             <p className="text-indigo-200 font-medium md:text-lg max-w-md">
-              Start a new visit to capture data, photos, and signatures on-site.
+              Starten Sie einen Einsatz, um Daten, Fotos und Unterschriften direkt vor Ort zu erfassen.
             </p>
           </div>
 
@@ -104,7 +104,7 @@ export default function Dashboard() {
             className="group relative flex items-center justify-center gap-3 bg-white text-indigo-900 px-10 py-6 rounded-[2rem] font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-white/20 shrink-0"
           >
             <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
-            START VISIT
+            EINSATZ STARTEN
           </button>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900 leading-none">{stats.submissions}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Completed</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Erledigt</p>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900 leading-none">{stats.drafts}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Drafts</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Entwürfe</p>
           </div>
         </div>
 
@@ -137,7 +137,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900 leading-none">{stats.templates}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Templates</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Vorlagen</p>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export default function Dashboard() {
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-black text-slate-900 leading-tight uppercase">Tools &<br />Settings</p>
+            <p className="text-xs font-black text-slate-900 leading-tight uppercase">Tools &<br />Optionen</p>
           </div>
         </div>
       </div>
@@ -158,13 +158,13 @@ export default function Dashboard() {
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
               <ClipboardList className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Recent Visits</h2>
+            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Letzte Einsätze</h2>
           </div>
           <button
             onClick={() => navigate('/submissions')}
             className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:translate-x-1 transition-transform flex items-center gap-1"
           >
-            History <ChevronRight className="w-4 h-4" />
+            Verlauf <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -174,8 +174,8 @@ export default function Dashboard() {
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                 <ClipboardList className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">No visits recorded yet</h3>
-              <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">Click "Start Visit" above to begin your first service record.</p>
+              <h3 className="text-lg font-bold text-slate-900">Noch keine Einsätze verzeichnet</h3>
+              <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">Klicken Sie oben auf "Einsatz starten", um Ihren ersten Bericht zu erstellen.</p>
             </div>
           ) : (
             recentSubmissions.map((sub) => (
@@ -191,19 +191,19 @@ export default function Dashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-base truncate">
-                      {sub.customer_name || 'Walking Customer'}
+                      {sub.customer_name || 'Laufkunde'}
                     </h4>
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg mt-1 shrink-0 ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                       }`}>
-                      {sub.status}
+                      {sub.status === 'submitted' ? 'Eingereicht' : 'Entwurf'}
                     </span>
                   </div>
                   <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-0.5">
-                    {sub.form_templates?.name || 'Standard Form'}
+                    {sub.form_templates?.name || 'Standardformular'}
                   </p>
                   <p className="text-[10px] text-slate-400 font-medium mt-3 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(sub.created_at).toLocaleDateString(undefined, {
+                    {new Date(sub.created_at).toLocaleDateString('de-DE', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
@@ -225,13 +225,13 @@ export default function Dashboard() {
             <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
               <FileText className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Templates</h2>
+            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Vorlagen</h2>
           </div>
           <button
             onClick={() => navigate('/templates')}
             className="text-slate-500 font-black text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors"
           >
-            Manage
+            Verwalten
           </button>
         </div>
 
@@ -257,7 +257,7 @@ export default function Dashboard() {
             <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
               <Plus className="w-5 h-5" />
             </div>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600">New Template</p>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600">Neue Vorlage</p>
           </div>
         </div>
       </section>

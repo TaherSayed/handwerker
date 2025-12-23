@@ -53,7 +53,7 @@ export default function FormFilling() {
       setFieldValues(initialValues);
     } catch (error: any) {
       console.error('Load template error:', error);
-      setError(error.message || 'Failed to load template');
+      setError(error.message || 'Laden der Vorlage fehlgeschlagen');
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function FormFilling() {
 
     // Check required customer fields
     if (!customerInfo.name.trim()) {
-      setError('Please enter customer name');
+      setError('Bitte geben Sie den Kundennamen ein');
       return false;
     }
 
@@ -92,7 +92,7 @@ export default function FormFilling() {
         const value = fieldValues[field.id];
         if (value === undefined || value === null || value === '' ||
           (Array.isArray(value) && value.length === 0)) {
-          setError(`Please fill in required field: ${field.label}`);
+          setError(`Bitte füllen Sie das Pflichtfeld aus: ${field.label}`);
           return false;
         }
       }
@@ -136,7 +136,7 @@ export default function FormFilling() {
         // Show success message
         const successMsg = document.createElement('div');
         successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50';
-        successMsg.textContent = 'Draft saved successfully!';
+        successMsg.textContent = 'Entwurf erfolgreich gespeichert!';
         document.body.appendChild(successMsg);
         setTimeout(() => {
           document.body.removeChild(successMsg);
@@ -144,7 +144,7 @@ export default function FormFilling() {
       }
     } catch (error: any) {
       console.error('Save submission error:', error);
-      setError(error.message || 'Failed to save submission. Please try again.');
+      setError(error.message || 'Speichern des Einsatzes fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setSaving(false);
       setSubmitting(false);
@@ -171,7 +171,7 @@ export default function FormFilling() {
             value={value || ''}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={field.placeholder || `${field.label} eingeben...`}
           />
         );
 
@@ -182,7 +182,7 @@ export default function FormFilling() {
             value={value || ''}
             onChange={(e) => handleFieldChange(field.id, parseFloat(e.target.value) || 0)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={field.placeholder || `${field.label} eingeben...`}
           />
         );
 
@@ -218,7 +218,7 @@ export default function FormFilling() {
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
           >
-            <option value="">Select {field.label}</option>
+            <option value="">{field.label} auswählen</option>
             {field.options?.map((option: string) => (
               <option key={option} value={option}>{option}</option>
             ))}
@@ -252,7 +252,7 @@ export default function FormFilling() {
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
             rows={4}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={field.placeholder || `${field.label} eingeben...`}
           />
         );
 
@@ -261,13 +261,13 @@ export default function FormFilling() {
           <div className="space-y-3">
             {signature ? (
               <div className="relative">
-                <img src={signature} alt="Signature" className="w-full max-w-md h-32 object-contain border-2 border-gray-200 rounded-xl bg-white" />
+                <img src={signature} alt="Unterschrift" className="w-full max-w-md h-32 object-contain border-2 border-gray-200 rounded-xl bg-white" />
                 <button
                   type="button"
                   onClick={() => setSignature(null)}
                   className="absolute top-2 right-2 px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
                 >
-                  Clear
+                  Löschen
                 </button>
               </div>
             ) : (
@@ -295,7 +295,7 @@ export default function FormFilling() {
               className="input"
             />
             {value && (
-              <img src={value} alt="Uploaded" className="w-full max-w-md h-48 object-cover rounded-xl border border-gray-200" />
+              <img src={value} alt="Hochgeladen" className="w-full max-w-md h-48 object-cover rounded-xl border border-gray-200" />
             )}
           </div>
         );
@@ -307,7 +307,7 @@ export default function FormFilling() {
             value={value || ''}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={field.placeholder || `${field.label} eingeben...`}
           />
         );
     }
@@ -330,7 +330,7 @@ export default function FormFilling() {
           </div>
           <button onClick={() => navigate('/templates')} className="btn-primary">
             <ArrowLeft className="w-5 h-5" />
-            Back to Templates
+            Zurück zu den Vorlagen
           </button>
         </div>
       </div>
@@ -351,7 +351,7 @@ export default function FormFilling() {
         </button>
         <div className="min-w-0">
           <h1 className="font-black text-slate-900 truncate uppercase text-sm tracking-tight">{template.name}</h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">Filling Form</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">Formular ausfüllen</p>
         </div>
       </div>
 
@@ -366,7 +366,7 @@ export default function FormFilling() {
           </button>
           <div>
             <h1 className="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tight">{template.name}</h1>
-            <p className="text-slate-500 font-medium text-lg">{template.description || 'Complete the information below'}</p>
+            <p className="text-slate-500 font-medium text-lg">{template.description || 'Vervollständigen Sie die untenstehenden Informationen'}</p>
           </div>
         </div>
 
@@ -385,7 +385,7 @@ export default function FormFilling() {
                 <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
                   <User className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Customer</h2>
+                <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Kunde</h2>
               </div>
               <button
                 type="button"
@@ -399,47 +399,47 @@ export default function FormFilling() {
 
             <div className="card grid grid-cols-1 md:grid-cols-2 gap-5 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name *</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vollständiger Name *</label>
                 <input
                   type="text"
                   value={customerInfo.name}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
                   className="input"
-                  placeholder="John Doe"
+                  placeholder="Max Mustermann"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-Mail</label>
                 <input
                   type="email"
                   value={customerInfo.email}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
                   className="input"
-                  placeholder="john@example.com"
+                  placeholder="max@beispiel.de"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Telefonnummer</label>
                 <input
                   type="tel"
                   value={customerInfo.phone}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
                   className="input"
-                  placeholder="+1 (555) 000-0000"
+                  placeholder="+49 (0) 123 456789"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Address</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Einsatzort / Adresse</label>
                 <input
                   type="text"
                   value={customerInfo.address}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
                   className="input"
-                  placeholder="123 Builder Lane, Suite 400"
+                  placeholder="Beispielstraße 1, 12345 Stadt"
                 />
               </div>
             </div>
@@ -483,7 +483,7 @@ export default function FormFilling() {
                 ) : (
                   <Save className="w-5 h-5" />
                 )}
-                Draft
+                Entwurf
               </button>
               <button
                 type="submit"
@@ -495,7 +495,7 @@ export default function FormFilling() {
                 ) : (
                   <Send className="w-5 h-5 fill-current" />
                 )}
-                Finalize & Submit
+                Abschließen & Senden
               </button>
             </div>
           </div>
@@ -584,7 +584,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
       />
-      <p className="text-xs text-gray-500 p-2 text-center">Sign above</p>
+      <p className="text-xs text-gray-500 p-2 text-center">Hier unterschreiben</p>
     </div>
   );
 }

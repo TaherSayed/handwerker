@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { ArrowLeft, Download, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 export default function SubmissionDetail() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ export default function SubmissionDetail() {
       setSubmission(data);
     } catch (error: any) {
       console.error('Load submission error:', error);
-      setError(error.message || 'Failed to load submission');
+      setError(error.message || 'Laden des Einsatzberichts fehlgeschlagen');
     } finally {
       setLoading(false);
     }
@@ -38,19 +39,19 @@ export default function SubmissionDetail() {
       loadSubmission();
     } catch (error: any) {
       console.error('Generate PDF error:', error);
-      setError(error.message || 'Failed to generate PDF');
+      setError(error.message || 'PDF konnte nicht erstellt werden');
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) return;
+    if (!confirm('Sind Sie sicher, dass Sie diesen Einsatzbericht löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
     try {
       setError(null);
       await apiService.deleteSubmission(id!);
       navigate('/submissions');
     } catch (error: any) {
       console.error('Delete error:', error);
-      setError(error.message || 'Failed to delete submission');
+      setError(error.message || 'Löschen des Berichts fehlgeschlagen');
     }
   };
 
@@ -71,7 +72,7 @@ export default function SubmissionDetail() {
           </div>
           <button onClick={() => navigate('/submissions')} className="btn-primary">
             <ArrowLeft className="w-5 h-5" />
-            Back to Submissions
+            Zurück zum Verlauf
           </button>
         </div>
       </div>
@@ -84,25 +85,25 @@ export default function SubmissionDetail() {
     switch (field.type) {
       case 'checkbox':
       case 'toggle':
-        return value ? 'Yes' : 'No';
+        return value ? 'Ja' : 'Nein';
       case 'date':
-        return value ? format(new Date(value), 'MMM d, yyyy') : 'N/A';
+        return value ? format(new Date(value), 'do MMMM yyyy', { locale: de }) : '-';
       case 'datetime':
-        return value ? format(new Date(value), 'MMM d, yyyy h:mm a') : 'N/A';
+        return value ? format(new Date(value), 'do MMMM yyyy HH:mm', { locale: de }) + ' Uhr' : '-';
       case 'photo':
         return value ? (
-          <img src={value} alt="Photo" className="w-32 h-32 object-cover rounded" />
+          <img src={value} alt="Foto" className="w-32 h-32 object-cover rounded" />
         ) : (
-          'No photo'
+          'Kein Foto'
         );
       case 'signature':
         return value ? (
-          <img src={value} alt="Signature" className="w-48 h-24 object-contain border rounded" />
+          <img src={value} alt="Unterschrift" className="w-48 h-24 object-contain border rounded" />
         ) : (
-          'No signature'
+          'Keine Unterschrift'
         );
       default:
-        return value || 'N/A';
+        return value || '-';
     }
   };
 
@@ -118,7 +119,7 @@ export default function SubmissionDetail() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">Submission Details</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">Einsatz-Details</h1>
             <p className="text-gray-600 text-lg">{submission.form_templates?.name}</p>
           </div>
         </div>
@@ -131,7 +132,7 @@ export default function SubmissionDetail() {
               className="btn-primary"
             >
               <Download className="w-5 h-5" />
-              Download PDF
+              PDF Herunterladen
             </a>
           ) : (
             <button
@@ -139,7 +140,7 @@ export default function SubmissionDetail() {
               className="btn-primary"
             >
               <Download className="w-5 h-5" />
-              Generate PDF
+              PDF Erstellen
             </button>
           )}
           {submission.status === 'draft' && (
@@ -148,7 +149,7 @@ export default function SubmissionDetail() {
               className="btn-secondary text-red-600 border-red-200 hover:bg-red-50"
             >
               <Trash2 className="w-5 h-5" />
-              Delete
+              Löschen
             </button>
           )}
         </div>
@@ -163,21 +164,20 @@ export default function SubmissionDetail() {
 
       {/* Status Badge */}
       <div className="mb-6">
-        <span className={`badge ${
-          submission.status === 'submitted'
+        <span className={`badge ${submission.status === 'submitted'
             ? 'bg-green-100 text-green-700'
             : submission.status === 'draft'
-            ? 'bg-amber-100 text-amber-700'
-            : 'bg-gray-100 text-gray-700'
-        }`}>
-          {submission.status}
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-gray-100 text-gray-700'
+          }`}>
+          {submission.status === 'submitted' ? 'Eingereicht' : 'Entwurf'}
         </span>
       </div>
 
       {/* Customer Information */}
       {submission.customer_name && (
         <div className="card p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Customer Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Kunden-Informationen</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Name</label>
@@ -185,19 +185,19 @@ export default function SubmissionDetail() {
             </div>
             {submission.customer_email && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">E-Mail</label>
                 <p className="text-base text-gray-900">{submission.customer_email}</p>
               </div>
             )}
             {submission.customer_phone && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Telefonnummer</label>
                 <p className="text-base text-gray-900">{submission.customer_phone}</p>
               </div>
             )}
             {submission.customer_address && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Einsatzort / Adresse</label>
                 <p className="text-base text-gray-900">{submission.customer_address}</p>
               </div>
             )}
@@ -207,7 +207,7 @@ export default function SubmissionDetail() {
 
       {/* Form Data */}
       <div className="card p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Form Responses</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Antworten / Details</h2>
         <div className="space-y-6">
           {submission.form_templates?.fields?.map((field: any) => (
             <div key={field.id} className="border-b border-gray-100 pb-6 last:border-0">
@@ -226,33 +226,13 @@ export default function SubmissionDetail() {
       {/* Signature */}
       {submission.signature_url && (
         <div className="card p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Signature</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Unterschrift</h2>
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
             <img
               src={submission.signature_url}
-              alt="Signature"
+              alt="Unterschrift"
               className="max-w-md h-auto"
             />
-          </div>
-        </div>
-      )}
-
-      {/* Photos */}
-      {submission.submission_photos && submission.submission_photos.length > 0 && (
-        <div className="card p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Photos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {submission.submission_photos.map((photo: any) => (
-              <div key={photo.id} className="relative group">
-                <img
-                  src={photo.photo_url}
-                  alt={photo.field_name}
-                  className="w-full h-32 object-cover rounded-xl border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => window.open(photo.photo_url, '_blank')}
-                />
-                <p className="text-xs text-gray-600 mt-2 font-medium">{photo.field_name}</p>
-              </div>
-            ))}
           </div>
         </div>
       )}
@@ -262,17 +242,17 @@ export default function SubmissionDetail() {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Created</label>
-            <p className="text-base text-gray-900">{format(new Date(submission.created_at), 'PPpp')}</p>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Erstellt am</label>
+            <p className="text-base text-gray-900">{format(new Date(submission.created_at), 'Pp', { locale: de })}</p>
           </div>
           {submission.submitted_at && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Submitted</label>
-              <p className="text-base text-gray-900">{format(new Date(submission.submitted_at), 'PPpp')}</p>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Eingereicht am</label>
+              <p className="text-base text-gray-900">{format(new Date(submission.submitted_at), 'Pp', { locale: de })}</p>
             </div>
           )}
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Submission ID</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Einsatz-ID</label>
             <p className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-lg inline-block">{submission.id}</p>
           </div>
         </div>
