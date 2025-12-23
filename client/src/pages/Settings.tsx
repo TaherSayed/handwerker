@@ -112,8 +112,8 @@ export default function Settings() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Profile Card */}
         <div className="lg:col-span-8 space-y-10">
+          {/* Profile Section */}
           <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
             <div className="flex items-center gap-4 px-2">
               <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
@@ -155,6 +155,61 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Google Account Section */}
+          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
+            <div className="flex items-center gap-4 px-2">
+              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Google Konto & Synchronisierung</h2>
+                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Status Ihrer Cloud-Verbindung</p>
+              </div>
+            </div>
+
+            <div className="p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100 flex flex-col sm:flex-row items-center gap-8">
+              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg border border-slate-100 items-center justify-center flex overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-xl">
+                    {profile?.full_name?.charAt(0) || 'U'}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 text-center sm:text-left space-y-2">
+                <h4 className="text-xl font-black text-slate-900 leading-none">{profile?.full_name || 'Benutzer'}</h4>
+                <p className="text-sm font-bold text-slate-400 uppercase tracking-tighter">{profile?.email}</p>
+                <div className="flex items-center justify-center sm:justify-start gap-4 mt-4">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-full border border-green-100 shadow-sm">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Verbunden</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 shadow-sm">
+                    <Sparkles className="w-3 h-3" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Kontakte synchronisiert</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shrink-0">
+                <button
+                  onClick={() => window.open('https://myaccount.google.com/', '_blank')}
+                  className="text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-800 transition-colors"
+                >
+                  Google Konto verwalten
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Organisation Section */}
           <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
             <div className="flex items-center gap-4 px-2">
               <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">

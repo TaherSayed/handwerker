@@ -30,7 +30,7 @@ function AuthCallback() {
         const errorParam = hashParams.get('error');
 
         if (errorParam) {
-          setError(`Authentication error: ${errorParam}`);
+          setError(`Authentifizierungsfehler: ${errorParam}`);
           setTimeout(() => window.location.href = '/', 3000);
           return;
         }
@@ -42,7 +42,7 @@ function AuthCallback() {
 
         if (sessionError) {
           console.error('Auth callback error:', sessionError);
-          setError(`Session error: ${sessionError.message}`);
+          setError(`Sitzungsfehler: ${sessionError.message}`);
           setTimeout(() => window.location.href = '/', 3000);
           return;
         }
@@ -51,12 +51,12 @@ function AuthCallback() {
           await initialize();
           window.location.href = '/dashboard';
         } else {
-          setError('No session found. Redirecting...');
+          setError('Keine Sitzung gefunden. Weiterleitung...');
           setTimeout(() => window.location.href = '/', 2000);
         }
       } catch (err: any) {
         console.error('Callback handler error:', err);
-        setError(err.message || 'Authentication failed');
+        setError(err.message || 'Authentifizierung fehlgeschlagen');
         setTimeout(() => window.location.href = '/', 3000);
       }
     };
@@ -66,10 +66,13 @@ function AuthCallback() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
-          <h2 className="text-xl font-bold text-red-600 mb-4">Authentication Error</h2>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">Redirecting to home...</p>
+        <div className="bg-white rounded-[2rem] shadow-2xl p-10 max-w-md border border-slate-100">
+          <h2 className="text-2xl font-black text-red-600 mb-4 uppercase tracking-tighter">Authentifizierungsfehler</h2>
+          <p className="text-slate-600 font-bold mb-6">{error}</p>
+          <div className="flex items-center gap-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+            <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
+            Weiterleitung zur Startseite...
+          </div>
         </div>
       </div>
     );
