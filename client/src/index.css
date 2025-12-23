@@ -3,22 +3,26 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Apple SF Pro inspired font stack */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   
-  /* Flutter theme colors - Light mode */
-  --color-primary: #2563EB;
-  --color-secondary: #64748B;
-  --color-success: #059669;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
+  /* Apple Design System Colors */
+  --color-primary: #007AFF;
+  --color-secondary: #86868B;
+  --color-success: #34C759;
+  --color-warning: #FF9500;
+  --color-error: #FF3B30;
   --color-surface: #FFFFFF;
-  --color-background: #F8FAFC;
-  --color-border: #E2E8F0;
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-disabled: #94A3B8;
+  --color-background: #F5F5F7;
+  --color-border: #E5E5EA;
+  --color-text-primary: #1D1D1F;
+  --color-text-secondary: #86868B;
+  --color-text-disabled: #AEAEB2;
+  --color-separator: #C6C6C8;
 }
 
 body {
@@ -35,84 +39,99 @@ body {
   min-height: 100vh;
 }
 
-/* Professional Minimalism - Card styling */
+/* Apple-style Card */
 .card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* Button styling matching Flutter theme */
+/* Apple-style Button */
 .btn-primary {
   background-color: var(--color-primary);
   color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 14px;
-  letter-spacing: 1.25px;
-  min-height: 48px;
+  letter-spacing: -0.01em;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  opacity: 0.85;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
 }
 
 .btn-outlined {
   background-color: transparent;
   color: var(--color-primary);
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 14px;
-  letter-spacing: 1.25px;
-  min-height: 48px;
-  border: 1px solid var(--color-primary);
+  letter-spacing: -0.01em;
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-outlined:hover {
-  background-color: rgba(37, 99, 235, 0.05);
+  background-color: var(--color-background);
 }
 
-/* Modern compact design utilities */
+/* Apple-style utilities */
 .hover\:scale-102:hover {
   transform: scale(1.02);
 }
 
-/* Smooth transitions */
+/* Apple-style smooth transitions */
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Better box shadows */
-.shadow-3xl {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+/* Apple-style shadows */
+.shadow-apple {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-/* Improved scrollbar styling */
+.shadow-apple-lg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Apple-style scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
+  background: #D1D1D6;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #AEAEB2;
+}
+
+/* Apple-style focus states */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Apple-style text rendering */
+body {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1;
 }
 
