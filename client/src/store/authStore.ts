@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signIn: async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -56,12 +56,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             access_type: 'offline',
             prompt: 'consent',
           },
+          skipBrowserRedirect: false,
         },
       });
       if (error) {
         console.error('Google sign in error:', error);
         throw new Error(error.message || 'Failed to sign in with Google');
       }
+      // Note: OAuth redirect will happen, so we don't need to do anything here
     } catch (error: any) {
       console.error('Sign in error:', error);
       throw error;

@@ -7,6 +7,7 @@ export default function FormTemplates() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'active' | 'archived'>('active');
 
   useEffect(() => {
@@ -16,12 +17,15 @@ export default function FormTemplates() {
   const loadTemplates = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await apiService.getTemplates({
         is_archived: filter === 'archived',
       }) as any[];
-      setTemplates(data);
-    } catch (error) {
+      setTemplates(data || []);
+    } catch (error: any) {
       console.error('Load templates error:', error);
+      setError(error.message || 'Failed to load templates. Please try again.');
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -31,9 +35,9 @@ export default function FormTemplates() {
     try {
       await apiService.duplicateTemplate(id);
       loadTemplates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Duplicate error:', error);
-      alert('Failed to duplicate template');
+      setError(error.message || 'Failed to duplicate template');
     }
   };
 
@@ -41,9 +45,9 @@ export default function FormTemplates() {
     try {
       await apiService.updateTemplate(id, { is_archived: true });
       loadTemplates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Archive error:', error);
-      alert('Failed to archive template');
+      setError(error.message || 'Failed to archive template');
     }
   };
 
@@ -52,9 +56,9 @@ export default function FormTemplates() {
     try {
       await apiService.deleteTemplate(id);
       loadTemplates();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete error:', error);
-      alert('Failed to delete template');
+      setError(error.message || 'Failed to delete template');
     }
   };
 
@@ -73,6 +77,21 @@ export default function FormTemplates() {
           New Template
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-red-800">{error}</p>
+            <button
+              onClick={loadTemplates}
+              className="text-red-600 hover:text-red-800 font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter */}
       <div className="flex gap-4 mb-6">
@@ -100,8 +119,9 @@ export default function FormTemplates() {
 
       {/* Templates Grid */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+        <div className="flex flex-col items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
+          <p className="text-gray-600">Loading templates...</p>
         </div>
       ) : templates.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">

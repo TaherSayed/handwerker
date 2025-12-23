@@ -12,20 +12,41 @@ class GoogleContactsService {
   private async getAccessToken(): Promise<string> {
     const { data: { session } } = await supabase.auth.getSession();
     
-    // Try provider_token first (available after OAuth)
+    // Check for provider_token in session
+    // Note: Supabase stores provider_token only if OAuth was completed with proper scopes
     if (session?.provider_token) {
       return session.provider_token;
     }
     
-    // Fallback: try to refresh session to get provider_token
+    // Check if provider_token is in the session metadata
+    const providerToken = (session as any)?.provider_token || 
+                         (session as any)?.providerToken ||
+                         session?.user?.app_metadata?.provider_token;
+    
+    if (providerToken) {
+      return providerToken;
+    }
+    
+    // Try to refresh session
     if (session) {
-      const { data: refreshedSession } = await supabase.auth.refreshSession();
-      if (refreshedSession?.session?.provider_token) {
-        return refreshedSession.session.provider_token;
+      const { data: refreshedSession, error } = await supabase.auth.refreshSession();
+      if (!error && refreshedSession?.session) {
+        const refreshedToken = refreshedSession.session.provider_token ||
+                               (refreshedSession.session as any)?.providerToken ||
+                               refreshedSession.session?.user?.app_metadata?.provider_token;
+        if (refreshedToken) {
+          return refreshedToken;
+        }
       }
     }
     
-    throw new Error('No Google access token available. Please sign in again and grant contacts permission.');
+    // Last resort: check user metadata
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.app_metadata?.provider_token) {
+      return user.app_metadata.provider_token;
+    }
+    
+    throw new Error('No Google access token available. Please sign out and sign in again, making sure to grant contacts permission.');
   }
 
   async fetchContacts(): Promise<GoogleContact[]> {
