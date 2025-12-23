@@ -271,26 +271,47 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Submission not found' });
     }
 
+    // Validate template data
+    if (!submission.form_templates || !submission.form_templates.fields) {
+      return res.status(400).json({ 
+        error: 'Template data is missing or invalid',
+        success: false 
+      });
+    }
+
     // Generate PDF
-    const pdfUrl = await pdfService.generateSubmissionPDF(userId, {
-      id: submission.id,
-      customer_name: submission.customer_name,
-      customer_email: submission.customer_email,
-      customer_phone: submission.customer_phone,
-      customer_address: submission.customer_address,
-      field_values: submission.field_values,
-      signature_url: submission.signature_url,
-      created_at: submission.created_at,
-      submitted_at: submission.submitted_at,
-      template: {
-        name: submission.form_templates.name,
-        fields: submission.form_templates.fields,
-      },
-      user: {
-        company_name: submission.user_profiles.company_name,
-        company_logo_url: submission.user_profiles.company_logo_url,
-      },
-    });
+    let pdfUrl: string;
+    try {
+      pdfUrl = await pdfService.generateSubmissionPDF(
+        userId,
+        {
+          id: submission.id,
+          customer_name: submission.customer_name,
+          customer_email: submission.customer_email,
+          customer_phone: submission.customer_phone,
+          customer_address: submission.customer_address,
+          field_values: submission.field_values || {},
+          signature_url: submission.signature_url,
+          created_at: submission.created_at,
+          submitted_at: submission.submitted_at,
+          template: {
+            name: submission.form_templates.name,
+            fields: submission.form_templates.fields,
+          },
+          user: {
+            company_name: submission.user_profiles?.company_name,
+            company_logo_url: submission.user_profiles?.company_logo_url,
+          },
+        },
+        userClient
+      );
+    } catch (pdfError: any) {
+      console.error('PDF generation error:', pdfError);
+      return res.status(500).json({ 
+        error: pdfError.message || 'Failed to generate PDF',
+        success: false 
+      });
+    }
 
     // Update submission with PDF URL
     const { data: updated, error: updateError } = await userClient
@@ -302,13 +323,26 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (updateError) {
-      return res.status(400).json({ error: updateError.message });
+      console.error('PDF URL update error:', updateError);
+      // PDF was generated but URL update failed - still return PDF URL
+      return res.json({ 
+        pdf_url: pdfUrl, 
+        submission: submission,
+        warning: 'PDF generated but failed to update submission record'
+      });
     }
 
-    res.json({ pdf_url: pdfUrl, submission: updated });
-  } catch (error) {
+    res.json({ 
+      success: true,
+      pdf_url: pdfUrl, 
+      submission: updated 
+    });
+  } catch (error: any) {
     console.error('Generate PDF error:', error);
-    res.status(500).json({ error: 'Failed to generate PDF' });
+    res.status(500).json({ 
+      error: error.message || 'Failed to generate PDF',
+      success: false 
+    });
   }
 });
 

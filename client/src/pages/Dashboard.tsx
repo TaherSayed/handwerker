@@ -121,7 +121,7 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="card p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <button
             onClick={() => navigate('/templates/new')}
             className="btn-primary"
@@ -129,7 +129,17 @@ export default function Dashboard() {
             <Plus className="w-5 h-5" />
             Create New Template
           </button>
+          <button
+            onClick={() => navigate('/submissions')}
+            className="btn-secondary"
+          >
+            <ClipboardList className="w-5 h-5" />
+            View All Submissions
+          </button>
         </div>
+        <p className="text-sm text-gray-500 mt-4">
+          💡 Tip: Use the mobile app to create new visits and fill forms on-site
+        </p>
       </div>
 
       {/* Recent Activity */}
