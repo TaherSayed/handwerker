@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { ClipboardList, FileText, Download } from 'lucide-react';
+import { ClipboardList, FileText, Download, Calendar, User, ChevronRight, Zap, Clock, ArrowLeft, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function Submissions() {
@@ -9,26 +9,24 @@ export default function Submissions() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'draft' | 'submitted'>('all');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSubmissions();
   }, [filter]);
 
-  const [error, setError] = useState<string | null>(null);
-
   const loadSubmissions = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
+
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Request timeout')), 10000)
       );
-      
+
       const params = filter !== 'all' ? { status: filter } : {};
       const dataPromise = apiService.getSubmissions(params) as Promise<any[]>;
-      
+
       const data = await Promise.race([dataPromise, timeoutPromise]) as any[];
       setSubmissions(data || []);
     } catch (error: any) {
@@ -40,10 +38,10 @@ export default function Submissions() {
     }
   };
 
-  const handleGeneratePDF = async (id: string) => {
+  const handleGeneratePDF = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       const result = await apiService.generatePDF(id) as any;
-      alert('PDF generated successfully!');
       window.open(result.pdf_url, '_blank');
       loadSubmissions();
     } catch (error) {
@@ -53,141 +51,121 @@ export default function Submissions() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Submissions</h1>
-        <p className="text-gray-600 text-lg">View and manage your form submissions</p>
+    <div className="animate-slide-up space-y-8">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">Submissions</h1>
+          <p className="text-slate-500 font-medium">History of your successfully completed work.</p>
+        </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-            filter === 'all'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilter('draft')}
-          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-            filter === 'draft'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-          }`}
-        >
-          Drafts
-        </button>
-        <button
-          onClick={() => setFilter('submitted')}
-          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-            filter === 'submitted'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-          }`}
-        >
-          Submitted
-        </button>
+      {/* Filter Tabs */}
+      <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit">
+        {['all', 'draft', 'submitted'].map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f as any)}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all capitalize ${filter === f
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+              }`}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-red-800 font-medium">{error}</p>
-            <button
-              onClick={loadSubmissions}
-              className="text-red-600 hover:text-red-800 font-semibold text-sm px-4 py-2 hover:bg-red-100 rounded-lg transition-colors"
-            >
-              Retry
-            </button>
-          </div>
+        <div className="bg-red-50 border-l-4 border-red-500 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+          <p className="text-red-800 font-bold text-sm">{error}</p>
+          <button onClick={loadSubmissions} className="text-red-600 font-black text-xs uppercase tracking-widest px-3 py-1 hover:bg-red-100 rounded-lg text-sm">Retry</button>
         </div>
       )}
 
-      {/* Submissions List */}
+      {/* Submissions Display */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
-          <p className="text-gray-600">Loading submissions...</p>
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-12 h-12 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
+          <p className="text-slate-400 font-bold text-sm">Fetching history...</p>
         </div>
       ) : submissions.length === 0 ? (
-        <div className="card text-center py-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <ClipboardList className="w-10 h-10 text-gray-400" />
+        <div className="p-12 md:p-20 bg-white rounded-[2rem] border border-slate-100 flex flex-col items-center text-center shadow-sm">
+          <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-200 mb-8">
+            <ClipboardList className="w-12 h-12" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">No submissions yet</h3>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            {filter === 'draft' 
-              ? 'You don\'t have any draft submissions yet'
-              : filter === 'submitted'
-              ? 'You don\'t have any submitted forms yet'
-              : 'Submissions from the mobile app will appear here'}
+          <h3 className="text-2xl font-black text-slate-900 mb-2">No results found</h3>
+          <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8">
+            Try adjusting your filters or complete a form to see it here.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {submissions.map((submission) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {submissions.map((sub) => (
             <div
-              key={submission.id}
-              className="card p-6 hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
-              onClick={() => navigate(`/submissions/${submission.id}`)}
+              key={sub.id}
+              onClick={() => navigate(`/submissions/${sub.id}`)}
+              className="group bg-white rounded-[2rem] p-6 border border-slate-100 hover:border-indigo-100 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all cursor-pointer flex flex-col h-full"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">
-                    {submission.customer_name || 'Unnamed Customer'}
-                  </h3>
-                  {submission.customer_email && (
-                    <p className="text-sm text-gray-500 truncate">{submission.customer_email}</p>
-                  )}
+              <div className="flex items-start justify-between mb-6">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${sub.status === 'submitted' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                  }`}>
+                  {sub.status === 'submitted' ? <Zap className="w-7 h-7" /> : <Clock className="w-7 h-7" />}
                 </div>
-                <span className={`badge flex-shrink-0 ml-2 ${
-                  submission.status === 'submitted'
-                    ? 'bg-green-100 text-green-700'
-                    : submission.status === 'draft'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {submission.status}
-                </span>
+                <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                  {sub.status}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
-                <FileText className="w-4 h-4" />
-                <span className="truncate">{submission.form_templates?.name || 'Unknown Template'}</span>
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate mb-1">
+                    {sub.customer_name || 'Anonymous'}
+                  </h3>
+                  <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-wider">
+                    <FileText className="w-3.5 h-3.5" />
+                    {sub.form_templates?.name || 'Form'}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {sub.customer_email && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                      <User className="w-3.5 h-3.5 opacity-50" />
+                      {sub.customer_email}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                    <Calendar className="w-3.5 h-3.5 opacity-50" />
+                    {format(new Date(sub.created_at), 'MMMM do, yyyy')}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <span className="text-xs text-gray-500">
-                  {format(new Date(submission.created_at), 'MMM d, yyyy')}
-                </span>
-                {submission.pdf_url ? (
+              <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
+                {sub.pdf_url ? (
                   <a
-                    href={submission.pdf_url}
+                    href={sub.pdf_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-black text-[10px] uppercase tracking-widest"
                   >
                     <Download className="w-4 h-4" />
-                    PDF
+                    Download PDF
                   </a>
                 ) : (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleGeneratePDF(submission.id);
-                    }}
-                    className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    onClick={(e) => handleGeneratePDF(sub.id, e)}
+                    className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest transition-colors"
                   >
+                    <RefreshCw className="w-4 h-4" />
                     Generate PDF
                   </button>
                 )}
+                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
               </div>
             </div>
           ))}
@@ -196,4 +174,3 @@ export default function Submissions() {
     </div>
   );
 }
-

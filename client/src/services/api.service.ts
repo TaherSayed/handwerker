@@ -15,10 +15,18 @@ class ApiService {
     if (!session?.access_token) {
       throw new Error('Not authenticated');
     }
+
+    const providerToken = (session as any).provider_token;
+
+    // Debug logging for missing tokens
+    if (!providerToken && window.location.pathname.includes('fill')) {
+      console.warn('[API] Missing provider_token for Google Contacts. User may need to re-login.');
+    }
+
     return {
       'Authorization': `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
-      'X-Provider-Token': (session as any).provider_token,
+      'X-Provider-Token': providerToken || '',
     };
   }
 

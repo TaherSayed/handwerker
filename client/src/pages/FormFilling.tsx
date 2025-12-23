@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
-import { Save, Send, ArrowLeft, User, Loader } from 'lucide-react';
+import { Save, Send, ArrowLeft, User, Loader, Zap, ClipboardList } from 'lucide-react';
 
 export default function FormFilling() {
   const { templateId } = useParams<{ templateId: string }>();
@@ -340,150 +340,167 @@ export default function FormFilling() {
   if (!template) return null;
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6 md:mb-8">
+    <div className="animate-slide-up flex flex-col min-h-full pb-32 lg:pb-8">
+      {/* Sticky Mobile Header */}
+      <div className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/templates')}
-          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+          className="p-2 hover:bg-slate-50 rounded-xl transition-colors shrink-0"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-slate-600" />
         </button>
-        <div className="flex-1">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{template.name}</h1>
-          <p className="text-gray-600 text-lg">{template.description || 'Fill out the form below'}</p>
+        <div className="min-w-0">
+          <h1 className="font-black text-slate-900 truncate uppercase text-sm tracking-tight">{template.name}</h1>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">Filling Form</p>
         </div>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
-          <p className="text-red-800 font-medium">{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={(e) => { e.preventDefault(); handleSave('submitted'); }}>
-        {/* Customer Information */}
-        <div className="card p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Customer Information</h2>
-            <button
-              type="button"
-              onClick={() => setShowContactSelector(true)}
-              className="btn-secondary text-sm"
-            >
-              <User className="w-4 h-4" />
-              Import from Google
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={customerInfo.name}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                className="input"
-                placeholder="Customer name"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={customerInfo.email}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                className="input"
-                placeholder="customer@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
-              <input
-                type="tel"
-                value={customerInfo.phone}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                className="input"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-              <input
-                type="text"
-                value={customerInfo.address}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
-                className="input"
-                placeholder="123 Main St, City, State ZIP"
-              />
-            </div>
+      <div className="p-4 md:p-8 max-w-4xl mx-auto w-full space-y-8">
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center gap-6 mb-12">
+          <button
+            onClick={() => navigate('/templates')}
+            className="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tight">{template.name}</h1>
+            <p className="text-slate-500 font-medium text-lg">{template.description || 'Complete the information below'}</p>
           </div>
         </div>
 
-        {/* Form Fields */}
-        <div className="card p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Form Fields</h2>
-          <div className="space-y-6">
-            {template.fields?.map((field: any) => (
-              <div key={field.id}>
-                {field.type !== 'section' && (
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </label>
-                )}
-                {renderField(field)}
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-2xl p-4 shadow-sm">
+            <p className="text-red-800 font-bold text-sm">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={(e) => { e.preventDefault(); handleSave('submitted'); }} className="space-y-8">
+          {/* Section: Customer */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                  <User className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Customer</h2>
               </div>
-            ))}
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => setShowContactSelector(true)}
+                className="btn-secondary h-10 px-4 py-0 text-xs gap-2"
+              >
+                <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                Google Import
+              </button>
+            </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-3 justify-end">
-          <button
-            type="button"
-            onClick={() => handleSave('draft')}
-            disabled={saving || submitting}
-            className="btn-secondary"
-          >
-            {saving ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Save Draft
-              </>
-            )}
-          </button>
-          <button
-            type="submit"
-            disabled={saving || submitting}
-            className="btn-primary"
-          >
-            {submitting ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Submit Form
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+            <div className="card grid grid-cols-1 md:grid-cols-2 gap-5 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name *</label>
+                <input
+                  type="text"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                  className="input"
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                <input
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                  className="input"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={customerInfo.phone}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                  className="input"
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Address</label>
+                <input
+                  type="text"
+                  value={customerInfo.address}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
+                  className="input"
+                  placeholder="123 Builder Lane, Suite 400"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Section: Form Body */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                <ClipboardList className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Details</h2>
+            </div>
+
+            <div className="card space-y-8 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
+              {template.fields?.map((field: any) => (
+                <div key={field.id} className="space-y-3">
+                  {field.type !== 'section' && (
+                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1 block">
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                  )}
+                  {renderField(field)}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Action Bar (Mobile Floating / Desktop Inline) */}
+          <div className="fixed bottom-24 left-0 right-0 p-4 lg:relative lg:bottom-0 lg:p-0 z-40 lg:z-auto">
+            <div className="max-w-4xl mx-auto flex gap-3 p-3 bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-slate-200 shadow-2xl lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:border-none lg:justify-end">
+              <button
+                type="button"
+                onClick={() => handleSave('draft')}
+                disabled={saving || submitting}
+                className="btn-secondary flex-1 lg:flex-none py-4 px-8 rounded-[2rem]"
+              >
+                {saving ? (
+                  <Loader className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Save className="w-5 h-5" />
+                )}
+                Draft
+              </button>
+              <button
+                type="submit"
+                disabled={saving || submitting}
+                className="btn-primary flex-[2] lg:flex-none py-4 px-12 rounded-[2rem] bg-indigo-900"
+              >
+                {submitting ? (
+                  <Loader className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5 fill-current" />
+                )}
+                Finalize & Submit
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
 
       {/* Contact Selector Modal */}
       {showContactSelector && (
