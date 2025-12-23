@@ -5,6 +5,7 @@ import SplashScreen from './pages/SplashScreen';
 import GoogleSignInScreen from './pages/GoogleSignInScreen';
 import Dashboard from './pages/Dashboard';
 import ContactSelection from './pages/ContactSelection';
+import ManualCustomerEntry from './pages/ManualCustomerEntry';
 import FormTemplateSelection from './pages/FormTemplateSelection';
 import VisitFormFilling from './pages/VisitFormFilling';
 import PdfPreview from './pages/PdfPreview';
@@ -27,11 +28,12 @@ function App() {
       {user ? (
         <>
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/contact-selection" element={<Layout><ContactSelection /></Layout>} />
+          <Route path="/contact-selection" element={<ContactSelection />} />
+          <Route path="/manual-customer-entry" element={<ManualCustomerEntry />} />
           <Route path="/form-template-selection" element={<Layout><FormTemplateSelection /></Layout>} />
           <Route path="/visit-form-filling" element={<Layout><VisitFormFilling /></Layout>} />
           <Route path="/pdf-preview" element={<Layout><PdfPreview /></Layout>} />
-          <Route path="/form-builder" element={<Layout><FormBuilder /></Layout>} />
+          <Route path="/form-builder" element={<FormBuilder />} />
           <Route path="/contacts-management" element={<Layout><ContactsManagement /></Layout>} />
           <Route path="/user-profile" element={<Layout><UserProfile /></Layout>} />
         </>
