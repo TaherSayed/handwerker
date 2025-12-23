@@ -4,19 +4,46 @@ import { supabase } from '../services/supabase.service.js';
 
 const router = Router();
 
-// GET /me - Get current user profile
+// GET /me - Get current user profile (auto-create if missing)
 router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const userEmail = req.user!.email;
     
-    const { data: profile, error } = await supabase.client
+    // Try to get existing profile
+    let { data: profile, error } = await supabase.client
       .from('user_profiles')
       .select('*, workspaces(*)')
       .eq('id', userId)
       .single();
 
-    if (error) {
-      return res.status(404).json({ error: 'Profile not found' });
+    // Auto-create profile if it doesn't exist
+    if (error || !profile) {
+      const { data: newProfile, error: createError } = await supabase.client
+        .from('user_profiles')
+        .insert({
+          id: userId,
+          email: userEmail,
+          full_name: userEmail?.split('@')[0] || 'User',
+        })
+        .select('*')
+        .single();
+
+      if (createError || !newProfile) {
+        return res.status(400).json({ error: 'Failed to create profile' });
+      }
+
+      // Auto-create workspace
+      const { data: workspace } = await supabase.client
+        .from('workspaces')
+        .insert({
+          owner_id: userId,
+          name: newProfile.company_name || newProfile.full_name || 'My Workspace',
+        })
+        .select()
+        .single();
+
+      profile = { ...newProfile, workspaces: workspace ? [workspace] : [] };
     }
 
     res.json(profile);

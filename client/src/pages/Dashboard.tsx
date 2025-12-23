@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [recentTemplates, setRecentTemplates] = useState<any[]>([]);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -20,21 +21,25 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const [templates, submissions] = await Promise.all([
         apiService.getTemplates({ is_archived: false }),
         apiService.getSubmissions({}),
       ]) as [any[], any[]];
 
       setStats({
-        templates: templates.length,
-        submissions: submissions.filter((s: any) => s.status === 'submitted').length,
-        drafts: submissions.filter((s: any) => s.status === 'draft').length,
+        templates: templates?.length || 0,
+        submissions: submissions?.filter((s: any) => s.status === 'submitted').length || 0,
+        drafts: submissions?.filter((s: any) => s.status === 'draft').length || 0,
       });
 
-      setRecentTemplates(templates.slice(0, 5));
-      setRecentSubmissions(submissions.slice(0, 5));
-    } catch (error) {
+      setRecentTemplates(templates?.slice(0, 5) || []);
+      setRecentSubmissions(submissions?.slice(0, 5) || []);
+    } catch (error: any) {
       console.error('Load dashboard error:', error);
+      setError(error.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -54,6 +59,21 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600 mt-1">Welcome to OnSite Forms</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-red-800">{error}</p>
+            <button
+              onClick={loadDashboard}
+              className="text-red-600 hover:text-red-800 font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

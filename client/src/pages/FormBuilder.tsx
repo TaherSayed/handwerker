@@ -57,23 +57,33 @@ export default function FormBuilder() {
     }
   };
 
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      alert('Please enter a template name');
+      setError('Please enter a template name');
       return;
     }
 
     try {
       setSaving(true);
+      setError(null);
+      setSuccess(false);
+      
       if (id) {
         await apiService.updateTemplate(id, formData);
       } else {
         await apiService.createTemplate(formData);
       }
-      navigate('/templates');
-    } catch (error) {
+      
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/templates');
+      }, 500);
+    } catch (error: any) {
       console.error('Save template error:', error);
-      alert('Failed to save template');
+      setError(error.message || 'Failed to save template. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -122,6 +132,18 @@ export default function FormBuilder() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
+      {/* Success/Error Messages */}
+      {success && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-green-800">Template saved successfully!</p>
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -214,11 +236,11 @@ export default function FormBuilder() {
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="fields">
-              {(provided) => (
+              {(provided: any) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                   {formData.fields.map((field, index) => (
                     <Draggable key={field.id} draggableId={field.id} index={index}>
-                      {(provided) => (
+                      {(provided: any) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}

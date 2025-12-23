@@ -10,6 +10,30 @@ import FormBuilder from './pages/FormBuilder';
 import Submissions from './pages/Submissions';
 import SubmissionDetail from './pages/SubmissionDetail';
 import Settings from './pages/Settings';
+import { supabase } from './services/supabase';
+
+// OAuth callback handler
+function AuthCallback() {
+  const { initialize } = useAuthStore();
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Auth callback error:', error);
+        window.location.href = '/';
+        return;
+      }
+      if (data.session) {
+        await initialize();
+        window.location.href = '/dashboard';
+      }
+    };
+    handleCallback();
+  }, [initialize]);
+
+  return <SplashScreen />;
+}
 
 function App() {
   const { user, loading, initialized, initialize } = useAuthStore();
@@ -23,7 +47,14 @@ function App() {
   }
 
   if (!user) {
-    return <GoogleSignInScreen />;
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="*" element={<GoogleSignInScreen />} />
+        </Routes>
+      </BrowserRouter>
+    );
   }
 
   return (
@@ -39,6 +70,7 @@ function App() {
           <Route path="submissions/:id" element={<SubmissionDetail />} />
           <Route path="settings" element={<Settings />} />
         </Route>
+        <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </BrowserRouter>
   );

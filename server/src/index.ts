@@ -8,6 +8,7 @@ import userRoutes from './routes/user.routes.js';
 import templatesRoutes from './routes/templates.routes.js';
 import submissionsRoutes from './routes/submissions.routes.js';
 import uploadsRoutes from './routes/uploads.routes.js';
+import contactsRoutes from './routes/contacts.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api/submissions', submissionsRoutes);
 app.use('/api/uploads', uploadsRoutes);
+app.use('/api/contacts', contactsRoutes);
 
 // Serve static files from React build
 // In Nixpacks, the structure is /app/server/dist and /app/client/dist

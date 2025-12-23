@@ -8,6 +8,8 @@ export default function Settings() {
   const { profile, refreshProfile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     company_name: '',
@@ -27,12 +29,17 @@ export default function Settings() {
   const handleSave = async () => {
     try {
       setSaving(true);
+      setError(null);
+      setSuccess(false);
+      
       await apiService.updateProfile(formData);
       await refreshProfile();
-      alert('Settings saved successfully!');
-    } catch (error) {
+      
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (error: any) {
       console.error('Save settings error:', error);
-      alert('Failed to save settings');
+      setError(error.message || 'Failed to save settings. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -68,9 +75,9 @@ export default function Settings() {
       const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
 
       setFormData({ ...formData, company_logo_url: data.publicUrl });
-    } catch (error) {
+      } catch (error: any) {
       console.error('Logo upload error:', error);
-      alert('Failed to upload logo');
+      setError(error.message || 'Failed to upload logo. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -82,6 +89,18 @@ export default function Settings() {
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-600 mt-1">Manage your account and company information</p>
       </div>
+
+      {/* Success/Error Messages */}
+      {success && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-green-800">Settings saved successfully!</p>
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow p-6">
         <div className="space-y-6">

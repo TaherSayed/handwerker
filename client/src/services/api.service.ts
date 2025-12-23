@@ -134,6 +134,11 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Contacts
+  async getContacts() {
+    return this.request('/contacts');
+  }
 }
 
 export const apiService = new ApiService();

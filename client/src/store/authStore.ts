@@ -46,13 +46,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signIn: async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          scopes: 'email profile https://www.googleapis.com/auth/contacts.readonly',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      if (error) {
+        console.error('Google sign in error:', error);
+        throw new Error(error.message || 'Failed to sign in with Google');
+      }
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
   },
 
   signOut: async () => {

@@ -77,16 +77,41 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       status,
     } = req.body;
 
-    // Get user's workspace
-    const { data: workspaces } = await supabase.client
+    // Get or create user's workspace
+    let { data: workspace, error: workspaceError } = await supabase.client
       .from('workspaces')
       .select('id')
       .eq('owner_id', userId)
       .limit(1)
       .single();
 
-    if (!workspaces) {
-      return res.status(400).json({ error: 'No workspace found' });
+    if (!workspace || workspaceError) {
+      // Auto-create workspace if it doesn't exist
+      const { data: profile } = await supabase.client
+        .from('user_profiles')
+        .select('full_name, company_name')
+        .eq('id', userId)
+        .single();
+
+      const workspaceName = profile?.company_name || profile?.full_name || 'My Workspace';
+      
+      const { data: newWorkspace, error: createError } = await supabase.client
+        .from('workspaces')
+        .insert({
+          owner_id: userId,
+          name: workspaceName,
+        })
+        .select()
+        .single();
+
+      if (createError || !newWorkspace) {
+        return res.status(400).json({ error: 'Failed to create workspace' });
+      }
+      workspace = newWorkspace;
+    }
+
+    if (!workspace || !workspace.id) {
+      return res.status(400).json({ error: 'No workspace available' });
     }
 
     const { data, error } = await supabase.client
@@ -94,7 +119,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       .insert({
         template_id,
         user_id: userId,
-        workspace_id: workspaces.id,
+        workspace_id: workspace.id,
         customer_name,
         customer_email,
         customer_phone,

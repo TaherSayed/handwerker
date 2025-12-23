@@ -14,14 +14,27 @@ export default function Submissions() {
     loadSubmissions();
   }, [filter]);
 
+  const [error, setError] = useState<string | null>(null);
+
   const loadSubmissions = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
       const params = filter !== 'all' ? { status: filter } : {};
-      const data = await apiService.getSubmissions(params) as any[];
-      setSubmissions(data);
-    } catch (error) {
+      const dataPromise = apiService.getSubmissions(params) as Promise<any[]>;
+      
+      const data = await Promise.race([dataPromise, timeoutPromise]) as any[];
+      setSubmissions(data || []);
+    } catch (error: any) {
       console.error('Load submissions error:', error);
+      setError(error.message || 'Failed to load submissions. Please try again.');
+      setSubmissions([]);
     } finally {
       setLoading(false);
     }
@@ -82,10 +95,26 @@ export default function Submissions() {
         </button>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-red-800">{error}</p>
+            <button
+              onClick={loadSubmissions}
+              className="text-red-600 hover:text-red-800 font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Submissions List */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+        <div className="flex flex-col items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
+          <p className="text-gray-600">Loading submissions...</p>
         </div>
       ) : submissions.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
