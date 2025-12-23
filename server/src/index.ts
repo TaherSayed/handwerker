@@ -31,7 +31,18 @@ app.use('/api/submissions', submissionsRoutes);
 app.use('/api/uploads', uploadsRoutes);
 
 // Serve static files from React build
-const clientBuildPath = path.join(__dirname, '../../client/dist');
+// In Nixpacks, the structure is /app/server/dist and /app/client/dist
+// __dirname will be /app/server/dist, so we go up to /app/server, then up to /app, then into client/dist
+let clientBuildPath = path.join(__dirname, '../../client/dist');
+
+// Alternative: check if we're in a production Nixpacks environment
+if (process.cwd().includes('/app/server')) {
+  // In Nixpacks: /app/server -> /app/client/dist
+  clientBuildPath = path.join(process.cwd(), '../client/dist');
+}
+
+console.log(`📁 Current working directory: ${process.cwd()}`);
+console.log(`📁 __dirname: ${__dirname}`);
 console.log(`📁 Looking for client build at: ${clientBuildPath}`);
 
 // Check if client build exists
