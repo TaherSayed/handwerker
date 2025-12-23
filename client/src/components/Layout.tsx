@@ -72,20 +72,23 @@ export default function Layout() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
-                  ? 'bg-indigo-900 text-white shadow-xl shadow-indigo-900/20 active:scale-95'
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative ${isActive
+                  ? 'bg-slate-100 text-slate-900 font-medium'
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
             >
-              <item.icon className="w-5 h-5 shrink-0" />
-              {sidebarOpen && <span className="font-semibold text-sm">{item.label}</span>}
-              {!sidebarOpen && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-                  {item.label}
-                </div>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full" />
+                  )}
+                  <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                  {sidebarOpen && <span className="text-sm">{item.label}</span>}
+                </>
               )}
             </NavLink>
+          ))}
           ))}
         </nav>
 
@@ -197,6 +200,6 @@ export default function Layout() {
       </nav>
 
       <SyncStatus />
-    </div>
+    </div >
   );
 }
