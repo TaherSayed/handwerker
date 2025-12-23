@@ -9,6 +9,9 @@ import FormTemplateSelection from './pages/FormTemplateSelection';
 import VisitFormFilling from './pages/VisitFormFilling';
 import PdfPreview from './pages/PdfPreview';
 import FormBuilder from './pages/FormBuilder';
+import UserProfile from './pages/UserProfile';
+import Datenschutz from './pages/Datenschutz';
+import Impressum from './pages/Impressum';
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -22,6 +25,10 @@ function App() {
       <Route path="/" element={<SplashScreen />} />
       <Route path="/google-sign-in" element={<GoogleSignInScreen />} />
       
+      {/* Public pages */}
+      <Route path="/datenschutz" element={<Datenschutz />} />
+      <Route path="/impressum" element={<Impressum />} />
+      
       {user ? (
         <>
           <Route path="/contact-selection" element={<ContactSelection />} />
@@ -30,6 +37,7 @@ function App() {
           <Route path="/visit-form-filling" element={<Layout><VisitFormFilling /></Layout>} />
           <Route path="/pdf-preview" element={<Layout><PdfPreview /></Layout>} />
           <Route path="/form-builder" element={<FormBuilder />} />
+          <Route path="/user-profile" element={<Layout><UserProfile /></Layout>} />
           <Route path="*" element={<Navigate to="/contact-selection" replace />} />
         </>
       ) : (

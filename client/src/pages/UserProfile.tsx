@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import axios from 'axios';
 
@@ -264,6 +264,31 @@ export default function UserProfile() {
           </svg>
           Abmelden
         </button>
+      </div>
+
+      {/* Legal Links */}
+      <div className="card p-6">
+        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F172A' }}>Rechtliches</h2>
+        <div className="space-y-3">
+          <Link 
+            to="/datenschutz"
+            className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
+          >
+            <span style={{ color: '#475569' }}>Datenschutzerklärung</span>
+            <svg className="w-5 h-5" style={{ color: '#94A3B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+          <Link 
+            to="/impressum"
+            className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
+          >
+            <span style={{ color: '#475569' }}>Impressum</span>
+            <svg className="w-5 h-5" style={{ color: '#94A3B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
     </div>

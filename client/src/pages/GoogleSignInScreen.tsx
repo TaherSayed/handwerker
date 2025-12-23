@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function GoogleSignInScreen() {
@@ -149,6 +149,26 @@ export default function GoogleSignInScreen() {
         >
           {isSignUp ? 'Bereits ein Konto? Anmelden' : "Noch kein Konto? Registrieren"}
         </button>
+
+        {/* Footer Links */}
+        <div className="mt-8 pt-6 border-t text-center" style={{ borderColor: '#E2E8F0' }}>
+          <div className="flex justify-center gap-6 text-sm">
+            <Link 
+              to="/datenschutz" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#64748B' }}
+            >
+              Datenschutz
+            </Link>
+            <Link 
+              to="/impressum" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#64748B' }}
+            >
+              Impressum
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
