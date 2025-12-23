@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface CustomerData {
   full_name: string;
@@ -174,6 +174,26 @@ export default function ManualCustomerEntry() {
           >
             Weiter zum Formular
           </button>
+        </div>
+
+        {/* Footer with Legal Links */}
+        <div className="mt-8 pt-6 border-t text-center" style={{ borderColor: '#E5E5EA' }}>
+          <div className="flex justify-center gap-6 text-sm">
+            <Link 
+              to="/datenschutz" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#86868B' }}
+            >
+              Datenschutz
+            </Link>
+            <Link 
+              to="/impressum" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#86868B' }}
+            >
+              Impressum
+            </Link>
+          </div>
         </div>
 
         {/* Spacer for fixed button on mobile */}

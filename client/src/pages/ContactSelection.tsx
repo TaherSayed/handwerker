@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api.service';
+import { useAuthStore } from '../store/authStore';
 
 interface Contact {
   id: string;
@@ -13,6 +14,7 @@ interface Contact {
 
 export default function ContactSelection() {
   const navigate = useNavigate();
+  const { importGoogleContacts } = useAuthStore();
   const [showGoogleContacts, setShowGoogleContacts] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,12 +25,27 @@ export default function ContactSelection() {
     setLoading(true);
     
     try {
+      // First, import Google contacts
+      await importGoogleContacts();
+      
+      // Then fetch the imported contacts from database
       const data = await apiService.getContacts();
       setContacts(data || []);
-    } catch (error) {
-      console.error('Failed to load contacts:', error);
-      // Show user-friendly message
-      alert('Noch keine Kontakte vorhanden.\n\nBitte verwenden Sie "Kunde manuell eingeben" um einen neuen Kunden anzulegen.');
+      
+      if (!data || data.length === 0) {
+        alert('Keine Kontakte in Ihrem Google-Konto gefunden.\n\nBitte verwenden Sie "Kunde manuell eingeben".');
+        setShowGoogleContacts(false);
+      }
+    } catch (error: any) {
+      console.error('Failed to import Google contacts:', error);
+      
+      // Show user-friendly error message
+      const errorMsg = error.response?.data?.error || error.message;
+      if (errorMsg?.includes('provider_token')) {
+        alert('Google-Berechtigung fehlt.\n\nBitte melden Sie sich erneut an und erteilen Sie die Berechtigung für Google Contacts.');
+      } else {
+        alert('Fehler beim Importieren der Google Kontakte.\n\nBitte verwenden Sie "Kunde manuell eingeben".');
+      }
       setShowGoogleContacts(false);
     } finally {
       setLoading(false);
@@ -233,6 +250,26 @@ export default function ContactSelection() {
             </div>
           </button>
 
+        </div>
+
+        {/* Footer with Legal Links */}
+        <div className="mt-12 pt-6 border-t text-center" style={{ borderColor: '#E5E5EA' }}>
+          <div className="flex justify-center gap-6 text-sm">
+            <Link 
+              to="/datenschutz" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#86868B' }}
+            >
+              Datenschutz
+            </Link>
+            <Link 
+              to="/impressum" 
+              className="hover:opacity-70 transition"
+              style={{ color: '#86868B' }}
+            >
+              Impressum
+            </Link>
+          </div>
         </div>
       </div>
     </div>
