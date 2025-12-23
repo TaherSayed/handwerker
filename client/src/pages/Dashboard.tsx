@@ -129,6 +129,15 @@ export default function Dashboard() {
             <Plus className="w-5 h-5" />
             Create New Template
           </button>
+          {recentTemplates.length > 0 && (
+            <button
+              onClick={() => navigate(`/templates/${recentTemplates[0].id}/fill`)}
+              className="btn-primary"
+            >
+              <ClipboardList className="w-5 h-5" />
+              Fill Form
+            </button>
+          )}
           <button
             onClick={() => navigate('/submissions')}
             className="btn-secondary"
@@ -138,7 +147,7 @@ export default function Dashboard() {
           </button>
         </div>
         <p className="text-sm text-gray-500 mt-4">
-          💡 Tip: Use the mobile app to create new visits and fill forms on-site
+          💡 Tip: Create templates and fill forms directly from the web app
         </p>
       </div>
 

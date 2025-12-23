@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { offlineService } from './offline.service';
 
 const API_URL = import.meta.env.VITE_API_URL || 
   (window.location.origin.includes('localhost') 
@@ -6,6 +7,9 @@ const API_URL = import.meta.env.VITE_API_URL ||
     : '/api');
 
 class ApiService {
+  private isOnline(): boolean {
+    return offlineService.isOnline();
+  }
   private async getAuthHeader() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
@@ -101,7 +105,30 @@ class ApiService {
   // Templates
   async getTemplates(params?: { is_archived?: boolean }) {
     const query = params ? `?${new URLSearchParams(params as any)}` : '';
-    return this.request(`/templates${query}`);
+    
+    if (!this.isOnline()) {
+      // Return cached templates when offline
+      const cached = offlineService.getCachedTemplates();
+      if (params?.is_archived !== undefined) {
+        return cached.filter((t: any) => t.is_archived === params.is_archived);
+      }
+      return cached;
+    }
+    
+    try {
+      const data = await this.request(`/templates${query}`) as any[];
+      // Cache templates
+      offlineService.cacheTemplates(data);
+      return data;
+    } catch (error: any) {
+      // If request fails and we have cached data, return it
+      const cached = offlineService.getCachedTemplates();
+      if (cached.length > 0) {
+        console.warn('Using cached templates due to network error');
+        return cached;
+      }
+      throw error;
+    }
   }
 
   async getTemplate(id: string) {
@@ -137,7 +164,34 @@ class ApiService {
   // Submissions
   async getSubmissions(params?: { status?: string; template_id?: string }) {
     const query = params ? `?${new URLSearchParams(params as any)}` : '';
-    return this.request(`/submissions${query}`);
+    
+    if (!this.isOnline()) {
+      // Return cached submissions when offline
+      const cached = offlineService.getCachedSubmissions();
+      let filtered = cached;
+      if (params?.status) {
+        filtered = filtered.filter((s: any) => s.status === params.status);
+      }
+      if (params?.template_id) {
+        filtered = filtered.filter((s: any) => s.template_id === params.template_id);
+      }
+      return filtered;
+    }
+    
+    try {
+      const data = await this.request(`/submissions${query}`) as any[];
+      // Cache submissions
+      offlineService.cacheSubmissions(data);
+      return data;
+    } catch (error: any) {
+      // If request fails and we have cached data, return it
+      const cached = offlineService.getCachedSubmissions();
+      if (cached.length > 0) {
+        console.warn('Using cached submissions due to network error');
+        return cached;
+      }
+      throw error;
+    }
   }
 
   async getSubmission(id: string) {
@@ -145,10 +199,40 @@ class ApiService {
   }
 
   async createSubmission(data: any) {
-    return this.request('/submissions', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    if (!this.isOnline()) {
+      // Save to local storage and queue for sync
+      const draftSubmission = {
+        ...data,
+        id: `draft_${Date.now()}`,
+        is_offline: true,
+        created_at: new Date().toISOString(),
+      };
+      offlineService.saveDraftSubmission(draftSubmission);
+      offlineService.addToSyncQueue('create', 'submission', data);
+      return draftSubmission;
+    }
+    
+    try {
+      const result = await this.request('/submissions', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return result;
+    } catch (error: any) {
+      // If request fails, save as draft
+      if (error.message.includes('Network error') || error.message.includes('fetch')) {
+        const draftSubmission = {
+          ...data,
+          id: `draft_${Date.now()}`,
+          is_offline: true,
+          created_at: new Date().toISOString(),
+        };
+        offlineService.saveDraftSubmission(draftSubmission);
+        offlineService.addToSyncQueue('create', 'submission', data);
+        return draftSubmission;
+      }
+      throw error;
+    }
   }
 
   async updateSubmission(id: string, data: any) {

@@ -92,8 +92,11 @@ export default function ContactSelector({ onSelect, onClose, initialContact: _in
               <p className="text-gray-600 font-medium">Loading contacts...</p>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-6">
-              <p className="text-red-800 font-medium mb-4">{error}</p>
+            <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-6">
+              <p className="text-amber-800 font-medium mb-4">{error}</p>
+              <p className="text-sm text-amber-700 mb-4">
+                You can still enter customer information manually. Google Contacts access is optional.
+              </p>
               <div className="flex gap-3">
                 <button
                   onClick={loadContacts}
@@ -105,11 +108,11 @@ export default function ContactSelector({ onSelect, onClose, initialContact: _in
                   onClick={onClose}
                   className="btn-secondary text-sm"
                 >
-                  Close
+                  Enter Manually
                 </button>
               </div>
-              <p className="text-xs text-red-600 mt-4">
-                Tip: Make sure you granted contacts permission during Google sign-in
+              <p className="text-xs text-amber-600 mt-4">
+                Tip: Make sure you granted contacts permission during Google sign-in, or enter information manually
               </p>
             </div>
           ) : filteredContacts.length === 0 ? (

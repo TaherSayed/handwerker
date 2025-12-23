@@ -7,6 +7,7 @@ import GoogleSignInScreen from './pages/GoogleSignInScreen';
 import Dashboard from './pages/Dashboard';
 import FormTemplates from './pages/FormTemplates';
 import FormBuilder from './pages/FormBuilder';
+import FormFilling from './pages/FormFilling';
 import Submissions from './pages/Submissions';
 import SubmissionDetail from './pages/SubmissionDetail';
 import Settings from './pages/Settings';
@@ -104,6 +105,7 @@ function App() {
           <Route path="templates" element={<FormTemplates />} />
           <Route path="templates/new" element={<FormBuilder />} />
           <Route path="templates/:id/edit" element={<FormBuilder />} />
+          <Route path="templates/:templateId/fill" element={<FormFilling />} />
           <Route path="submissions" element={<Submissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
           <Route path="settings" element={<Settings />} />

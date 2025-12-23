@@ -41,13 +41,13 @@ export default function FormTemplates() {
     }
   };
 
-  const handleArchive = async (id: string) => {
+  const handleArchive = async (id: string, archive: boolean) => {
     try {
-      await apiService.updateTemplate(id, { is_archived: true });
+      await apiService.updateTemplate(id, { is_archived: archive });
       loadTemplates();
     } catch (error: any) {
       console.error('Archive error:', error);
-      setError(error.message || 'Failed to archive template');
+      setError(error.message || `Failed to ${archive ? 'archive' : 'unarchive'} template`);
     }
   };
 
@@ -166,20 +166,29 @@ export default function FormTemplates() {
                   </button>
                   {filter === 'active' ? (
                     <button
-                      onClick={() => handleArchive(template.id)}
+                      onClick={() => handleArchive(template.id, true)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Archive"
                     >
                       <Archive className="w-4 h-4" />
                     </button>
                   ) : (
-                    <button
-                      onClick={() => handleDelete(template.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleArchive(template.id, false)}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Unarchive"
+                      >
+                        <Archive className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(template.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -194,6 +203,15 @@ export default function FormTemplates() {
                 {template.category && (
                   <span className="badge bg-blue-100 text-blue-700">{template.category}</span>
                 )}
+              </div>
+              
+              <div className="mt-4">
+                <button
+                  onClick={() => navigate(`/templates/${template.id}/fill`)}
+                  className="w-full btn-primary text-sm py-2"
+                >
+                  Fill Form
+                </button>
               </div>
             </div>
           ))}

@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { FileText, ClipboardList, Settings, LogOut, Menu } from 'lucide-react';
 import { useState } from 'react';
+import SyncStatus from './SyncStatus';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
@@ -106,6 +107,9 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+      
+      {/* Sync Status Indicator */}
+      <SyncStatus />
     </div>
   );
 }
