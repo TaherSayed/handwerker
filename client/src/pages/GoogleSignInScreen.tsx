@@ -34,9 +34,24 @@ export default function GoogleSignInScreen() {
         <div className="space-y-5">
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
-              <p className="text-red-800 text-sm font-medium">{error}</p>
+              <p className="text-red-800 text-sm font-medium mb-2">{error}</p>
+              {error.includes('unverified') && (
+                <p className="text-xs text-red-700 mt-2">
+                  This is normal for testing. Click "Advanced" → "Go to OnSite Forms (unsafe)" to continue.
+                </p>
+              )}
             </div>
           )}
+          
+          {/* Info about unverified app */}
+          <div className="bg-blue-50 border-l-4 border-blue-500 rounded-xl p-4">
+            <p className="text-sm text-blue-800 font-medium mb-1">⚠️ Testing Mode</p>
+            <p className="text-xs text-blue-700">
+              Google may show an "unverified app" warning. This is normal during testing. 
+              Click "Advanced" then "Go to OnSite Forms" to continue.
+            </p>
+          </div>
+
           <button
             onClick={handleSignIn}
             disabled={loading}
@@ -69,9 +84,14 @@ export default function GoogleSignInScreen() {
           )}
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-8">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
+            By signing in, you agree to our Terms of Service and Privacy Policy
+          </p>
+          <p className="text-xs text-gray-400 text-center mt-2">
+            We request access to your Google Contacts to help you select customers quickly
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -14,15 +14,17 @@ export default function SubmissionDetail() {
     loadSubmission();
   }, [id]);
 
+  const [error, setError] = useState<string | null>(null);
+
   const loadSubmission = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await apiService.getSubmission(id!) as any;
       setSubmission(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Load submission error:', error);
-      alert('Failed to load submission');
-      navigate('/submissions');
+      setError(error.message || 'Failed to load submission');
     } finally {
       setLoading(false);
     }
@@ -30,24 +32,25 @@ export default function SubmissionDetail() {
 
   const handleGeneratePDF = async () => {
     try {
+      setError(null);
       const result = await apiService.generatePDF(id!) as any;
-      alert('PDF generated successfully!');
       window.open(result.pdf_url, '_blank');
       loadSubmission();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Generate PDF error:', error);
-      alert('Failed to generate PDF');
+      setError(error.message || 'Failed to generate PDF');
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this submission?')) return;
+    if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) return;
     try {
+      setError(null);
       await apiService.deleteSubmission(id!);
       navigate('/submissions');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete error:', error);
-      alert('Failed to delete submission');
+      setError(error.message || 'Failed to delete submission');
     }
   };
 
@@ -55,6 +58,22 @@ export default function SubmissionDetail() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (error && !submission) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto">
+        <div className="card p-6 text-center">
+          <div className="text-red-600 mb-4">
+            <p className="text-lg font-semibold">{error}</p>
+          </div>
+          <button onClick={() => navigate('/submissions')} className="btn-primary">
+            <ArrowLeft className="w-5 h-5" />
+            Back to Submissions
+          </button>
+        </div>
       </div>
     );
   }
@@ -88,27 +107,28 @@ export default function SubmissionDetail() {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/submissions')}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Submission Details</h1>
-            <p className="text-gray-600 mt-1">{submission.form_templates?.name}</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">Submission Details</h1>
+            <p className="text-gray-600 text-lg">{submission.form_templates?.name}</p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {submission.pdf_url ? (
             <a
               href={submission.pdf_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+              className="btn-primary"
             >
               <Download className="w-5 h-5" />
               Download PDF
@@ -116,62 +136,69 @@ export default function SubmissionDetail() {
           ) : (
             <button
               onClick={handleGeneratePDF}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+              className="btn-primary"
             >
               <Download className="w-5 h-5" />
               Generate PDF
             </button>
           )}
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700"
-          >
-            <Trash2 className="w-5 h-5" />
-            Delete
-          </button>
+          {submission.status === 'draft' && (
+            <button
+              onClick={handleDelete}
+              className="btn-secondary text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <Trash2 className="w-5 h-5" />
+              Delete
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
+          <p className="text-red-800 font-medium">{error}</p>
+        </div>
+      )}
+
       {/* Status Badge */}
       <div className="mb-6">
-        <span
-          className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${
-            submission.status === 'submitted'
-              ? 'bg-green-100 text-green-800'
-              : submission.status === 'draft'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-gray-100 text-gray-800'
-          }`}
-        >
+        <span className={`badge ${
+          submission.status === 'submitted'
+            ? 'bg-green-100 text-green-700'
+            : submission.status === 'draft'
+            ? 'bg-amber-100 text-amber-700'
+            : 'bg-gray-100 text-gray-700'
+        }`}>
           {submission.status}
         </span>
       </div>
 
       {/* Customer Information */}
       {submission.customer_name && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Customer Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <p className="mt-1 text-sm text-gray-900">{submission.customer_name}</p>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Name</label>
+              <p className="text-base text-gray-900">{submission.customer_name}</p>
             </div>
             {submission.customer_email && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <p className="mt-1 text-sm text-gray-900">{submission.customer_email}</p>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <p className="text-base text-gray-900">{submission.customer_email}</p>
               </div>
             )}
             {submission.customer_phone && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone</label>
-                <p className="mt-1 text-sm text-gray-900">{submission.customer_phone}</p>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
+                <p className="text-base text-gray-900">{submission.customer_phone}</p>
               </div>
             )}
             {submission.customer_address && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Address</label>
-                <p className="mt-1 text-sm text-gray-900">{submission.customer_address}</p>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
+                <p className="text-base text-gray-900">{submission.customer_address}</p>
               </div>
             )}
           </div>
@@ -179,13 +206,16 @@ export default function SubmissionDetail() {
       )}
 
       {/* Form Data */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Form Data</h2>
-        <div className="space-y-4">
+      <div className="card p-6 mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Form Responses</h2>
+        <div className="space-y-6">
           {submission.form_templates?.fields?.map((field: any) => (
-            <div key={field.id} className="border-b border-gray-200 pb-4 last:border-0">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
-              <div className="text-sm text-gray-900">
+            <div key={field.id} className="border-b border-gray-100 pb-6 last:border-0">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+              <div className="text-base text-gray-900 mt-1">
                 {renderFieldValue(field, submission.field_values[field.id])}
               </div>
             </div>
@@ -195,29 +225,32 @@ export default function SubmissionDetail() {
 
       {/* Signature */}
       {submission.signature_url && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Signature</h2>
-          <img
-            src={submission.signature_url}
-            alt="Signature"
-            className="border rounded p-4 bg-gray-50"
-          />
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Signature</h2>
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <img
+              src={submission.signature_url}
+              alt="Signature"
+              className="max-w-md h-auto"
+            />
+          </div>
         </div>
       )}
 
       {/* Photos */}
       {submission.submission_photos && submission.submission_photos.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Photos</h2>
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Photos</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {submission.submission_photos.map((photo: any) => (
-              <div key={photo.id} className="relative">
+              <div key={photo.id} className="relative group">
                 <img
                   src={photo.photo_url}
                   alt={photo.field_name}
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full h-32 object-cover rounded-xl border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => window.open(photo.photo_url, '_blank')}
                 />
-                <p className="text-xs text-gray-600 mt-1">{photo.field_name}</p>
+                <p className="text-xs text-gray-600 mt-2 font-medium">{photo.field_name}</p>
               </div>
             ))}
           </div>
@@ -225,22 +258,22 @@ export default function SubmissionDetail() {
       )}
 
       {/* Metadata */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Metadata</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div className="card p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 font-medium">Created</label>
-            <p className="text-gray-900">{format(new Date(submission.created_at), 'PPpp')}</p>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Created</label>
+            <p className="text-base text-gray-900">{format(new Date(submission.created_at), 'PPpp')}</p>
           </div>
           {submission.submitted_at && (
             <div>
-              <label className="block text-gray-700 font-medium">Submitted</label>
-              <p className="text-gray-900">{format(new Date(submission.submitted_at), 'PPpp')}</p>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Submitted</label>
+              <p className="text-base text-gray-900">{format(new Date(submission.submitted_at), 'PPpp')}</p>
             </div>
           )}
-          <div>
-            <label className="block text-gray-700 font-medium">Submission ID</label>
-            <p className="text-gray-900 font-mono text-xs">{submission.id}</p>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Submission ID</label>
+            <p className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-lg inline-block">{submission.id}</p>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Plus, GripVertical, Trash2, Save, X } from 'lucide-react';
+import { Plus, GripVertical, Trash2, Save, X, FileText } from 'lucide-react';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text' },
@@ -176,11 +176,11 @@ export default function FormBuilder() {
 
       {/* Template Info */}
       <div className="card p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Information</h2>
-        <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Template Information</h2>
+        <div className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Template Name *
+              Template Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -191,7 +191,7 @@ export default function FormBuilder() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -201,7 +201,7 @@ export default function FormBuilder() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
             <input
               type="text"
               value={formData.category}
@@ -209,6 +209,7 @@ export default function FormBuilder() {
               className="input"
               placeholder="e.g., Inspection, Safety, Maintenance"
             />
+            <p className="text-xs text-gray-500 mt-1">Categorize your templates for easier organization</p>
           </div>
         </div>
       </div>
@@ -232,75 +233,90 @@ export default function FormBuilder() {
 
       {/* Fields List */}
       <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Form Fields</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Form Fields</h2>
+          {formData.fields.length > 0 && (
+            <span className="text-sm text-gray-500 font-medium">
+              {formData.fields.length} {formData.fields.length === 1 ? 'field' : 'fields'}
+            </span>
+          )}
+        </div>
         {formData.fields.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
-            No fields yet. Add fields from the palette above.
-          </p>
+          <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-600 font-medium mb-1">No fields yet</p>
+            <p className="text-sm text-gray-500">Add fields from the palette above to build your form</p>
+          </div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="fields">
               {(provided: any) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                   {formData.fields.map((field, index) => (
                     <Draggable key={field.id} draggableId={field.id} index={index}>
-                      {(provided: any) => (
+                      {(provided: any, snapshot: any) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className="border border-gray-300 rounded-lg p-4"
+                          className={`card p-4 transition-all duration-200 ${
+                            snapshot.isDragging ? 'shadow-lg scale-[1.02]' : ''
+                          }`}
                         >
                           <div className="flex items-start gap-4">
-                            <div {...provided.dragHandleProps} className="pt-2">
-                              <GripVertical className="w-5 h-5 text-gray-400" />
+                            <div {...provided.dragHandleProps} className="pt-2 cursor-grab active:cursor-grabbing">
+                              <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                             </div>
                             <div className="flex-1 space-y-3">
-                              <div className="flex items-center gap-3">
+                              <div className="flex flex-wrap items-center gap-3">
                                 <input
                                   type="text"
                                   value={field.label}
                                   onChange={(e) => updateField(index, { label: e.target.value })}
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                                  className="flex-1 min-w-[200px] input text-sm"
                                   placeholder="Field label"
                                 />
-                                <span className="text-sm text-gray-500 px-3 py-2 bg-gray-100 rounded">
+                                <span className="badge bg-blue-100 text-blue-700 font-medium">
                                   {field.type}
                                 </span>
-                                <label className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
                                   <input
                                     type="checkbox"
                                     checked={field.required}
                                     onChange={(e) =>
                                       updateField(index, { required: e.target.checked })
                                     }
-                                    className="rounded"
+                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                   />
-                                  <span className="text-sm text-gray-700">Required</span>
+                                  <span className="text-sm font-medium text-gray-700">Required</span>
                                 </label>
                                 <button
                                   onClick={() => removeField(index)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                                  title="Delete field"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
 
                               {field.type === 'dropdown' && (
-                                <div>
-                                  <label className="block text-sm text-gray-700 mb-1">
-                                    Options (comma-separated)
+                                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Dropdown Options
                                   </label>
                                   <input
                                     type="text"
                                     value={field.options?.join(', ') || ''}
                                     onChange={(e) =>
                                       updateField(index, {
-                                        options: e.target.value.split(',').map((o) => o.trim()),
+                                        options: e.target.value.split(',').map((o) => o.trim()).filter(Boolean),
                                       })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                    className="input text-sm"
                                     placeholder="Option 1, Option 2, Option 3"
                                   />
+                                  <p className="text-xs text-gray-500 mt-1">Separate options with commas</p>
                                 </div>
                               )}
                             </div>

@@ -84,65 +84,67 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-1">Manage your account and company information</p>
+    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Settings</h1>
+        <p className="text-gray-600 text-lg">Manage your account and company information</p>
       </div>
 
       {/* Success/Error Messages */}
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-green-800">Settings saved successfully!</p>
+        <div className="mb-6 bg-green-50 border-l-4 border-green-500 rounded-xl p-4 shadow-sm">
+          <p className="text-green-800 font-medium">Settings saved successfully!</p>
         </div>
       )}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
+          <p className="text-red-800 font-medium">{error}</p>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="space-y-6">
+      <div className="card p-6 md:p-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
             <input
               type="text"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               placeholder="Your full name"
             />
           </div>
 
           {/* Company Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name</label>
             <input
               type="text"
               value={formData.company_name}
               onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               placeholder="Your company name"
             />
+            <p className="text-xs text-gray-500 mt-1">This will appear on your PDF reports</p>
           </div>
 
           {/* Company Logo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Company Logo</label>
             {formData.company_logo_url && (
-              <div className="mb-4">
+              <div className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <img
                   src={formData.company_logo_url}
                   alt="Company Logo"
-                  className="h-24 w-auto object-contain border rounded p-2"
+                  className="h-20 w-auto object-contain"
                 />
               </div>
             )}
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50">
-                <Upload className="w-4 h-4" />
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="btn-secondary cursor-pointer">
+                <Upload className="w-5 h-5" />
                 {loading ? 'Uploading...' : 'Upload Logo'}
                 <input
                   type="file"
@@ -155,32 +157,33 @@ export default function Settings() {
               {formData.company_logo_url && (
                 <button
                   onClick={() => setFormData({ ...formData, company_logo_url: '' })}
-                  className="text-sm text-red-600 hover:text-red-700"
+                  className="text-sm text-red-600 hover:text-red-700 font-medium px-4 py-2 hover:bg-red-50 rounded-xl transition-colors"
                 >
-                  Remove
+                  Remove Logo
                 </button>
               )}
             </div>
+            <p className="text-xs text-gray-500 mt-2">Recommended: PNG or SVG, max 2MB</p>
           </div>
 
           {/* Email (read-only) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
             <input
               type="email"
               value={profile?.email || ''}
               disabled
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+              className="input bg-gray-50 text-gray-500 cursor-not-allowed"
             />
-            <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+            <p className="text-xs text-gray-500 mt-1">Email is managed by Google and cannot be changed</p>
           </div>
 
           {/* Save Button */}
-          <div className="pt-4">
+          <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary"
             >
               <Save className="w-5 h-5" />
               {saving ? 'Saving...' : 'Save Changes'}

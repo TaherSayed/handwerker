@@ -53,42 +53,41 @@ export default function Submissions() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Submissions</h1>
-          <p className="text-gray-600 mt-1">View and manage form submissions</p>
-        </div>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Submissions</h1>
+        <p className="text-gray-600 text-lg">View and manage your form submissions</p>
       </div>
 
       {/* Filter */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
             filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
           }`}
         >
           All
         </button>
         <button
           onClick={() => setFilter('draft')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
             filter === 'draft'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
           }`}
         >
           Drafts
         </button>
         <button
           onClick={() => setFilter('submitted')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
             filter === 'submitted'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
           }`}
         >
           Submitted
@@ -97,12 +96,12 @@ export default function Submissions() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-red-800">{error}</p>
+            <p className="text-red-800 font-medium">{error}</p>
             <button
               onClick={loadSubmissions}
-              className="text-red-600 hover:text-red-800 font-medium"
+              className="text-red-600 hover:text-red-800 font-semibold text-sm px-4 py-2 hover:bg-red-100 rounded-lg transition-colors"
             >
               Retry
             </button>
@@ -117,101 +116,81 @@ export default function Submissions() {
           <p className="text-gray-600">Loading submissions...</p>
         </div>
       ) : submissions.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <ClipboardList className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
-          <p className="text-gray-600">Submissions from the mobile app will appear here</p>
+        <div className="card text-center py-16">
+          <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <ClipboardList className="w-10 h-10 text-gray-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">No submissions yet</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            {filter === 'draft' 
+              ? 'You don\'t have any draft submissions yet'
+              : filter === 'submitted'
+              ? 'You don\'t have any submitted forms yet'
+              : 'Submissions from the mobile app will appear here'}
+          </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Template
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {submissions.map((submission) => (
-                <tr
-                  key={submission.id}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/submissions/${submission.id}`)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {submission.customer_name || 'Unnamed'}
-                    </div>
-                    {submission.customer_email && (
-                      <div className="text-sm text-gray-500">{submission.customer_email}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FileText className="w-4 h-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900">
-                        {submission.form_templates?.name || 'Unknown Template'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        submission.status === 'submitted'
-                          ? 'bg-green-100 text-green-800'
-                          : submission.status === 'draft'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {submission.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(new Date(submission.created_at), 'MMM d, yyyy')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-2">
-                      {submission.pdf_url ? (
-                        <a
-                          href={submission.pdf_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleGeneratePDF(submission.id);
-                          }}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          Generate PDF
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {submissions.map((submission) => (
+            <div
+              key={submission.id}
+              className="card p-6 hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
+              onClick={() => navigate(`/submissions/${submission.id}`)}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">
+                    {submission.customer_name || 'Unnamed Customer'}
+                  </h3>
+                  {submission.customer_email && (
+                    <p className="text-sm text-gray-500 truncate">{submission.customer_email}</p>
+                  )}
+                </div>
+                <span className={`badge flex-shrink-0 ml-2 ${
+                  submission.status === 'submitted'
+                    ? 'bg-green-100 text-green-700'
+                    : submission.status === 'draft'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {submission.status}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+                <FileText className="w-4 h-4" />
+                <span className="truncate">{submission.form_templates?.name || 'Unknown Template'}</span>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <span className="text-xs text-gray-500">
+                  {format(new Date(submission.created_at), 'MMM d, yyyy')}
+                </span>
+                {submission.pdf_url ? (
+                  <a
+                    href={submission.pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    PDF
+                  </a>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGeneratePDF(submission.id);
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                  >
+                    Generate PDF
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
