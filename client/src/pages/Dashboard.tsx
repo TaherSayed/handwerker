@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [recentTemplates, setRecentTemplates] = useState<any[]>([]);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -84,171 +84,183 @@ export default function Dashboard() {
 
   return (
     <div className="animate-slide-up space-y-8">
-      {/* Welcome Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">
-            Hey there! <Sparkles className="inline-block w-6 h-6 text-amber-400 mb-1" />
-          </h1>
-          <p className="text-slate-500 font-medium md:text-lg">Here's a quick look at your business.</p>
+      {/* Start New Visit Hero */}
+      <div className="bg-indigo-900 rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-indigo-500 rounded-full opacity-20 blur-3xl animate-pulse" />
+        <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-violet-500 rounded-full opacity-20 blur-3xl" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+              Ready for a<br />New Visit?
+            </h1>
+            <p className="text-indigo-200 font-medium md:text-lg max-w-md">
+              Start a new visit to capture data, photos, and signatures on-site.
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate('/visits/new')}
+            className="group relative flex items-center justify-center gap-3 bg-white text-indigo-900 px-10 py-6 rounded-[2rem] font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-white/20 shrink-0"
+          >
+            <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
+            START VISIT
+          </button>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-indigo-700 border-none">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-            <FileText className="w-24 h-24 text-white" />
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="card p-4 flex items-center gap-4 bg-white border-slate-100 h-24">
+          <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shrink-0">
+            <Zap className="w-6 h-6" />
           </div>
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div>
-              <p className="text-indigo-100 font-bold text-xs uppercase tracking-widest mb-1">Templates</p>
-              <h3 className="text-4xl font-black text-white">{stats.templates}</h3>
-            </div>
-            <p className="mt-4 text-indigo-100/80 text-sm font-medium">Ready for your team</p>
+          <div>
+            <p className="text-2xl font-black text-slate-900 leading-none">{stats.submissions}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Completed</p>
           </div>
         </div>
 
-        <div className="card group relative overflow-hidden bg-white hover:border-violet-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-colors duration-300">
-              <ClipboardList className="w-6 h-6" />
-            </div>
-            <p className="text-2xl font-black text-slate-900">{stats.submissions}</p>
+        <div className="card p-4 flex items-center gap-4 bg-white border-slate-100 h-24">
+          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+            <Clock className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-slate-500 font-bold text-xs uppercase tracking-wider">Submissions</p>
-            <p className="text-slate-400 text-[10px] font-bold mt-1">Successfully completed</p>
+            <p className="text-2xl font-black text-slate-900 leading-none">{stats.drafts}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Drafts</p>
           </div>
         </div>
 
-        <div className="card group relative overflow-hidden bg-white hover:border-amber-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
-              <Clock className="w-6 h-6" />
-            </div>
-            <p className="text-2xl font-black text-slate-900">{stats.drafts}</p>
+        <div className="card p-4 flex items-center gap-4 bg-white border-slate-100 h-24">
+          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0">
+            <FileText className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-slate-500 font-bold text-xs uppercase tracking-wider">Unfinished Drafts</p>
-            <p className="text-slate-400 text-[10px] font-bold mt-1">Local & Cloud sync</p>
+            <p className="text-2xl font-black text-slate-900 leading-none">{stats.templates}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Templates</p>
+          </div>
+        </div>
+
+        <div className="card p-4 flex items-center gap-4 bg-white border-slate-100 h-24 cursor-pointer hover:border-indigo-200" onClick={() => navigate('/settings')}>
+          <div className="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center shrink-0">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-900 leading-tight uppercase">Tools &<br />Settings</p>
           </div>
         </div>
       </div>
 
-      {/* Main Content Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        {/* Templates Quick Start */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-black text-slate-900">Your Templates</h2>
-            <button
-              onClick={() => navigate('/templates')}
-              className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:translate-x-1 transition-transform"
-            >
-              View all
-            </button>
+      {/* Primary Section: Recent Visits */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+              <ClipboardList className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Recent Visits</h2>
           </div>
+          <button
+            onClick={() => navigate('/submissions')}
+            className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:translate-x-1 transition-transform flex items-center gap-1"
+          >
+            History <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
-          <div className="space-y-3">
-            {recentTemplates.map((template) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {recentSubmissions.length === 0 ? (
+            <div className="md:col-span-2 p-12 bg-white rounded-[2rem] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                <ClipboardList className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">No visits recorded yet</h3>
+              <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">Click "Start Visit" above to begin your first service record.</p>
+            </div>
+          ) : (
+            recentSubmissions.map((sub) => (
               <div
-                key={template.id}
-                onClick={() => navigate(`/templates/${template.id}/fill`)}
-                className="group flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer"
+                key={sub.id}
+                onClick={() => navigate(`/submissions/${sub.id}`)}
+                className="group flex items-start gap-4 p-5 bg-white rounded-[2rem] border border-slate-100 hover:border-indigo-300 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all cursor-pointer"
               >
-                <div className="w-14 h-14 bg-slate-50 border border-slate-100 text-indigo-500 rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all duration-300">
-                  <FileText className="w-6 h-6" />
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${sub.status === 'submitted' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                  }`}>
+                  {sub.status === 'submitted' ? <Zap className="w-7 h-7" /> : <Clock className="w-7 h-7" />}
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors uppercase text-sm tracking-tight">{template.name}</h4>
-                  <p className="text-slate-400 text-xs font-medium truncate max-w-[200px]">{template.description || 'Quick start template'}</p>
-                </div>
-                <div className="p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
-                    <Plus className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button
-              onClick={() => navigate('/templates/new')}
-              className="w-full h-16 rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-center gap-2 text-slate-400 font-bold hover:border-indigo-400 hover:text-indigo-600 transition-all group"
-            >
-              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-              Build a New Form
-            </button>
-          </div>
-        </section>
-
-        {/* Recent Activity */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-black text-slate-900">Recent Submissions</h2>
-            <button
-              onClick={() => navigate('/submissions')}
-              className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:translate-x-1 transition-transform"
-            >
-              History
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {recentSubmissions.length === 0 ? (
-              <div className="p-12 bg-white rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center">
-                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                  <ClipboardList className="w-6 h-6" />
-                </div>
-                <p className="text-slate-400 font-bold text-sm">No activity yet</p>
-                <p className="text-slate-300 text-xs mt-1">Start by filling out a template</p>
-              </div>
-            ) : (
-              recentSubmissions.map((sub) => (
-                <div
-                  key={sub.id}
-                  onClick={() => navigate(`/submissions/${sub.id}`)}
-                  className="flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer group"
-                >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${sub.status === 'submitted' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
-                    }`}>
-                    {sub.status === 'submitted' ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-sm">{sub.customer_name || 'Anonymous Customer'}</h4>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{sub.form_templates?.name || 'Form'}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-base truncate">
+                      {sub.customer_name || 'Walking Customer'}
+                    </h4>
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg mt-1 shrink-0 ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                       {sub.status}
-                    </div>
-                    <p className="text-[10px] text-slate-300 font-bold mt-1">
-                      {new Date(sub.created_at).toLocaleDateString()}
-                    </p>
+                    </span>
                   </div>
+                  <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-0.5">
+                    {sub.form_templates?.name || 'Standard Form'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-3 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(sub.created_at).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
                 </div>
-              ))
-            )}
-          </div>
-        </section>
-      </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
 
-      {/* Pro Tip Tooltip-like element */}
-      <div className="bg-indigo-900 rounded-3xl p-6 text-white relative overflow-hidden">
-        <div className="absolute -right-8 -top-8 w-32 h-32 bg-indigo-500 rounded-full opacity-20 blur-2xl" />
-        <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-violet-500 rounded-full opacity-20 blur-2xl" />
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-          <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0">
-            <Zap className="w-6 h-6 text-amber-400" />
+      {/* Secondary Section: Quick Templates */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Templates</h2>
           </div>
-          <div>
-            <h4 className="font-bold text-lg mb-1">Pro Tip: Offline Sync</h4>
-            <p className="text-indigo-200 text-sm font-medium leading-relaxed">You can keep working even without internet. Your forms will automatically save to your phone and sync up the moment you're back online.</p>
+          <button
+            onClick={() => navigate('/templates')}
+            className="text-slate-500 font-black text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors"
+          >
+            Manage
+          </button>
+        </div>
+
+        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+          {recentTemplates.map((template) => (
+            <div
+              key={template.id}
+              onClick={() => navigate(`/visits/new?templateId=${template.id}`)}
+              className="flex-shrink-0 w-64 p-5 bg-white rounded-[2rem] border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer text-center group"
+            >
+              <div className="w-14 h-14 bg-slate-50 border border-slate-100 text-slate-400 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 transition-all">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight mb-1 group-hover:text-indigo-600 transition-colors">{template.name}</h4>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest line-clamp-1">{template.category || 'Standard'}</p>
+            </div>
+          ))}
+
+          <div
+            onClick={() => navigate('/templates/new')}
+            className="flex-shrink-0 w-64 p-5 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-indigo-400 group"
+          >
+            <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
+              <Plus className="w-5 h-5" />
+            </div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600">New Template</p>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

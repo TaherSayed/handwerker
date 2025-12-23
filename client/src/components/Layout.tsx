@@ -5,12 +5,10 @@ import {
   ClipboardList,
   Settings,
   LogOut,
-  Menu,
   LayoutDashboard,
   PlusCircle,
   Bell,
   User as UserIcon,
-  ChevronRight
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SyncStatus from './SyncStatus';
@@ -19,7 +17,7 @@ export default function Layout() {
   const { profile, signOut } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+  const [sidebarOpen] = useState(window.innerWidth > 1024);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {

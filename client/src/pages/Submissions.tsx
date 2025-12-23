@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { ClipboardList, FileText, Download, Calendar, User, ChevronRight, Zap, Clock, ArrowLeft, RefreshCw } from 'lucide-react';
+import { ClipboardList, FileText, Download, Calendar, User, ChevronRight, Zap, Clock, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function Submissions() {

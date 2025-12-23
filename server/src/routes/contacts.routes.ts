@@ -24,7 +24,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     const response = await people.people.connections.list({
       resourceName: 'people/me',
       pageSize: 1000,
-      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata',
+      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata,organizations',
     });
 
     const connections = response.data.connections || [];
@@ -35,15 +35,17 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       const email = person.emailAddresses?.[0]?.value || '';
       const phone = person.phoneNumbers?.[0]?.value || '';
       const address = person.addresses?.[0]?.formattedValue || '';
+      const organization = person.organizations?.[0]?.name || '';
       const googleId = person.metadata?.sources?.[0]?.id || '';
 
       return {
-        id: googleId, // Use Google ID as local ID for now
+        id: googleId,
         google_contact_id: googleId,
         name,
         email,
         phone,
-        address
+        address,
+        company: organization,
       };
     });
 

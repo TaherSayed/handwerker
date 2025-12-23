@@ -11,7 +11,11 @@ import FormFilling from './pages/FormFilling';
 import Submissions from './pages/Submissions';
 import SubmissionDetail from './pages/SubmissionDetail';
 import Settings from './pages/Settings';
+import VisitWorkflow from './pages/VisitWorkflow';
 import { supabase } from './services/supabase';
+
+
+// OAuth callback handler
 
 // OAuth callback handler
 function AuthCallback() {
@@ -35,7 +39,7 @@ function AuthCallback() {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const { data, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError) {
           console.error('Auth callback error:', sessionError);
           setError(`Session error: ${sessionError.message}`);
@@ -102,6 +106,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="visits/new" element={<VisitWorkflow />} />
           <Route path="templates" element={<FormTemplates />} />
           <Route path="templates/new" element={<FormBuilder />} />
           <Route path="templates/:id/edit" element={<FormBuilder />} />
