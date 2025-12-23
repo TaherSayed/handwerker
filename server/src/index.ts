@@ -46,6 +46,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Start server
 app.listen(config.port, config.host, () => {
-  console.log(`🚀 OnSite Forms API running on ${config.host}:${config.port}`);
-  console.log(`📝 Environment: ${config.nodeEnv}`);
+  console.log('🚀 OnSite Forms API Server Started!');
+  console.log(`   → URL: http://${config.host}:${config.port}`);
+  console.log(`   → Environment: ${config.nodeEnv}`);
+  console.log(`   → Health Check: http://${config.host}:${config.port}/health`);
+  console.log(`   → Supabase URL: ${config.supabase.url}`);
+}).on('error', (err: NodeJS.ErrnoException) => {
+  console.error('❌ Failed to start server:', err.message);
+  if (err.code === 'EADDRINUSE') {
+    console.error(`   Port ${config.port} is already in use`);
+  }
+  process.exit(1);
 });
