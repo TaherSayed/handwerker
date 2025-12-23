@@ -17,7 +17,7 @@ export default function SubmissionDetail() {
   const loadSubmission = async () => {
     try {
       setLoading(true);
-      const data = await apiService.getSubmission(id!);
+      const data = await apiService.getSubmission(id!) as any;
       setSubmission(data);
     } catch (error) {
       console.error('Load submission error:', error);
@@ -30,7 +30,7 @@ export default function SubmissionDetail() {
 
   const handleGeneratePDF = async () => {
     try {
-      const result = await apiService.generatePDF(id!);
+      const result = await apiService.generatePDF(id!) as any;
       alert('PDF generated successfully!');
       window.open(result.pdf_url, '_blank');
       loadSubmission();

@@ -40,7 +40,7 @@ export default function FormBuilder() {
   const loadTemplate = async () => {
     try {
       setLoading(true);
-      const data = await apiService.getTemplate(id!);
+      const data = await apiService.getTemplate(id!) as any;
       setFormData({
         name: data.name,
         description: data.description || '',

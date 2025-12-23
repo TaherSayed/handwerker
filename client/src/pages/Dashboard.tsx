@@ -23,7 +23,7 @@ export default function Dashboard() {
       const [templates, submissions] = await Promise.all([
         apiService.getTemplates({ is_archived: false }),
         apiService.getSubmissions({}),
-      ]);
+      ]) as [any[], any[]];
 
       setStats({
         templates: templates.length,

@@ -18,7 +18,7 @@ export default function FormTemplates() {
       setLoading(true);
       const data = await apiService.getTemplates({
         is_archived: filter === 'archived',
-      });
+      }) as any[];
       setTemplates(data);
     } catch (error) {
       console.error('Load templates error:', error);

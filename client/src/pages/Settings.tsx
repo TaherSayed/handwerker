@@ -49,7 +49,7 @@ export default function Settings() {
       const { signed_url, path } = await apiService.getSignedUploadUrl(
         'company-logos',
         file.name
-      );
+      ) as any;
 
       // Upload file
       const uploadResponse = await fetch(signed_url, {
@@ -65,7 +65,7 @@ export default function Settings() {
       }
 
       // Get public URL
-      const { data } = supabase.client.storage.from('company-logos').getPublicUrl(path);
+      const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
 
       setFormData({ ...formData, company_logo_url: data.publicUrl });
     } catch (error) {
