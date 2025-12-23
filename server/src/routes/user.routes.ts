@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware.js';
 import { supabase } from '../services/supabase.service.js';
+import { userService } from '../services/user.service.js';
 
 const router = Router();
 
@@ -12,44 +13,16 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     const accessToken = req.accessToken!;
 
     const userClient = supabase.getClientForUser(accessToken);
-    
-    // Try to get existing profile
-    let { data: profile, error } = await userClient
-      .from('user_profiles')
-      .select('*, workspaces(*)')
-      .eq('id', userId)
-      .single();
 
-    // Auto-create profile if it doesn't exist
-    if (error || !profile) {
-      const { data: newProfile, error: createError } = await userClient
-        .from('user_profiles')
-        .insert({
-          id: userId,
-          email: userEmail,
-          full_name: userEmail?.split('@')[0] || 'User',
-        })
-        .select('*')
-        .single();
+    // Ensure user is provisioned safely
+    const { profile, workspace } = await userService.getOrCreateWorkspace(userId, userEmail!, userClient);
 
-      if (createError || !newProfile) {
-        return res.status(400).json({ error: 'Failed to create profile' });
-      }
+    const fullProfile = {
+      ...profile,
+      workspaces: workspace ? [workspace] : []
+    };
 
-      // Auto-create workspace
-      const { data: workspace } = await userClient
-        .from('workspaces')
-        .insert({
-          owner_id: userId,
-          name: newProfile.company_name || newProfile.full_name || 'My Workspace',
-        })
-        .select()
-        .single();
-
-      profile = { ...newProfile, workspaces: workspace ? [workspace] : [] };
-    }
-
-    res.json(profile);
+    res.json(fullProfile);
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to fetch user' });

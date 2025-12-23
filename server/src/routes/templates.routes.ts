@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware.js';
 import { supabase } from '../services/supabase.service.js';
+import { userService } from '../services/user.service.js';
 
 const router = Router();
 
@@ -72,78 +73,30 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Template name is required',
-        success: false 
+        success: false
       });
     }
 
     // Validate fields array
     if (!Array.isArray(fields)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Fields must be an array',
-        success: false 
+        success: false
       });
     }
 
     // Get Supabase client with user's token for RLS
     const userClient = supabase.getClientForUser(accessToken);
 
-    // Get or create user's workspace
-    let { data: workspace, error: workspaceError } = await userClient
-      .from('workspaces')
-      .select('id')
-      .eq('owner_id', userId)
-      .limit(1)
-      .single();
-
-    // Handle case where workspaces table doesn't exist
-    if (workspaceError) {
-      const errorMessage = workspaceError.message || '';
-      if (errorMessage.includes('does not exist') || errorMessage.includes('schema cache')) {
-        console.error('❌ Database schema error: workspaces table not found');
-        console.error('📋 Please run the migration: supabase/migrations/20251223_onsite_complete_schema.sql');
-        return res.status(500).json({ 
-          error: 'Database schema not initialized. Please run the migration file in Supabase SQL Editor.',
-          success: false,
-          details: 'The workspaces table does not exist. See MIGRATION_GUIDE.md for instructions.'
-        });
-      }
-    }
-
-    if (!workspace || workspaceError) {
-      // Auto-create workspace if it doesn't exist
-      const { data: profile } = await userClient
-        .from('user_profiles')
-        .select('full_name, company_name')
-        .eq('id', userId)
-        .single();
-
-      const workspaceName = profile?.company_name || profile?.full_name || 'My Workspace';
-      
-      const { data: newWorkspace, error: createError } = await userClient
-        .from('workspaces')
-        .insert({
-          owner_id: userId,
-          name: workspaceName,
-        })
-        .select()
-        .single();
-
-      if (createError || !newWorkspace) {
-        console.error('Workspace creation error:', createError);
-        return res.status(500).json({ 
-          error: createError?.message || 'Failed to create workspace',
-          success: false 
-        });
-      }
-      workspace = newWorkspace;
-    }
+    // Get or create user's workspace safely
+    const { workspace } = await userService.getOrCreateWorkspace(userId, req.user!.email!, userClient);
 
     if (!workspace || !workspace.id) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'No workspace available',
-        success: false 
+        success: false
       });
     }
 
@@ -163,25 +116,18 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
     if (error) {
       console.error('Template creation error:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: error.message || 'Failed to save template',
-        success: false 
-      });
-    }
-
-    if (!data) {
-      return res.status(500).json({ 
-        error: 'Template was not created',
-        success: false 
+        success: false
       });
     }
 
     res.status(201).json(data);
   } catch (error: any) {
     console.error('Create template error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message || 'Failed to create template',
-      success: false 
+      success: false
     });
   }
 });
@@ -198,17 +144,17 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
 
     // Validate template name if provided
     if (name !== undefined && (!name || typeof name !== 'string' || name.trim().length === 0)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Template name cannot be empty',
-        success: false 
+        success: false
       });
     }
 
     // Validate fields array if provided
     if (fields !== undefined && !Array.isArray(fields)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Fields must be an array',
-        success: false 
+        success: false
       });
     }
 
@@ -220,13 +166,6 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
     if (fields !== undefined) updates.fields = fields || [];
     if (is_archived !== undefined) updates.is_archived = is_archived;
 
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ 
-        error: 'No fields to update',
-        success: false 
-      });
-    }
-
     const { data, error } = await userClient
       .from('form_templates')
       .update(updates)
@@ -236,27 +175,13 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (error) {
-      console.error('Template update error:', error);
-      return res.status(500).json({ 
-        error: error.message || 'Failed to update template',
-        success: false 
-      });
-    }
-
-    if (!data) {
-      return res.status(404).json({ 
-        error: 'Template not found',
-        success: false 
-      });
+      return res.status(500).json({ error: error.message });
     }
 
     res.json(data);
   } catch (error: any) {
     console.error('Update template error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to update template',
-      success: false 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -334,4 +259,3 @@ router.post('/:id/duplicate', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 export default router;
-

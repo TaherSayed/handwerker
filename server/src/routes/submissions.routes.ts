@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware.js';
 import { supabase } from '../services/supabase.service.js';
+import { userService } from '../services/user.service.js';
 import { pdfService } from '../services/pdf.service.js';
 
 const router = Router();
@@ -21,10 +22,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       .order('created_at', { ascending: false });
 
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq('status', status as string);
     }
     if (template_id) {
-      query = query.eq('template_id', template_id);
+      query = query.eq('template_id', template_id as string);
     }
 
     const { data, error } = await query;
@@ -86,52 +87,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
     const userClient = supabase.getClientForUser(accessToken);
 
-    // Get or create user's workspace
-    let { data: workspace, error: workspaceError } = await userClient
-      .from('workspaces')
-      .select('id')
-      .eq('owner_id', userId)
-      .limit(1)
-      .single();
-
-    // Handle case where workspaces table doesn't exist
-    if (workspaceError) {
-      const errorMessage = workspaceError.message || '';
-      if (errorMessage.includes('does not exist') || errorMessage.includes('schema cache')) {
-        console.error('❌ Database schema error: workspaces table not found');
-        console.error('📋 Please run the migration: supabase/migrations/20251223_onsite_complete_schema.sql');
-        return res.status(500).json({ 
-          error: 'Database schema not initialized. Please run the migration file in Supabase SQL Editor.',
-          success: false,
-          details: 'The workspaces table does not exist. See MIGRATION_GUIDE.md for instructions.'
-        });
-      }
-    }
-
-    if (!workspace || workspaceError) {
-      // Auto-create workspace if it doesn't exist
-      const { data: profile } = await userClient
-        .from('user_profiles')
-        .select('full_name, company_name')
-        .eq('id', userId)
-        .single();
-
-      const workspaceName = profile?.company_name || profile?.full_name || 'My Workspace';
-      
-      const { data: newWorkspace, error: createError } = await userClient
-        .from('workspaces')
-        .insert({
-          owner_id: userId,
-          name: workspaceName,
-        })
-        .select()
-        .single();
-
-      if (createError || !newWorkspace) {
-        return res.status(400).json({ error: 'Failed to create workspace' });
-      }
-      workspace = newWorkspace;
-    }
+    // Get or create user's workspace safely
+    const { workspace } = await userService.getOrCreateWorkspace(userId, req.user!.email!, userClient);
 
     if (!workspace || !workspace.id) {
       return res.status(400).json({ error: 'No workspace available' });
@@ -271,14 +228,6 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Submission not found' });
     }
 
-    // Validate template data
-    if (!submission.form_templates || !submission.form_templates.fields) {
-      return res.status(400).json({ 
-        error: 'Template data is missing or invalid',
-        success: false 
-      });
-    }
-
     // Generate PDF
     let pdfUrl: string;
     try {
@@ -306,11 +255,8 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
         userClient
       );
     } catch (pdfError: any) {
-      console.error('PDF generation error:', pdfError);
-      return res.status(500).json({ 
-        error: pdfError.message || 'Failed to generate PDF',
-        success: false 
-      });
+      console.error(' PDF generation error:', pdfError);
+      return res.status(500).json({ error: pdfError.message });
     }
 
     // Update submission with PDF URL
@@ -322,29 +268,11 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       .select()
       .single();
 
-    if (updateError) {
-      console.error('PDF URL update error:', updateError);
-      // PDF was generated but URL update failed - still return PDF URL
-      return res.json({ 
-        pdf_url: pdfUrl, 
-        submission: submission,
-        warning: 'PDF generated but failed to update submission record'
-      });
-    }
-
-    res.json({ 
-      success: true,
-      pdf_url: pdfUrl, 
-      submission: updated 
-    });
+    res.json({ success: true, pdf_url: pdfUrl, submission: updated || submission });
   } catch (error: any) {
     console.error('Generate PDF error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to generate PDF',
-      success: false 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
 export default router;
-
