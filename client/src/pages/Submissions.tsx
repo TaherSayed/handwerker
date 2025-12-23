@@ -55,6 +55,19 @@ export default function Submissions() {
     }
   };
 
+
+
+  const handleViewPDF = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { url } = await apiService.getPDFDownloadUrl(id) as any;
+      window.open(url, '_blank');
+    } catch (error: any) {
+      console.error('Download PDF error:', error);
+      notifyError('Fehler', 'PDF konnte nicht geöffnet werden. ' + (error.message || ''));
+    }
+  };
+
   const getStatusDisplay = (sub: any) => {
     const isSynced = !sub.id.toString().startsWith('draft_') && !sub.is_offline;
 
@@ -195,32 +208,27 @@ export default function Submissions() {
                 </div>
               </div>
 
-              <div className="mt-10 pt-8 border-t border-slate-100 flex items-center justify-between">
-                {sub.pdf_url ? (
-                  <a
-                    href={sub.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-3 text-indigo-900 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest group/btn transition-colors px-4 py-2 bg-slate-50 rounded-xl hover:bg-slate-100"
-                  >
-                    <Download className="w-4 h-4 transition-transform group-hover/btn:-translate-y-0.5" />
-                    PDF Archiv
-                  </a>
-                ) : (
-                  <Button
-                    onClick={(e) => handleGeneratePDF(sub.id, e)}
-                    variant="secondary"
-                    size="sm"
-                    className="py-3 px-6 rounded-xl"
-                    icon={<RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />}
-                  >
-                    Bericht Finalisieren
-                  </Button>
-                )}
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all shadow-sm">
-                  <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
-                </div>
+              {sub.pdf_url ? (
+                <button
+                  onClick={(e) => handleViewPDF(sub.id, e)}
+                  className="flex items-center gap-3 text-blue-900 hover:text-blue-600 font-black text-[10px] uppercase tracking-widest group/btn transition-colors px-4 py-2 bg-slate-50 rounded-xl hover:bg-slate-100"
+                >
+                  <Download className="w-4 h-4 transition-transform group-hover/btn:-translate-y-0.5" />
+                  PDF Archiv
+                </button>
+              ) : (
+                <Button
+                  onClick={(e) => handleGeneratePDF(sub.id, e)}
+                  variant="secondary"
+                  size="sm"
+                  className="py-3 px-6 rounded-xl"
+                  icon={<RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />}
+                >
+                  Bericht Finalisieren
+                </Button>
+              )}
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all shadow-sm">
+                <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           ))}

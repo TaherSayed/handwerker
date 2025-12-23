@@ -263,6 +263,10 @@ class ApiService {
     });
   }
 
+  async getPDFDownloadUrl(id: string) {
+    return this.request(`/submissions/${id}/download-pdf`);
+  }
+
   // Uploads
   async getSignedUploadUrl(bucket: string, fileName: string) {
     return this.request('/uploads/signed-url', {

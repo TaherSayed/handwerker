@@ -275,4 +275,43 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
+// GET /submissions/:id/download-pdf - Get signed URL for PDF download
+router.get('/:id/download-pdf', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+    const accessToken = req.accessToken!;
+
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { data: submission, error: fetchError } = await userClient
+      .from('submissions')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !submission) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+
+    const storageClient = supabase.adminClient || userClient; // Use admin client if available, else user client
+    const fileName = `${userId}/${id}.pdf`;
+
+    const { data, error } = await storageClient.storage
+      .from('submission-pdfs')
+      .createSignedUrl(fileName, 3600); // Valid for 1 hour
+
+    if (error) {
+      console.error('Signed URL error:', error);
+      return res.status(500).json({ error: 'Failed to generate download link' });
+    }
+
+    res.json({ url: data.signedUrl });
+  } catch (error: any) {
+    console.error('Download PDF error:', error);
+    res.status(500).json({ error: 'Failed to generate download link' });
+  }
+});
+
 export default router;

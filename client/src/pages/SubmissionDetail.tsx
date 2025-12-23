@@ -67,6 +67,16 @@ export default function SubmissionDetail() {
     }
   };
 
+  const handleViewPDF = async () => {
+    try {
+      const { url } = await apiService.getPDFDownloadUrl(id!) as any;
+      window.open(url, '_blank');
+    } catch (error: any) {
+      console.error('Download PDF error:', error);
+      notifyError('Fehler', 'PDF konnte nicht geöffnet werden. ' + (error.message || ''));
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm('Sind Sie sicher, dass Sie diesen Einsatzbericht löschen möchten?')) return;
     try {
@@ -234,7 +244,7 @@ export default function SubmissionDetail() {
 
           {submission.pdf_url ? (
             <Button
-              onClick={() => window.open(submission.pdf_url, '_blank')}
+              onClick={handleViewPDF}
               className="rounded-2xl py-4 shadow-indigo-500/20"
               icon={<Download className="w-5 h-5" />}
             >
