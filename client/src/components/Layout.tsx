@@ -89,7 +89,6 @@ export default function Layout() {
               )}
             </NavLink>
           ))}
-          ))}
         </nav>
 
         {/* Sidebar Footer */}
