@@ -91,71 +91,64 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
 
   return (
     <div className="card p-4">
-      {/* Calendar Week and Current Time */}
-      <div className="mb-4 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#475569' }}>Kalenderwoche</p>
-            <p className="text-2xl font-bold" style={{ color: '#2563EB' }}>KW {calendarWeek}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-medium" style={{ color: '#475569' }}>Aktuelle Zeit</p>
-            <CurrentTime />
-          </div>
+      {/* Compact Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-xs font-medium" style={{ color: '#64748B' }}>Kalenderwoche</p>
+          <p className="text-lg font-bold" style={{ color: '#2563EB' }}>KW {calendarWeek}</p>
         </div>
+        <CurrentTime />
       </div>
 
-      {/* Month Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Compact Month Navigation */}
+      <div className="flex items-center justify-between mb-3">
         <button
           onClick={handlePrevMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition"
-          style={{ color: '#475569' }}
+          className="p-1.5 rounded-md hover:bg-gray-100 transition"
+          style={{ color: '#64748B' }}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <div className="text-center">
-          <h3 className="font-semibold" style={{ color: '#0F172A' }}>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h3>
-        </div>
+        <h3 className="text-sm font-semibold" style={{ color: '#0F172A' }}>
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </h3>
         <button
           onClick={handleNextMonth}
-          className="p-2 rounded-lg hover:bg-gray-100 transition"
-          style={{ color: '#475569' }}
+          className="p-1.5 rounded-md hover:bg-gray-100 transition"
+          style={{ color: '#64748B' }}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
 
-      {/* Day Names */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      {/* Compact Day Names */}
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs font-medium py-1" style={{ color: '#64748B' }}>
+          <div key={day} className="text-center text-[10px] font-semibold py-1" style={{ color: '#94A3B8' }}>
             {day}
           </div>
         ))}
       </div>
 
-      {/* Calendar Days */}
-      <div className="grid grid-cols-7 gap-1">
+      {/* Compact Calendar Days */}
+      <div className="grid grid-cols-7 gap-0.5">
         {days.map((day, index) => (
           <button
             key={index}
             onClick={() => day && handleDayClick(day)}
             disabled={!day}
-            className={`aspect-square rounded-lg text-sm font-medium transition ${
-              !day ? 'cursor-default' : 'hover:bg-gray-100 cursor-pointer'
+            className={`aspect-square rounded-md text-xs font-medium transition-all ${
+              !day ? 'cursor-default invisible' : 'hover:scale-105 cursor-pointer'
             } ${
               isToday(day)
-                ? 'bg-blue-600 text-white font-bold'
+                ? 'bg-blue-600 text-white font-bold shadow-md'
                 : isSelected(day)
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-700'
+                ? 'bg-blue-100 text-blue-700 font-semibold'
+                : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
             {day}
@@ -163,10 +156,10 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
         ))}
       </div>
 
-      {/* Today Button */}
+      {/* Compact Today Button */}
       <button
         onClick={handleToday}
-        className="w-full mt-3 py-2 rounded-lg text-sm font-medium transition hover:bg-gray-100"
+        className="w-full mt-3 py-1.5 rounded-md text-xs font-medium transition hover:bg-blue-50"
         style={{ color: '#2563EB', border: '1px solid #E2E8F0' }}
       >
         Heute
@@ -190,14 +183,16 @@ function CurrentTime() {
     return date.toLocaleTimeString('de-DE', {
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
     });
   };
 
   return (
-    <p className="text-xl font-bold" style={{ color: '#2563EB' }}>
-      {formatTime(time)}
-    </p>
+    <div className="text-right">
+      <p className="text-xs font-medium" style={{ color: '#64748B' }}>Zeit</p>
+      <p className="text-sm font-bold" style={{ color: '#2563EB' }}>
+        {formatTime(time)}
+      </p>
+    </div>
   );
 }
 

@@ -215,160 +215,126 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Left Column - Calendar and Quick Stats */}
-          <div className="lg:col-span-1 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+          {/* Left Column - Compact Calendar */}
+          <div className="lg:col-span-3">
             <CalendarWidget />
-            
-            {/* Quick Stats Card */}
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F172A' }}>Schnellübersicht</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F1F5F9' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#2563EB' }}>
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: '#475569' }}>Kontakte</span>
-                  </div>
-                  <span className="text-lg font-bold" style={{ color: '#0F172A' }}>{statistics.recentVisits}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F1F5F9' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#059669' }}>
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: '#475569' }}>Abgeschlossen</span>
-                  </div>
-                  <span className="text-lg font-bold" style={{ color: '#0F172A' }}>{statistics.recentVisits - statistics.pendingReports}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F1F5F9' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D97706' }}>
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: '#475569' }}>Ausstehend</span>
-                  </div>
-                  <span className="text-lg font-bold" style={{ color: '#0F172A' }}>{statistics.pendingReports}</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Right Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Statistics Cards */}
+          <div className="lg:col-span-9 space-y-6">
+            {/* Statistics Cards - Modern Compact Design */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="card p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
+              <div className="card p-5 hover:shadow-lg transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>Gesamt Besuche</p>
+                    <p className="text-2xl font-bold" style={{ color: '#0F172A' }}>{statistics.recentVisits}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
                     <svg className="w-6 h-6" style={{ color: '#2563EB' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium" style={{ color: '#475569' }}>Gesamt Besuche</h3>
-                    <p className="text-3xl font-bold" style={{ color: '#0F172A' }}>{statistics.recentVisits}</p>
-                  </div>
                 </div>
               </div>
 
-              <div className="card p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
+              <div className="card p-5 hover:shadow-lg transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>Ausstehende</p>
+                    <p className="text-2xl font-bold" style={{ color: '#0F172A' }}>{statistics.pendingReports}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FEF3C7' }}>
                     <svg className="w-6 h-6" style={{ color: '#D97706' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium" style={{ color: '#475569' }}>Ausstehende</h3>
-                    <p className="text-3xl font-bold" style={{ color: '#0F172A' }}>{statistics.pendingReports}</p>
-                  </div>
                 </div>
               </div>
 
-              <div className="card p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
+              <div className="card p-5 hover:shadow-lg transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>Status</p>
+                    <p className="text-base font-semibold" style={{ color: '#059669' }}>{statistics.syncStatus}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#D1FAE5' }}>
                     <svg className="w-6 h-6" style={{ color: '#059669' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium" style={{ color: '#475569' }}>Status</h3>
-                    <p className="text-lg font-semibold" style={{ color: '#059669' }}>{statistics.syncStatus}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - Modern Compact Design */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={() => navigate('/contact-selection')}
-                className="card p-6 text-left hover:shadow-xl transition-all transform hover:scale-105"
+                className="card p-5 text-left hover:shadow-xl transition-all transform hover:scale-102 group"
                 style={{ 
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   color: 'white',
                   border: 'none'
                 }}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg bg-white bg-opacity-20 flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-white bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-30 transition">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
+                  <svg className="w-5 h-5 opacity-70 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Neuer Besuch</h2>
-                <p className="text-sm opacity-90">Erstellen Sie einen neuen Kundenbesuch</p>
+                <h2 className="text-lg font-semibold mb-1">Neuer Besuch</h2>
+                <p className="text-xs opacity-90">Kundenbesuch erstellen</p>
               </button>
 
               <button
                 onClick={() => navigate('/form-builder')}
-                className="card p-6 text-left hover:shadow-xl transition-all transform hover:scale-105"
+                className="card p-5 text-left hover:shadow-xl transition-all transform hover:scale-102 group"
                 style={{ 
                   borderColor: '#2563EB', 
                   borderWidth: '2px',
                   backgroundColor: 'white'
                 }}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
-                    <svg className="w-6 h-6" style={{ color: '#2563EB' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition" style={{ backgroundColor: '#EEF2FF' }}>
+                    <svg className="w-5 h-5" style={{ color: '#2563EB' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
+                  <svg className="w-5 h-5 group-hover:opacity-100 opacity-50 transition" style={{ color: '#2563EB' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-                <h2 className="text-xl font-semibold mb-2" style={{ color: '#2563EB' }}>Formular erstellen</h2>
-                <p className="text-sm" style={{ color: '#475569' }}>Erstellen Sie eine neue Formularvorlage</p>
+                <h2 className="text-lg font-semibold mb-1" style={{ color: '#2563EB' }}>Formular erstellen</h2>
+                <p className="text-xs" style={{ color: '#64748B' }}>Neue Formularvorlage</p>
               </button>
             </div>
 
             {/* Google Contacts Section */}
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold" style={{ color: '#0F172A' }}>Google Kontakte</h2>
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Google Kontakte</h2>
                 {!showGoogleContacts ? (
                   <button
                     onClick={loadGoogleContacts}
                     disabled={loadingGoogleContacts || !session?.provider_token}
-                    className="btn-outlined text-sm"
+                    className="btn-outlined text-xs px-3 py-1.5"
                     style={{ opacity: (!session?.provider_token || loadingGoogleContacts) ? 0.5 : 1 }}
                   >
-                    {loadingGoogleContacts ? 'Laden...' : 'Kontakte anzeigen'}
+                    {loadingGoogleContacts ? 'Laden...' : 'Anzeigen'}
                   </button>
                 ) : (
                   <button
                     onClick={() => setShowGoogleContacts(false)}
-                    className="text-sm font-medium"
-                    style={{ color: '#475569' }}
+                    className="text-xs font-medium hover:text-gray-700 transition"
+                    style={{ color: '#64748B' }}
                   >
                     Ausblenden
                   </button>
@@ -454,26 +420,26 @@ export default function Dashboard() {
 
             {/* Recent Visits Section */}
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold" style={{ color: '#0F172A' }}>Kürzliche Besuche</h2>
-                <button className="text-sm font-medium" style={{ color: '#2563EB' }}>
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Kürzliche Besuche</h2>
+                <button className="text-xs font-medium hover:underline" style={{ color: '#2563EB' }}>
                   Alle anzeigen
                 </button>
               </div>
               
-              <div className="card p-8 text-center">
-                <svg className="w-20 h-20 mx-auto mb-4 opacity-30" style={{ color: '#475569' }} fill="currentColor" viewBox="0 0 20 20">
+              <div className="card p-6 text-center">
+                <svg className="w-16 h-16 mx-auto mb-3 opacity-20" style={{ color: '#64748B' }} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                 </svg>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: '#0F172A' }}>Noch keine Besuche</h3>
-                <p className="text-base mb-6" style={{ color: '#475569' }}>
-                  Starten Sie Ihren ersten Kundenbesuch, um ihn hier zu sehen
+                <h3 className="text-base font-semibold mb-1" style={{ color: '#0F172A' }}>Noch keine Besuche</h3>
+                <p className="text-sm mb-4" style={{ color: '#64748B' }}>
+                  Starten Sie Ihren ersten Kundenbesuch
                 </p>
                 <button
                   onClick={() => navigate('/contact-selection')}
-                  className="btn-primary inline-flex items-center gap-2"
+                  className="btn-primary inline-flex items-center gap-2 text-sm px-4 py-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Ersten Besuch erstellen
@@ -487,13 +453,12 @@ export default function Dashboard() {
       {/* Floating Action Button */}
       <button
         onClick={() => navigate('/contact-selection')}
-        className="fixed bottom-6 right-6 btn-primary rounded-2xl px-6 py-4 flex items-center gap-2 shadow-lg z-40"
-        style={{ borderRadius: '16px' }}
+        className="fixed bottom-6 right-6 btn-primary rounded-full px-5 py-3 flex items-center gap-2 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 z-40"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        <span>Besuch starten</span>
+        <span className="font-medium">Besuch starten</span>
       </button>
     </div>
   );
