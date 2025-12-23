@@ -75,21 +75,6 @@ export default function FormBuilder() {
     setFields(fields.filter(f => f.id !== fieldId));
   };
 
-  const moveField = (fieldId: string, direction: 'up' | 'down') => {
-    const index = fields.findIndex(f => f.id === fieldId);
-    if (index === -1) return;
-    
-    if (direction === 'up' && index > 0) {
-      const newFields = [...fields];
-      [newFields[index], newFields[index - 1]] = [newFields[index - 1], newFields[index]];
-      setFields(newFields);
-    } else if (direction === 'down' && index < fields.length - 1) {
-      const newFields = [...fields];
-      [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
-      setFields(newFields);
-    }
-  };
-
   const handleFinish = async () => {
     if (!templateName || fields.length === 0 || !user) return;
 
@@ -124,176 +109,128 @@ export default function FormBuilder() {
         </div>
       </div>
 
-      <div className="px-6 py-6 max-w-2xl mx-auto">
+      <div className="px-4 py-4 max-w-2xl mx-auto">
         
-        {/* Template Name */}
-        <div className="mb-6">
+        {/* Template Name - Compact */}
+        <div className="mb-5">
           <input
             type="text"
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
-            placeholder="Name des Besuchsformulars"
-            className="w-full px-4 py-4 text-lg font-medium rounded-2xl border-2 focus:outline-none transition"
+            placeholder="Formularname..."
+            className="w-full px-3 py-3 text-base font-medium rounded-lg focus:outline-none transition"
             style={{
               backgroundColor: '#FFFFFF',
-              borderColor: templateName ? '#007AFF' : '#E5E5EA',
+              border: '1px solid #D1D1D6',
               color: '#1D1D1F'
             }}
           />
         </div>
 
-        {/* Action Buttons - Add Field Types */}
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold mb-3" style={{ color: '#86868B' }}>
-            FELDER HINZUFÜGEN
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            
+        {/* Compact Action Buttons - Add Field Types */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => addField('text')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">📝</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Textfeld</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Kurze Antwort</div>
+              + Text
             </button>
-
             <button
               onClick={() => addField('toggle')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">✓</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Ja/Nein</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Einfache Auswahl</div>
+              + Ja/Nein
             </button>
-
             <button
               onClick={() => addField('date')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">📅</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Datum</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Tag auswählen</div>
+              + Datum
             </button>
-
             <button
               onClick={() => addField('dropdown')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">▼</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Auswahl</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Mehrere Optionen</div>
+              + Auswahl
             </button>
-
             <button
               onClick={() => addField('notes')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">📄</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Notizen</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Lange Antwort</div>
+              + Notiz
             </button>
-
             <button
               onClick={() => addField('signature')}
-              className="p-4 rounded-2xl text-left hover:opacity-80 transition"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5EA' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-70 transition"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid #D1D1D6', color: '#1D1D1F' }}
             >
-              <div className="text-2xl mb-2">✍️</div>
-              <div className="text-base font-medium" style={{ color: '#1D1D1F' }}>Unterschrift</div>
-              <div className="text-xs" style={{ color: '#86868B' }}>Signatur</div>
+              + Unterschrift
             </button>
-
           </div>
         </div>
 
-        {/* Fields List */}
+        {/* Fields List - Clipboard Style */}
         {fields.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold mb-3" style={{ color: '#86868B' }}>
-              FORMULAR FELDER
-            </h2>
-            <div className="space-y-3">
+          <div className="mb-6">
+            <div className="bg-white rounded-lg" style={{ border: '1px solid #D1D1D6' }}>
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="bg-white rounded-2xl p-4"
-                  style={{ border: '1px solid #E5E5EA' }}
+                  className="flex items-center gap-2 px-3 py-2"
+                  style={{ 
+                    borderBottom: index < fields.length - 1 ? '1px solid #F0F0F0' : 'none'
+                  }}
                 >
-                  <div className="flex items-center gap-3">
-                    
-                    {/* Drag Handle */}
-                    <button
-                      className="flex flex-col gap-0.5 p-1 hover:opacity-60"
-                      style={{ color: '#C7C7CC' }}
-                    >
-                      <div className="flex gap-0.5">
-                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                      </div>
-                      <div className="flex gap-0.5">
-                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
-                      </div>
-                    </button>
-
-                    {/* Label Input */}
-                    <input
-                      type="text"
-                      value={field.label}
-                      onChange={(e) => updateFieldLabel(field.id, e.target.value)}
-                      onFocus={() => setEditingFieldId(field.id)}
-                      onBlur={() => setEditingFieldId(null)}
-                      className="flex-1 px-3 py-2 rounded-lg border focus:outline-none focus:border-2 transition"
-                      style={{
-                        backgroundColor: '#F5F5F7',
-                        borderColor: editingFieldId === field.id ? '#007AFF' : '#E5E5EA',
-                        color: '#1D1D1F',
-                        fontSize: '16px'
-                      }}
-                    />
-
-                    {/* Move Up/Down */}
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() => moveField(field.id, 'up')}
-                        disabled={index === 0}
-                        className="p-1 rounded hover:opacity-60 disabled:opacity-20"
-                        style={{ color: '#007AFF' }}
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => moveField(field.id, 'down')}
-                        disabled={index === fields.length - 1}
-                        className="p-1 rounded hover:opacity-60 disabled:opacity-20"
-                        style={{ color: '#007AFF' }}
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
+                  
+                  {/* Drag Handle */}
+                  <button
+                    className="flex flex-col gap-0.5 p-1 hover:opacity-50 transition"
+                    style={{ color: '#C7C7CC' }}
+                  >
+                    <div className="flex gap-0.5">
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
                     </div>
+                    <div className="flex gap-0.5">
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
+                      <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'currentColor' }}></div>
+                    </div>
+                  </button>
 
-                    {/* Delete Icon */}
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="p-2 rounded-lg hover:opacity-60 transition"
-                      style={{ color: '#FF3B30' }}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                  {/* Label Input - Inline Editable */}
+                  <input
+                    type="text"
+                    value={field.label}
+                    onChange={(e) => updateFieldLabel(field.id, e.target.value)}
+                    onFocus={() => setEditingFieldId(field.id)}
+                    onBlur={() => setEditingFieldId(null)}
+                    placeholder="Feldname eingeben..."
+                    className="flex-1 px-2 py-1.5 rounded focus:outline-none transition"
+                    style={{
+                      backgroundColor: editingFieldId === field.id ? '#F5F5F7' : 'transparent',
+                      borderBottom: editingFieldId === field.id ? '2px solid #007AFF' : '2px solid transparent',
+                      color: '#1D1D1F',
+                      fontSize: '16px'
+                    }}
+                  />
 
-                  </div>
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => removeField(field.id)}
+                    className="p-1.5 rounded hover:bg-red-50 transition"
+                    style={{ color: '#FF3B30' }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+
                 </div>
               ))}
             </div>
@@ -302,26 +239,22 @@ export default function FormBuilder() {
 
         {/* Empty State */}
         {fields.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📋</div>
-            <p className="text-base mb-2" style={{ color: '#1D1D1F' }}>
-              Keine Felder hinzugefügt
-            </p>
+          <div className="text-center py-8">
             <p className="text-sm" style={{ color: '#86868B' }}>
-              Tippe auf die Buttons oben, um Felder hinzuzufügen
+              Felder hinzufügen ↑
             </p>
           </div>
         )}
 
-        {/* Finish Button - Fixed at bottom on mobile */}
+        {/* Primary Action Button - Fixed at bottom on mobile */}
         {fields.length > 0 && templateName && (
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t sm:relative sm:border-t-0 sm:p-0 sm:bg-transparent" style={{ borderColor: '#E5E5EA' }}>
             <button
               onClick={handleFinish}
-              className="w-full py-4 rounded-2xl font-semibold text-white transition hover:opacity-90"
+              className="w-full py-4 rounded-xl font-semibold text-white transition hover:opacity-90"
               style={{ backgroundColor: '#007AFF', fontSize: '17px' }}
             >
-              Formular verwenden
+              Besuch starten
             </button>
           </div>
         )}
