@@ -4,11 +4,18 @@ import { config } from '../config/env.js';
 export class SupabaseService {
   private static instance: SupabaseService;
   public client: SupabaseClient;
-  public adminClient: SupabaseClient;
+  public adminClient: SupabaseClient | null;
 
   private constructor() {
     this.client = createClient(config.supabase.url, config.supabase.anonKey);
-    this.adminClient = createClient(config.supabase.url, config.supabase.serviceRoleKey);
+    
+    // Only create admin client if service role key is provided
+    if (config.supabase.serviceRoleKey) {
+      this.adminClient = createClient(config.supabase.url, config.supabase.serviceRoleKey);
+    } else {
+      this.adminClient = null;
+      console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY not provided - admin operations will be disabled');
+    }
   }
 
   public static getInstance(): SupabaseService {
