@@ -5,10 +5,10 @@ import { Search, User, Mail, Phone, MapPin, X, Loader } from 'lucide-react';
 interface ContactSelectorProps {
   onSelect: (contact: GoogleContact) => void;
   onClose: () => void;
-  initialContact?: GoogleContact | null;
+  initialContact?: GoogleContact | null; // Reserved for future use
 }
 
-export default function ContactSelector({ onSelect, onClose, initialContact }: ContactSelectorProps) {
+export default function ContactSelector({ onSelect, onClose, initialContact: _initialContact }: ContactSelectorProps) {
   const [contacts, setContacts] = useState<GoogleContact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<GoogleContact[]>([]);
   const [loading, setLoading] = useState(true);
