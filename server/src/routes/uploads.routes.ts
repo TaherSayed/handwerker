@@ -26,7 +26,7 @@ router.post('/signed-url', authMiddleware, async (req: AuthRequest, res) => {
     const uniqueFileName = `${userId}/${uuidv4()}.${fileExt}`;
 
     // Create signed URL (use adminClient if available, otherwise regular client)
-    const storageClient = supabase.adminClient ?? supabase.client;
+    const storageClient = supabase.adminClient !== null ? supabase.adminClient : supabase.client;
     const { data, error } = await storageClient.storage
       .from(bucket)
       .createSignedUploadUrl(uniqueFileName);
