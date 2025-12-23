@@ -1,9 +1,9 @@
 import { supabase } from './supabase';
 import { offlineService } from './offline.service';
 
-const API_URL = import.meta.env.VITE_API_URL || 
-  (window.location.origin.includes('localhost') 
-    ? 'http://localhost:3000/api' 
+const API_URL = import.meta.env.VITE_API_URL ||
+  (window.location.origin.includes('localhost')
+    ? 'http://localhost:3000/api'
     : '/api');
 
 class ApiService {
@@ -18,6 +18,7 @@ class ApiService {
     return {
       'Authorization': `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
+      'X-Provider-Token': (session as any).provider_token,
     };
   }
 
@@ -25,12 +26,12 @@ class ApiService {
     try {
       const headers = await this.getAuthHeader();
       const url = `${API_URL}${endpoint}`;
-      
+
       // Debug logging in development
       if (import.meta.env.DEV) {
         console.log(`[API] ${options.method || 'GET'} ${url}`, options.body ? JSON.parse(options.body as string) : '');
       }
-      
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -45,7 +46,7 @@ class ApiService {
 
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        
+
         if (isJson) {
           try {
             const errorData = await response.json();
@@ -61,7 +62,7 @@ class ApiService {
             // Failed to read text, use default error message
           }
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -79,12 +80,12 @@ class ApiService {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Network error: Unable to connect to server. Please check your connection.');
       }
-      
+
       // Re-throw if it's already an Error with a message
       if (error instanceof Error) {
         throw error;
       }
-      
+
       // Otherwise wrap in Error
       throw new Error(error.message || 'An unexpected error occurred');
     }
@@ -105,7 +106,7 @@ class ApiService {
   // Templates
   async getTemplates(params?: { is_archived?: boolean }) {
     const query = params ? `?${new URLSearchParams(params as any)}` : '';
-    
+
     if (!this.isOnline()) {
       // Return cached templates when offline
       const cached = offlineService.getCachedTemplates();
@@ -114,7 +115,7 @@ class ApiService {
       }
       return cached;
     }
-    
+
     try {
       const data = await this.request(`/templates${query}`) as any[];
       // Cache templates
@@ -164,7 +165,7 @@ class ApiService {
   // Submissions
   async getSubmissions(params?: { status?: string; template_id?: string }) {
     const query = params ? `?${new URLSearchParams(params as any)}` : '';
-    
+
     if (!this.isOnline()) {
       // Return cached submissions when offline
       const cached = offlineService.getCachedSubmissions();
@@ -177,7 +178,7 @@ class ApiService {
       }
       return filtered;
     }
-    
+
     try {
       const data = await this.request(`/submissions${query}`) as any[];
       // Cache submissions
@@ -211,7 +212,7 @@ class ApiService {
       offlineService.addToSyncQueue('create', 'submission', data);
       return draftSubmission;
     }
-    
+
     try {
       const result = await this.request('/submissions', {
         method: 'POST',

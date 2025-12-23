@@ -176,10 +176,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       });
     }
 
-    res.status(201).json({ 
-      success: true, 
-      template: data 
-    });
+    res.status(201).json(data);
   } catch (error: any) {
     console.error('Create template error:', error);
     res.status(500).json({ 
@@ -253,10 +250,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       });
     }
 
-    res.json({ 
-      success: true, 
-      template: data 
-    });
+    res.json(data);
   } catch (error: any) {
     console.error('Update template error:', error);
     res.status(500).json({ 

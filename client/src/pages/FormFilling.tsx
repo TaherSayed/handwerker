@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
-import { googleContactsService, GoogleContact } from '../services/google-contacts.service';
-import { Save, Send, ArrowLeft, User, Mail, Phone, MapPin, Loader } from 'lucide-react';
+import { GoogleContact } from '../services/google-contacts.service';
+import { Save, Send, ArrowLeft, User, Loader } from 'lucide-react';
 
 export default function FormFilling() {
   const { templateId } = useParams<{ templateId: string }>();
@@ -14,7 +14,7 @@ export default function FormFilling() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showContactSelector, setShowContactSelector] = useState(false);
-  
+
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -22,7 +22,7 @@ export default function FormFilling() {
     address: '',
     contact_id: '',
   });
-  
+
   const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
   const [signature, setSignature] = useState<string | null>(null);
 
@@ -38,7 +38,7 @@ export default function FormFilling() {
       setError(null);
       const data = await apiService.getTemplate(templateId!) as any;
       setTemplate(data);
-      
+
       // Initialize field values
       const initialValues: Record<string, any> = {};
       if (data.fields) {
@@ -79,7 +79,7 @@ export default function FormFilling() {
 
   const validateForm = (): boolean => {
     if (!template) return false;
-    
+
     // Check required customer fields
     if (!customerInfo.name.trim()) {
       setError('Please enter customer name');
@@ -90,8 +90,8 @@ export default function FormFilling() {
     for (const field of template.fields || []) {
       if (field.required) {
         const value = fieldValues[field.id];
-        if (value === undefined || value === null || value === '' || 
-            (Array.isArray(value) && value.length === 0)) {
+        if (value === undefined || value === null || value === '' ||
+          (Array.isArray(value) && value.length === 0)) {
           setError(`Please fill in required field: ${field.label}`);
           return false;
         }
@@ -129,7 +129,7 @@ export default function FormFilling() {
       };
 
       await apiService.createSubmission(submissionData);
-      
+
       if (status === 'submitted') {
         navigate('/submissions');
       } else {
@@ -156,6 +156,14 @@ export default function FormFilling() {
     const hasError = field.required && (value === undefined || value === null || value === '');
 
     switch (field.type) {
+      case 'section':
+        return (
+          <div className="pt-6 pb-2 border-b-2 border-gray-900 mb-2">
+            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">{field.label}</h3>
+            {field.help_text && <p className="text-sm text-gray-500 mt-1">{field.help_text}</p>}
+          </div>
+        );
+
       case 'text':
         return (
           <input
@@ -166,7 +174,7 @@ export default function FormFilling() {
             placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
           />
         );
-      
+
       case 'number':
         return (
           <input
@@ -177,7 +185,7 @@ export default function FormFilling() {
             placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
           />
         );
-      
+
       case 'checkbox':
         return (
           <label className="flex items-center gap-3 cursor-pointer">
@@ -190,21 +198,19 @@ export default function FormFilling() {
             <span className="text-gray-700">{field.label}</span>
           </label>
         );
-      
+
       case 'toggle':
         return (
           <label className="flex items-center gap-3 cursor-pointer">
-            <div className={`relative w-14 h-7 rounded-full transition-colors ${
-              value ? 'bg-blue-600' : 'bg-gray-300'
-            }`}>
-              <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${
-                value ? 'translate-x-7' : ''
-              }`} />
+            <div className={`relative w-14 h-7 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-gray-300'
+              }`}>
+              <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${value ? 'translate-x-7' : ''
+                }`} />
             </div>
             <span className="text-gray-700">{field.label}</span>
           </label>
         );
-      
+
       case 'dropdown':
         return (
           <select
@@ -218,7 +224,7 @@ export default function FormFilling() {
             ))}
           </select>
         );
-      
+
       case 'date':
         return (
           <input
@@ -228,7 +234,7 @@ export default function FormFilling() {
             className={`input ${hasError ? 'border-red-500' : ''}`}
           />
         );
-      
+
       case 'datetime':
         return (
           <input
@@ -238,7 +244,7 @@ export default function FormFilling() {
             className={`input ${hasError ? 'border-red-500' : ''}`}
           />
         );
-      
+
       case 'notes':
         return (
           <textarea
@@ -249,7 +255,7 @@ export default function FormFilling() {
             placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
           />
         );
-      
+
       case 'signature':
         return (
           <div className="space-y-3">
@@ -269,7 +275,7 @@ export default function FormFilling() {
             )}
           </div>
         );
-      
+
       case 'photo':
         return (
           <div className="space-y-3">
@@ -293,7 +299,7 @@ export default function FormFilling() {
             )}
           </div>
         );
-      
+
       default:
         return (
           <input
@@ -370,7 +376,7 @@ export default function FormFilling() {
               Import from Google
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -385,7 +391,7 @@ export default function FormFilling() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
               <input
@@ -396,7 +402,7 @@ export default function FormFilling() {
                 placeholder="customer@example.com"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
               <input
@@ -407,7 +413,7 @@ export default function FormFilling() {
                 placeholder="+1 (555) 123-4567"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
               <input
@@ -427,10 +433,12 @@ export default function FormFilling() {
           <div className="space-y-6">
             {template.fields?.map((field: any) => (
               <div key={field.id}>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
+                {field.type !== 'section' && (
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                )}
                 {renderField(field)}
               </div>
             ))}

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Plus, GripVertical, Trash2, Save, X, FileText } from 'lucide-react';
+import { Plus, GripVertical, Trash2, Save, X } from 'lucide-react';
 
 const FIELD_TYPES = [
+  { value: 'section', label: 'Section Header' },
   { value: 'text', label: 'Text' },
   { value: 'number', label: 'Number' },
   { value: 'checkbox', label: 'Checkbox' },
@@ -18,10 +19,11 @@ const FIELD_TYPES = [
 ];
 
 export default function FormBuilder() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -42,23 +44,20 @@ export default function FormBuilder() {
       setLoading(true);
       const data = await apiService.getTemplate(id!) as any;
       setFormData({
-        name: data.name,
+        name: data.name || '',
         description: data.description || '',
         category: data.category || '',
         tags: data.tags || [],
         fields: data.fields || [],
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Load template error:', error);
-      alert('Failed to load template');
+      setError('Failed to load template');
       navigate('/templates');
     } finally {
       setLoading(false);
     }
   };
-
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -69,24 +68,17 @@ export default function FormBuilder() {
     try {
       setSaving(true);
       setError(null);
-      setSuccess(false);
-      
+
       if (id) {
         await apiService.updateTemplate(id, formData);
       } else {
         await apiService.createTemplate(formData);
       }
-      
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/templates');
-      }, 500);
+
+      navigate('/templates');
     } catch (error: any) {
       console.error('Save template error:', error);
-      const errorMessage = error?.message || error?.error || 'Failed to save template. Please try again.';
-      setError(errorMessage);
-      
-      // Scroll to top to show error
+      setError(error?.message || 'Failed to save template');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
@@ -97,10 +89,11 @@ export default function FormBuilder() {
     const newField = {
       id: `field_${Date.now()}`,
       type,
-      label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      label: type === 'section' ? 'New Section' : `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
       required: false,
       options: type === 'dropdown' ? ['Option 1', 'Option 2'] : undefined,
-      default_value: undefined,
+      placeholder: '',
+      help_text: '',
     };
     setFormData({ ...formData, fields: [...formData.fields, newField] });
   };
@@ -118,219 +111,185 @@ export default function FormBuilder() {
 
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
-
     const items = Array.from(formData.fields);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-
     setFormData({ ...formData, fields: items });
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center p-20">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="mb-6 bg-green-50 border-l-4 border-green-500 rounded-xl p-4 shadow-sm">
-          <p className="text-green-800 font-medium">Template saved successfully!</p>
-        </div>
-      )}
+    <div className="p-4 md:p-8 max-w-6xl mx-auto pb-32">
+      {/* Messages */}
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
           <p className="text-red-800 font-medium">{error}</p>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">
             {id ? 'Edit Template' : 'New Template'}
           </h1>
-          <p className="text-gray-600 text-lg">Design your form template</p>
+          <p className="text-gray-600">Design your professional form template</p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={() => navigate('/templates')}
-            className="btn-secondary"
-          >
+          <button onClick={() => navigate('/templates')} className="btn-secondary flex-1 md:flex-none justify-center">
             <X className="w-5 h-5" />
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="btn-primary"
-          >
+          <button onClick={handleSave} disabled={saving} className="btn-primary flex-1 md:flex-none justify-center">
             <Save className="w-5 h-5" />
             {saving ? 'Saving...' : 'Save Template'}
           </button>
         </div>
       </div>
 
-      {/* Template Info */}
-      <div className="card p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Template Information</h2>
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Template Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="input"
-              placeholder="e.g., Site Inspection Form"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="input"
-              rows={3}
-              placeholder="Describe what this form is used for"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-            <input
-              type="text"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="input"
-              placeholder="e.g., Inspection, Safety, Maintenance"
-            />
-            <p className="text-xs text-gray-500 mt-1">Categorize your templates for easier organization</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Field Palette */}
-      <div className="card p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Fields</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {FIELD_TYPES.map((type) => (
-            <button
-              key={type.value}
-              onClick={() => addField(type.value)}
-              className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-600 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              {type.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Fields List */}
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Form Fields</h2>
-          {formData.fields.length > 0 && (
-            <span className="text-sm text-gray-500 font-medium">
-              {formData.fields.length} {formData.fields.length === 1 ? 'field' : 'fields'}
-            </span>
-          )}
-        </div>
-        {formData.fields.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-gray-400" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="card p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Template Info</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="input px-4 py-3 text-lg"
+                  placeholder="e.g., Daily Site Report"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="input"
+                  placeholder="e.g., Safety"
+                />
+              </div>
             </div>
-            <p className="text-gray-600 font-medium mb-1">No fields yet</p>
-            <p className="text-sm text-gray-500">Add fields from the palette above to build your form</p>
           </div>
-        ) : (
+
+          <div className="card p-6 lg:sticky lg:top-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Fields</h2>
+            <div className="grid grid-cols-2 gap-2">
+              {FIELD_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => addField(type.value)}
+                  className={`flex flex-col items-center justify-center p-3 border-2 border-dashed rounded-xl transition-all duration-200 text-sm font-medium
+                    ${type.value === 'section'
+                      ? 'bg-gray-900 border-gray-900 text-white hover:bg-gray-800 col-span-2'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50'}`}
+                >
+                  <Plus className="w-4 h-4 mb-1" />
+                  {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 space-y-4">
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="fields">
-              {(provided: any) => (
+              {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                  {formData.fields.map((field, index) => (
-                    <Draggable key={field.id} draggableId={field.id} index={index}>
-                      {(provided: any, snapshot: any) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`card p-4 transition-all duration-200 ${
-                            snapshot.isDragging ? 'shadow-lg scale-[1.02]' : ''
-                          }`}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div {...provided.dragHandleProps} className="pt-2 cursor-grab active:cursor-grabbing">
-                              <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-                            </div>
-                            <div className="flex-1 space-y-3">
-                              <div className="flex flex-wrap items-center gap-3">
-                                <input
-                                  type="text"
-                                  value={field.label}
-                                  onChange={(e) => updateField(index, { label: e.target.value })}
-                                  className="flex-1 min-w-[200px] input text-sm"
-                                  placeholder="Field label"
-                                />
-                                <span className="badge bg-blue-100 text-blue-700 font-medium">
-                                  {field.type}
-                                </span>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={field.required}
-                                    onChange={(e) =>
-                                      updateField(index, { required: e.target.checked })
-                                    }
-                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                  />
-                                  <span className="text-sm font-medium text-gray-700">Required</span>
-                                </label>
-                                <button
-                                  onClick={() => removeField(index)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                                  title="Delete field"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                  {formData.fields.length === 0 ? (
+                    <div className="card border-dashed border-2 py-20 text-center text-gray-400">
+                      <Plus className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                      <p>Start adding fields to your form</p>
+                    </div>
+                  ) : (
+                    formData.fields.map((field, index) => (
+                      <Draggable key={field.id} draggableId={field.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`card overflow-hidden transition-all duration-200 ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-blue-500 z-50' : ''
+                              } ${field.type === 'section' ? 'border-l-8 border-l-gray-900 bg-gray-50' : ''}`}
+                          >
+                            <div className="flex p-4 gap-4">
+                              <div {...provided.dragHandleProps} className="flex items-center text-gray-400 cursor-grab active:cursor-grabbing">
+                                <GripVertical className="w-5 h-5" />
                               </div>
 
-                              {field.type === 'dropdown' && (
-                                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Dropdown Options
-                                  </label>
+                              <div className="flex-1 space-y-4">
+                                <div className="flex flex-col md:flex-row md:items-center gap-4">
                                   <input
                                     type="text"
-                                    value={field.options?.join(', ') || ''}
-                                    onChange={(e) =>
-                                      updateField(index, {
-                                        options: e.target.value.split(',').map((o) => o.trim()).filter(Boolean),
-                                      })
-                                    }
-                                    className="input text-sm"
-                                    placeholder="Option 1, Option 2, Option 3"
+                                    value={field.label}
+                                    onChange={(e) => updateField(index, { label: e.target.value })}
+                                    className={`flex-1 bg-transparent border-b-2 border-transparent focus:border-blue-500 transition-colors font-semibold py-1 px-0 focus:ring-0
+                                      ${field.type === 'section' ? 'text-xl text-gray-900' : 'text-lg text-gray-800'}`}
+                                    placeholder={field.type === 'section' ? 'Section Title' : 'Field Label'}
                                   />
-                                  <p className="text-xs text-gray-500 mt-1">Separate options with commas</p>
+
+                                  <div className="flex items-center gap-3">
+                                    <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider
+                                      ${field.type === 'section' ? 'bg-gray-900 text-white' : 'bg-blue-100 text-blue-700'}`}>
+                                      {field.type}
+                                    </span>
+                                    {field.type !== 'section' && (
+                                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                                        <input
+                                          type="checkbox"
+                                          checked={field.required}
+                                          onChange={(e) => updateField(index, { required: e.target.checked })}
+                                          className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                                        />
+                                        <span className="text-xs font-semibold text-gray-600">Required</span>
+                                      </label>
+                                    )}
+                                    <button
+                                      onClick={() => removeField(index)}
+                                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </div>
-                              )}
+
+                                {field.type === 'dropdown' && (
+                                  <div className="pl-4 border-l-2 border-gray-200">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Options (comma separated)</label>
+                                    <input
+                                      type="text"
+                                      value={field.options?.join(', ') || ''}
+                                      onChange={(e) => updateField(index, {
+                                        options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
+                                      })}
+                                      className="input text-sm p-2"
+                                      placeholder="Option 1, Option 2..."
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
+                        )}
+                      </Draggable>
+                    ))
+                  )}
                   {provided.placeholder}
                 </div>
               )}
             </Droppable>
           </DragDropContext>
-        )}
+        </div>
       </div>
     </div>
   );

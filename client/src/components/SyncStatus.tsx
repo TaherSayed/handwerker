@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Wifi, WifiOff, Cloud, CloudOff } from 'lucide-react';
+import { Wifi, WifiOff, Cloud } from 'lucide-react';
 import { offlineService } from '../services/offline.service';
 
 export default function SyncStatus() {
@@ -36,11 +36,10 @@ export default function SyncStatus() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-lg ${
-        isOnline 
-          ? 'bg-blue-500 text-white' 
+      <div className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-lg ${isOnline
+          ? 'bg-blue-500 text-white'
           : 'bg-amber-500 text-white'
-      }`}>
+        }`}>
         {isOnline ? (
           <>
             {pendingSync > 0 ? (
@@ -69,4 +68,3 @@ export default function SyncStatus() {
     </div>
   );
 }
-

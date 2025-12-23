@@ -3,6 +3,7 @@
 DROP TABLE IF EXISTS submission_photos CASCADE;
 DROP TABLE IF EXISTS submissions CASCADE;
 DROP TABLE IF EXISTS form_templates CASCADE;
+DROP TABLE IF EXISTS contacts CASCADE;
 DROP TABLE IF EXISTS workspaces CASCADE;
 DROP TABLE IF EXISTS user_profiles CASCADE;
 
@@ -82,6 +83,19 @@ CREATE TABLE submission_photos (
   uploaded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Contacts Cache
+CREATE TABLE contacts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  google_contact_id TEXT, -- Original ID from Google
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  address TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX idx_workspaces_owner ON workspaces(owner_id);
 CREATE INDEX idx_templates_workspace ON form_templates(workspace_id);
@@ -91,6 +105,7 @@ CREATE INDEX idx_submissions_user ON submissions(user_id);
 CREATE INDEX idx_submissions_workspace ON submissions(workspace_id);
 CREATE INDEX idx_submissions_status ON submissions(status);
 CREATE INDEX idx_submission_photos_submission ON submission_photos(submission_id);
+CREATE INDEX idx_contacts_user ON contacts(user_id);
 
 -- RLS Policies
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
@@ -98,6 +113,7 @@ ALTER TABLE workspaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE form_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submission_photos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 
 -- User Profiles Policies
 CREATE POLICY "Users can view own profile" ON user_profiles
@@ -175,6 +191,10 @@ CREATE POLICY "Users can delete own submission photos" ON submission_photos
       AND submissions.user_id = auth.uid()
     )
   );
+
+-- Contacts Policies
+CREATE POLICY "Users can manage own contacts" ON contacts
+  FOR ALL USING (auth.uid() = user_id);
 
 -- Storage Buckets Setup
 INSERT INTO storage.buckets (id, name, public) 
@@ -279,5 +299,8 @@ CREATE TRIGGER update_form_templates_updated_at BEFORE UPDATE ON form_templates
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER update_submissions_updated_at BEFORE UPDATE ON submissions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER update_contacts_updated_at BEFORE UPDATE ON contacts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 

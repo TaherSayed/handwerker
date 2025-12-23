@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { apiService } from './api.service';
+import { db, LocalContact } from './db.service';
 
 interface GoogleContact {
   id: string;
@@ -9,106 +10,57 @@ interface GoogleContact {
 }
 
 class GoogleContactsService {
-  private async getAccessToken(): Promise<string> {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // Check for provider_token in session
-    // Note: Supabase stores provider_token only if OAuth was completed with proper scopes
-    if (session?.provider_token) {
-      return session.provider_token;
-    }
-    
-    // Check if provider_token is in the session metadata
-    const providerToken = (session as any)?.provider_token || 
-                         (session as any)?.providerToken ||
-                         session?.user?.app_metadata?.provider_token;
-    
-    if (providerToken) {
-      return providerToken;
-    }
-    
-    // Try to refresh session
-    if (session) {
-      const { data: refreshedSession, error } = await supabase.auth.refreshSession();
-      if (!error && refreshedSession?.session) {
-        const refreshedToken = refreshedSession.session.provider_token ||
-                               (refreshedSession.session as any)?.providerToken ||
-                               refreshedSession.session?.user?.app_metadata?.provider_token;
-        if (refreshedToken) {
-          return refreshedToken;
-        }
-      }
-    }
-    
-    // Last resort: check user metadata
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.app_metadata?.provider_token) {
-      return user.app_metadata.provider_token;
-    }
-    
-    throw new Error('No Google access token available. Please sign out and sign in again, making sure to grant contacts permission.');
-  }
-
-  async fetchContacts(): Promise<GoogleContact[]> {
+  async fetchContacts(forceRefresh = false): Promise<GoogleContact[]> {
     try {
-      const accessToken = await this.getAccessToken();
-      
-      const response = await fetch(
-        'https://people.googleapis.com/v1/people/me/connections?personFields=names,emailAddresses,phoneNumbers,addresses&pageSize=1000',
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Google authentication expired. Please sign in again.');
-        }
-        if (response.status === 403) {
-          throw new Error('Contacts access denied. Please grant contacts permission.');
-        }
-        throw new Error(`Failed to fetch contacts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.connections) {
-        return [];
-      }
-
-      return data.connections
-        .map((contact: any) => {
-          const name = contact.names?.[0]?.displayName || 'Unnamed Contact';
-          const email = contact.emailAddresses?.[0]?.value;
-          const phone = contact.phoneNumbers?.[0]?.value;
-          const address = contact.addresses?.[0]?.formattedValue;
-
-          // Only return contacts with at least a name or email
-          if (!name && !email) {
-            return null;
+      if (!forceRefresh) {
+        const localContacts = await db.contacts.toArray();
+        if (localContacts.length > 0) {
+          // Check if cache is fresh (e.g., < 1 hour)
+          const firstContact = localContacts[0] as LocalContact;
+          if (Date.now() - firstContact.synced_at < 3600000) {
+            return localContacts;
           }
+        }
+      }
 
-          return {
-            id: contact.resourceName?.replace('people/', '') || contact.id || `contact_${Date.now()}`,
-            name,
-            email,
-            phone,
-            address,
-          };
-        })
-        .filter((contact: GoogleContact | null) => contact !== null);
+      const contacts = await apiService.getContacts() as GoogleContact[];
+      if (contacts && Array.isArray(contacts)) {
+        // Update local cache
+        const localData: LocalContact[] = contacts.map(c => ({
+          ...c,
+          synced_at: Date.now()
+        }));
+
+        await db.contacts.clear();
+        await db.contacts.bulkAdd(localData);
+      }
+
+      return contacts || [];
     } catch (error: any) {
       console.error('Fetch contacts error:', error);
+      // Fallback to local data on error
+      const localContacts = await db.contacts.toArray();
+      if (localContacts.length > 0) return localContacts;
       throw new Error(error.message || 'Failed to load Google Contacts');
     }
   }
 
   async searchContacts(query: string): Promise<GoogleContact[]> {
-    const contacts = await this.fetchContacts();
     const lowerQuery = query.toLowerCase();
-    
+
+    // Search in local DB first for instant results
+    const localMatches = await db.contacts
+      .filter(c =>
+        c.name.toLowerCase().includes(lowerQuery) ||
+        (c.email?.toLowerCase().includes(lowerQuery) || false) ||
+        (c.phone?.includes(query) || false)
+      )
+      .toArray();
+
+    if (localMatches.length > 0) return localMatches;
+
+    // If not found locally, fetch fresh
+    const contacts = await this.fetchContacts();
     return contacts.filter(
       (contact) =>
         contact.name?.toLowerCase().includes(lowerQuery) ||
