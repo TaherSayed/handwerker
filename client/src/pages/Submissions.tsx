@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { ClipboardList, FileText, Download, Calendar, ChevronRight, Zap, Clock, RefreshCw } from 'lucide-react';
+import { ClipboardList, FileText, Download, Calendar, ChevronRight, Zap, Clock, RefreshCw, CheckCircle2 } from 'lucide-react';
+import Button from '../components/common/Button';
+import { useNotificationStore } from '../store/notificationStore';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -11,6 +13,7 @@ export default function Submissions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'draft' | 'submitted'>('all');
   const [error, setError] = useState<string | null>(null);
+  const { success, error: notifyError } = useNotificationStore();
 
   useEffect(() => {
     loadSubmissions();
@@ -42,13 +45,43 @@ export default function Submissions() {
   const handleGeneratePDF = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
+      success('PDF Erstellung', 'Ihr Dokument wird generiert...');
       const result = await apiService.generatePDF(id) as any;
       window.open(result.pdf_url, '_blank');
       loadSubmissions();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Generate PDF error:', error);
-      alert('PDF konnte nicht erstellt werden');
+      notifyError('Fehler', 'PDF konnte nicht erstellt werden. ' + (error.message || ''));
     }
+  };
+
+  const getStatusDisplay = (sub: any) => {
+    const isSynced = !sub.id.toString().startsWith('draft_') && !sub.is_offline;
+
+    if (sub.status === 'draft') {
+      return {
+        label: 'Entwurf',
+        color: 'bg-amber-100 text-amber-700',
+        icon: Clock,
+        iconBg: 'bg-amber-50 text-amber-600'
+      };
+    }
+
+    if (isSynced) {
+      return {
+        label: 'Synchronisiert',
+        color: 'bg-indigo-100 text-indigo-700',
+        icon: CheckCircle2,
+        iconBg: 'bg-indigo-50 text-indigo-600'
+      };
+    }
+
+    return {
+      label: 'Eingereicht',
+      color: 'bg-green-100 text-green-700',
+      icon: Zap,
+      iconBg: 'bg-green-50 text-green-600'
+    };
   };
 
   return (
@@ -122,13 +155,11 @@ export default function Submissions() {
               className="group bg-white rounded-[2.5rem] p-8 border border-slate-100 hover:border-indigo-100 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all cursor-pointer flex flex-col h-full relative overflow-hidden"
             >
               <div className="flex items-start justify-between mb-8">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner ${sub.status === 'submitted' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
-                  }`}>
-                  {sub.status === 'submitted' ? <Zap className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner ${getStatusDisplay(sub).iconBg}`}>
+                  {React.createElement(getStatusDisplay(sub).icon, { className: 'w-8 h-8' })}
                 </div>
-                <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                  }`}>
-                  {sub.status === 'submitted' ? 'Eingereicht' : 'Entwurf'}
+                <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${getStatusDisplay(sub).color}`}>
+                  {getStatusDisplay(sub).label}
                 </div>
               </div>
 
@@ -169,19 +200,21 @@ export default function Submissions() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-3 text-indigo-600 hover:text-indigo-700 font-black text-[10px] uppercase tracking-widest group/btn"
+                    className="flex items-center gap-3 text-indigo-900 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest group/btn transition-colors"
                   >
                     <Download className="w-4 h-4 transition-transform group-hover/btn:-translate-y-0.5" />
                     PDF Archiv
                   </a>
                 ) : (
-                  <button
+                  <Button
                     onClick={(e) => handleGeneratePDF(sub.id, e)}
-                    className="flex items-center gap-3 text-slate-400 hover:text-indigo-600 font-black text-[10px] uppercase tracking-widest transition-colors group/btn"
+                    variant="secondary"
+                    size="sm"
+                    className="py-2.5 px-4"
+                    icon={<RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />}
                   >
-                    <RefreshCw className="w-4 h-4 group-hover/btn:rotate-180 transition-transform duration-500" />
-                    PDF Erstellen
-                  </button>
+                    Bericht Finalisieren
+                  </Button>
                 )}
                 <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all">
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />

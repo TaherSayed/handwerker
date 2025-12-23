@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
-import { Save, Send, ArrowLeft, User, Loader, Zap, ClipboardList } from 'lucide-react';
+import { Save, Send, ArrowLeft, User, Zap, ClipboardList, Info, Plus, Trash2 } from 'lucide-react';
+import Button from '../components/common/Button';
+import { useNotificationStore } from '../store/notificationStore';
 
 export default function FormFilling() {
   const { templateId } = useParams<{ templateId: string }>();
@@ -14,6 +16,7 @@ export default function FormFilling() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showContactSelector, setShowContactSelector] = useState(false);
+  const { success, error: notifyError } = useNotificationStore();
 
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -82,6 +85,7 @@ export default function FormFilling() {
 
     // Check required customer fields
     if (!customerInfo.name.trim()) {
+      notifyError('Pflichtfeld fehlt', 'Bitte geben Sie den Kundennamen ein');
       setError('Bitte geben Sie den Kundennamen ein');
       return false;
     }
@@ -92,6 +96,7 @@ export default function FormFilling() {
         const value = fieldValues[field.id];
         if (value === undefined || value === null || value === '' ||
           (Array.isArray(value) && value.length === 0)) {
+          notifyError('Pflichtfeld fehlt', `Bitte füllen Sie das Pflichtfeld aus: ${field.label}`);
           setError(`Bitte füllen Sie das Pflichtfeld aus: ${field.label}`);
           return false;
         }
@@ -131,19 +136,14 @@ export default function FormFilling() {
       await apiService.createSubmission(submissionData);
 
       if (status === 'submitted') {
+        success('Einsatz eingereicht', 'Bericht wurde erfolgreich gespeichert und archiviert.');
         navigate('/submissions');
       } else {
-        // Show success message
-        const successMsg = document.createElement('div');
-        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50';
-        successMsg.textContent = 'Entwurf erfolgreich gespeichert!';
-        document.body.appendChild(successMsg);
-        setTimeout(() => {
-          document.body.removeChild(successMsg);
-        }, 3000);
+        success('Entwurf gespeichert', 'Sie können diesen Einsatz später im Verlauf fortsetzen.');
       }
     } catch (error: any) {
       console.error('Save submission error:', error);
+      notifyError('Fehler beim Speichern', error.message || 'Die Daten konnten nicht übertragen werden.');
       setError(error.message || 'Speichern des Einsatzes fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setSaving(false);
@@ -260,14 +260,14 @@ export default function FormFilling() {
         return (
           <div className="space-y-3">
             {signature ? (
-              <div className="relative">
-                <img src={signature} alt="Unterschrift" className="w-full max-w-md h-32 object-contain border-2 border-gray-200 rounded-xl bg-white" />
+              <div className="relative group/sig">
+                <img src={signature} alt="Unterschrift" className="w-full max-w-md h-32 object-contain border-2 border-slate-100 rounded-[1.5rem] bg-white shadow-sm" />
                 <button
                   type="button"
                   onClick={() => setSignature(null)}
-                  className="absolute top-2 right-2 px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
+                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl shadow-lg opacity-0 group-hover/sig:opacity-100 transition-opacity hover:bg-red-600"
                 >
-                  Löschen
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -280,8 +280,10 @@ export default function FormFilling() {
         return (
           <div className="space-y-3">
             <input
+              id={`photo-${field.id}`}
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
@@ -292,11 +294,32 @@ export default function FormFilling() {
                   reader.readAsDataURL(file);
                 }
               }}
-              className="input"
+              className="hidden"
             />
-            {value && (
-              <img src={value} alt="Hochgeladen" className="w-full max-w-md h-48 object-cover rounded-xl border border-gray-200" />
-            )}
+            <div className="flex flex-col gap-4">
+              {value ? (
+                <div className="relative group/photo w-full max-w-md">
+                  <img src={value} alt="Hochgeladen" className="w-full h-48 object-cover rounded-[1.5rem] border border-slate-100 shadow-md" />
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange(field.id, null)}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl shadow-lg opacity-0 group-hover/photo:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full max-w-md border-dashed border-2 py-8 bg-slate-50/50 hover:bg-white"
+                  onClick={() => document.getElementById(`photo-${field.id}`)?.click()}
+                  icon={<Plus className="w-5 h-5" />}
+                >
+                  Foto aufnehmen
+                </Button>
+              )}
+            </div>
           </div>
         );
 
@@ -380,21 +403,26 @@ export default function FormFilling() {
         <form onSubmit={(e) => { e.preventDefault(); handleSave('submitted'); }} className="space-y-8">
           {/* Section: Customer */}
           <section className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
-                  <User className="w-5 h-5" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+                  <User className="w-6 h-6" />
                 </div>
-                <h2 className="text-xl font-black text-slate-900 uppercase text-sm tracking-widest">Kunde</h2>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight leading-none">Kundendaten</h2>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 opacity-60">Empfänger des Berichts</p>
+                </div>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
+                className="bg-white"
                 onClick={() => setShowContactSelector(true)}
-                className="btn-secondary h-10 px-4 py-0 text-xs gap-2"
+                icon={<Zap className="w-4 h-4 text-amber-500 fill-amber-500" />}
               >
-                <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                 Google Import
-              </button>
+              </Button>
             </div>
 
             <div className="card grid grid-cols-1 md:grid-cols-2 gap-5 bg-white border-slate-100 shadow-xl shadow-slate-200/50">
@@ -472,31 +500,27 @@ export default function FormFilling() {
           {/* Action Bar (Mobile Floating / Desktop Inline) */}
           <div className="fixed bottom-24 left-0 right-0 p-4 lg:relative lg:bottom-0 lg:p-0 z-40 lg:z-auto">
             <div className="max-w-4xl mx-auto flex gap-3 p-3 bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-slate-200 shadow-2xl lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:border-none lg:justify-end">
-              <button
+              <Button
                 type="button"
                 onClick={() => handleSave('draft')}
-                disabled={saving || submitting}
-                className="btn-secondary flex-1 lg:flex-none py-4 px-8 rounded-[2rem]"
+                loading={saving}
+                disabled={submitting}
+                variant="secondary"
+                className="flex-1 lg:flex-none"
+                icon={<Save className="w-5 h-5" />}
               >
-                {saving ? (
-                  <Loader className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Save className="w-5 h-5" />
-                )}
                 Entwurf
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={saving || submitting}
-                className="btn-primary flex-[2] lg:flex-none py-4 px-12 rounded-[2rem] bg-indigo-900"
+                loading={submitting}
+                disabled={saving}
+                variant="primary"
+                className="flex-[2] lg:flex-none"
+                icon={<Send className="w-5 h-5 fill-current" />}
               >
-                {submitting ? (
-                  <Loader className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Send className="w-5 h-5 fill-current" />
-                )}
                 Abschließen & Senden
-              </button>
+              </Button>
             </div>
           </div>
         </form>
@@ -517,31 +541,49 @@ export default function FormFilling() {
 function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Handle high DPI displays
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
+    ctx.scale(dpr, dpr);
+    ctx.strokeStyle = '#0f172a'; // slate-900
+    ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }, []);
 
+  const getPos = (e: React.MouseEvent | React.TouchEvent | any) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
+    setIsEmpty(false);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
+    const { x, y } = getPos(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -549,19 +591,16 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas?.getContext('2d');
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
+    const { x, y } = getPos(e);
     ctx.lineTo(x, y);
     ctx.stroke();
   };
 
   const stopDrawing = () => {
+    if (!isDrawing) return;
     setIsDrawing(false);
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -569,13 +608,20 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
     onCapture(dataUrl);
   };
 
+  const clear = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setIsEmpty(true);
+    onCapture('');
+  };
+
   return (
-    <div className="border-2 border-gray-300 rounded-xl bg-white">
+    <div className="relative border-2 border-slate-100 rounded-[2rem] bg-slate-50/50 overflow-hidden group/pad transition-all hover:border-indigo-100">
       <canvas
         ref={canvasRef}
-        width={600}
-        height={200}
-        className="w-full h-48 cursor-crosshair touch-none"
+        className="w-full h-56 cursor-crosshair touch-none bg-transparent"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -584,7 +630,27 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
       />
-      <p className="text-xs text-gray-500 p-2 text-center">Hier unterschreiben</p>
+
+      <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/pad:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={clear}
+          className="bg-white/90 backdrop-blur-sm text-slate-400 hover:text-red-500 p-3 rounded-2xl shadow-lg border border-slate-100 transition-all active:scale-95"
+          title="Löschen"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
+        <p className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${isEmpty ? 'text-slate-400 opacity-60' : 'text-indigo-500 opacity-0 translate-y-2'
+          }`}>
+          Hier unterschreiben
+        </p>
+      </div>
+
+      {/* Decorative lines to look like a document */}
+      <div className="absolute bottom-10 left-8 right-8 h-[1px] bg-slate-200/50 pointer-events-none" />
     </div>
   );
 }

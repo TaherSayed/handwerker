@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { Plus, FileText, Copy, Trash2, Archive, Edit, Play } from 'lucide-react';
+import Button from '../components/common/Button';
+import { useNotificationStore } from '../store/notificationStore';
 
 export default function FormTemplates() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { success, error: notifyError } = useNotificationStore();
   const [filter, setFilter] = useState<'active' | 'archived'>('active');
 
   useEffect(() => {
@@ -36,9 +39,10 @@ export default function FormTemplates() {
     try {
       await apiService.duplicateTemplate(id);
       loadTemplates();
+      success('Vorlage dupliziert', 'Eine Kopie wurde erfolgreich erstellt.');
     } catch (error: any) {
       console.error('Duplicate error:', error);
-      setError(error.message || 'Duplizieren der Vorlage fehlgeschlagen');
+      notifyError('Fehler', error.message || 'Duplizieren fehlgeschlagen');
     }
   };
 
@@ -47,9 +51,10 @@ export default function FormTemplates() {
     try {
       await apiService.updateTemplate(id, { is_archived: archive });
       loadTemplates();
+      success(archive ? 'Vorlage archiviert' : 'Vorlage aktiviert');
     } catch (error: any) {
       console.error('Archive error:', error);
-      setError(error.message || `Vorlage konnte nicht ${archive ? 'archiviert' : 'deaktiviert'} werden`);
+      notifyError('Fehler', error.message || `Vorlage konnte nicht ${archive ? 'archiviert' : 'aktiviert'} werden`);
     }
   };
 
@@ -59,9 +64,10 @@ export default function FormTemplates() {
     try {
       await apiService.deleteTemplate(id);
       loadTemplates();
+      success('Vorlage gelöscht', 'Die Vorlage wurde dauerhaft entfernt.');
     } catch (error: any) {
       console.error('Delete error:', error);
-      setError(error.message || 'Löschen der Vorlage fehlgeschlagen');
+      notifyError('Fehler', error.message || 'Löschen fehlgeschlagen');
     }
   };
 
@@ -77,13 +83,14 @@ export default function FormTemplates() {
             Erstellen und verwalten Sie Ihre professionellen Einsatz-Formulare
           </p>
         </div>
-        <button
+        <Button
           onClick={() => navigate('/templates/new')}
-          className="group flex items-center justify-center gap-3 bg-indigo-900 text-white w-full md:w-auto px-8 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100"
+          variant="primary"
+          size="lg"
+          icon={<Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />}
         >
-          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           Neu erstellen
-        </button>
+        </Button>
       </div>
 
       {/* Filter & Actions Row */}
@@ -221,13 +228,14 @@ export default function FormTemplates() {
               </div>
 
               <div className="mt-8 relative z-10">
-                <button
+                <Button
                   onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/fill`); }}
-                  className="w-full flex items-center justify-center gap-4 py-6 bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] rounded-3xl hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-500/30 transition-all active:scale-95 group/btn"
+                  variant="primary"
+                  className="w-full bg-slate-900 text-white hover:bg-indigo-600 py-5"
+                  icon={<Play className="w-4 h-4 fill-current group-hover:translate-x-1 transition-transform" />}
                 >
-                  <Play className="w-4 h-4 fill-current group-hover/btn:translate-x-1 transition-transform" />
                   Einsatz starten
-                </button>
+                </Button>
               </div>
             </div>
           ))}

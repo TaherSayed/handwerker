@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { googleContactsService, GoogleContact } from '../services/google-contacts.service';
 import { useAuthStore } from '../store/authStore';
-import { Search, User, Mail, Phone, MapPin, X, AlertCircle, RefreshCw, Key, ChevronRight } from 'lucide-react';
+import { Search, User, Mail, Phone, MapPin, X, AlertCircle, RefreshCw, Key, ChevronRight, Contact2, ShieldCheck } from 'lucide-react';
+import Button from './common/Button';
+import { useNotificationStore } from '../store/notificationStore';
 
 interface ContactSelectorProps {
   onSelect: (contact: GoogleContact) => void;
@@ -16,6 +18,7 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { signIn } = useAuthStore();
+  const { success, error: notifyError } = useNotificationStore();
 
   useEffect(() => {
     loadContacts();
@@ -38,9 +41,11 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
       setError(null);
       const data = await googleContactsService.fetchContacts(force);
       setContacts(data);
+      if (force) success('Kontakte aktualisiert', 'Ihre Google-Kontakte wurden erfolgreich synchronisiert.');
     } catch (err: any) {
       console.error('Load contacts error:', err);
-      setError(err.message || 'Unable to sync Google Contacts');
+      setError(err.message || 'Synchronisierung der Google-Kontakte fehlgeschlagen');
+      notifyError('Sync-Fehler', 'Google-Kontakte konnten nicht geladen werden.');
     } finally {
       setLoading(false);
     }
@@ -49,9 +54,9 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
   const handleReconnect = async () => {
     try {
       setLoading(true);
-      await signIn(); // This will redirect to Google for re-authentication/consent
+      await signIn(); // Redirects to Google
     } catch (err) {
-      setError('Failed to initiate re-authentication');
+      notifyError('Fehler', 'Anmeldung konnte nicht gestartet werden.');
       setLoading(false);
     }
   };
@@ -68,9 +73,14 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
       <div className="relative w-full max-w-2xl bg-white sm:rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden animate-slide-up">
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
-          <div>
-            <h2 className="text-xl font-black text-slate-900">Select Customer</h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">From Google Contacts</p>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+              <Contact2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Kunden auswählen</h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 opacity-60">Aus Ihren Google Kontakten</p>
+            </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-2xl transition-colors">
             <X className="w-6 h-6 text-slate-400" />
@@ -85,8 +95,8 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, or phone..."
-              className="input pl-12 w-full bg-white shadow-sm border-slate-200 group-focus-within:border-indigo-500"
+              placeholder="Nach Name, E-Mail oder Telefon suchen..."
+              className="input pl-12 w-full bg-white shadow-sm border-slate-200 group-focus-within:border-indigo-500 font-bold text-sm"
             />
           </div>
         </div>
@@ -95,41 +105,39 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center p-12">
-              <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
-              <p className="text-slate-500 font-bold text-sm animate-pulse">Syncing Google Contacts...</p>
+              <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6" />
+              <p className="text-slate-500 font-black text-[10px] uppercase tracking-widest animate-pulse">Kontakte werden synchronisiert...</p>
             </div>
           ) : error ? (
-            <div className="p-8">
-              <div className="bg-amber-50 rounded-3xl p-8 border border-amber-100 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
-                  <AlertCircle className="w-8 h-8 text-amber-500" />
+            <div className="p-8 h-full flex items-center">
+              <div className="bg-amber-50 rounded-[2.5rem] p-10 border border-amber-100 flex flex-col items-center text-center w-full shadow-xl shadow-amber-500/5">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 text-amber-500">
+                  <AlertCircle className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-black text-slate-900 mb-2">Sync Permission Required</h3>
-                <p className="text-slate-600 text-sm mb-8 leading-relaxed">
-                  We need your permission to access Google Contacts. If you've already granted it, your session might have expired.
+                <h3 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">Berechtigung erforderlich</h3>
+                <p className="text-slate-500 text-sm mb-10 leading-relaxed font-medium">
+                  Wir benötigen Zugriff auf Ihre Google Kontakte. Falls Sie die Erlaubnis bereits erteilt haben, ist Ihre Sitzung möglicherweise abgelaufen.
                 </p>
-                <div className="flex flex-col w-full gap-3">
-                  <button onClick={handleReconnect} className="btn-primary w-full">
-                    <Key className="w-5 h-5" />
-                    Connect Google Contacts
-                  </button>
-                  <button onClick={() => loadContacts(true)} className="btn-secondary w-full">
-                    <RefreshCw className="w-5 h-5" />
-                    Try Again
-                  </button>
+                <div className="flex flex-col w-full gap-4 max-w-sm">
+                  <Button onClick={handleReconnect} variant="primary" size="lg" icon={<Key className="w-5 h-5" />}>
+                    Google Verbindung herstellen
+                  </Button>
+                  <Button onClick={() => loadContacts(true)} variant="secondary" size="lg" icon={<RefreshCw className="w-5 h-5" />}>
+                    Erneut versuchen
+                  </Button>
                 </div>
               </div>
             </div>
           ) : filteredContacts.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mb-6 text-slate-200">
+              <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
                 <User className="w-10 h-10" />
               </div>
-              <h3 className="text-lg font-black text-slate-900 mb-1">
-                {searchQuery ? 'No matches found' : 'No contacts found'}
+              <h3 className="text-lg font-black text-slate-900 mb-1 uppercase tracking-tight">
+                {searchQuery ? 'Keine Treffer' : 'Keine Kontakte'}
               </h3>
-              <p className="text-slate-400 text-sm font-medium">
-                {searchQuery ? 'Try a different search term' : 'Add some contacts to your Google account first'}
+              <p className="text-slate-400 text-sm font-bold uppercase tracking-tight opacity-70">
+                {searchQuery ? 'Versuchen Sie einen anderen Suchbegriff' : 'Fügen Sie Kontakte zu Ihrem Google-Konto hinzu'}
               </p>
             </div>
           ) : (
@@ -174,9 +182,10 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-white border-t border-slate-50 flex items-center justify-center">
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-            Secure Sync by Google Cloud
+        <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-center">
+          <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] flex items-center gap-3">
+            <ShieldCheck className="w-3 h-3 text-indigo-400" />
+            Sichere Synchronisierung via Google People API
           </p>
         </div>
       </div>

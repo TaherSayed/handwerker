@@ -3,13 +3,14 @@ import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
 import { Save, Upload, User, Building, Mail, Trash2, ShieldCheck, Sparkles, Plus } from 'lucide-react';
+import Button from '../components/common/Button';
+import { useNotificationStore } from '../store/notificationStore';
 
 export default function Settings() {
   const { profile, refreshProfile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const { success, error: notifyError } = useNotificationStore();
   const [formData, setFormData] = useState({
     full_name: '',
     company_name: '',
@@ -29,17 +30,12 @@ export default function Settings() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(false);
-
       await apiService.updateProfile(formData);
       await refreshProfile();
-
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      success('Profil aktualisiert', 'Ihre Änderungen wurden erfolgreich gespeichert.');
     } catch (error: any) {
       console.error('Save settings error:', error);
-      setError(error.message || 'Speichern der Einstellungen fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      notifyError('Speichern fehlgeschlagen', error.message || 'Die Änderungen konnten nicht übernommen werden.');
     } finally {
       setSaving(false);
     }
@@ -71,9 +67,10 @@ export default function Settings() {
 
       const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
       setFormData({ ...formData, company_logo_url: data.publicUrl });
+      success('Logo hochgeladen', 'Ihre Marken-Identität wurde aktualisiert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
-      setError(error.message || 'Logo-Upload fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      notifyError('Upload fehlgeschlagen', error.message || 'Das Bild konnte nicht verarbeitet werden.');
     } finally {
       setLoading(false);
     }
@@ -92,24 +89,6 @@ export default function Settings() {
           </p>
         </div>
       </div>
-
-      {/* Messages */}
-      {success && (
-        <div className="bg-green-50 border-l-4 border-green-500 rounded-[2rem] p-6 shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-black">✓</div>
-            <p className="text-green-800 font-bold tracking-tight text-sm">Profil erfolgreich aktualisiert!</p>
-          </div>
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 rounded-[2rem] p-6 shadow-xl shadow-red-500/5 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
-            <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-10">
@@ -199,12 +178,13 @@ export default function Settings() {
               </div>
 
               <div className="shrink-0">
-                <button
+                <Button
                   onClick={() => window.open('https://myaccount.google.com/', '_blank')}
-                  className="text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-800 transition-colors"
+                  variant="ghost"
+                  size="sm"
                 >
                   Google Konto verwalten
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -265,19 +245,24 @@ export default function Settings() {
                       <h4 className="text-xl font-black text-slate-900 leading-none">Globale Marken-Assets</h4>
                       <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-sm uppercase tracking-tighter opacity-70">Werten Sie Ihre Berichte mit einer klaren Markenidentität auf. SVGs oder hochauflösende PNGs empfohlen.</p>
                     </div>
-                    <label className="flex items-center justify-center sm:justify-start gap-4 cursor-pointer group/upload">
-                      <div className="bg-indigo-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 active:scale-95 flex items-center gap-3">
-                        <Plus className="w-4 h-4" />
-                        {loading ? 'Identität wird verarbeitet...' : formData.company_logo_url ? 'Identität ersetzen' : 'Asset hochladen'}
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        disabled={loading}
-                      />
-                    </label>
+                    <div className="flex items-center justify-center sm:justify-start">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        loading={loading}
+                        onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
+                        icon={<Plus className="w-4 h-4" />}
+                      >
+                        {formData.company_logo_url ? 'Asset ersetzen' : 'Asset hochladen'}
+                      </Button>
+                    </div>
+                    <input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
                   </div>
                 </div>
               </div>
@@ -297,18 +282,14 @@ export default function Settings() {
                 <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none">Änderungen sichern</h3>
                 <p className="text-sm font-bold text-slate-400 leading-relaxed uppercase tracking-tighter opacity-80">Schließen Sie Ihre Arbeitsbereich-Konfiguration ab, indem Sie Ihre Profil-Updates bestätigen.</p>
               </div>
-              <button
+              <Button
                 onClick={handleSave}
-                disabled={saving}
-                className="w-full bg-white text-indigo-950 px-8 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-slate-50 transition-all active:scale-95 disabled:bg-slate-800 disabled:text-slate-600 border-none"
+                loading={saving}
+                variant="primary"
+                className="w-full bg-white text-indigo-950 hover:bg-slate-50 border-none py-6"
               >
-                {saving ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
-                    <span>Wird angewendet...</span>
-                  </div>
-                ) : 'Konfiguration speichern'}
-              </button>
+                Konfiguration speichern
+              </Button>
             </div>
           </div>
 
@@ -323,7 +304,7 @@ export default function Settings() {
             <ShieldCheck className="w-8 h-8 text-green-500 opacity-20" />
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

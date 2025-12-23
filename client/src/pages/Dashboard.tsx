@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { FileText, ClipboardList, Plus, Clock, ChevronRight, Sparkles, Zap } from 'lucide-react';
+import { FileText, ClipboardList, Plus, Clock, ChevronRight, Sparkles, Zap, PlusCircle } from 'lucide-react';
+import Button from '../components/common/Button';
 import { supabase } from '../services/supabase';
 import { db, LocalSubmission } from '../services/db.service';
 
@@ -99,13 +100,15 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <button
+          <Button
             onClick={() => navigate('/visits/new')}
-            className="group relative flex items-center justify-center gap-3 bg-white text-indigo-900 px-10 py-6 rounded-[2rem] font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-white/20 shrink-0"
+            size="xl"
+            variant="primary"
+            className="bg-white text-indigo-900 hover:bg-slate-50 shadow-white/10"
+            icon={<PlusCircle className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />}
           >
-            <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
             EINSATZ STARTEN
-          </button>
+          </Button>
         </div>
       </div>
 

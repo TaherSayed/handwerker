@@ -13,6 +13,9 @@ import SubmissionDetail from './pages/SubmissionDetail';
 import Settings from './pages/Settings';
 import VisitWorkflow from './pages/VisitWorkflow';
 import { supabase } from './services/supabase';
+import Toaster from './components/Toaster';
+import { useNotificationStore } from './store/notificationStore';
+import { WifiOff } from 'lucide-react';
 
 
 // OAuth callback handler
@@ -83,10 +86,29 @@ function AuthCallback() {
 
 function App() {
   const { user, loading, initialized, initialize } = useAuthStore();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const { warn, success: notifySuccess } = useNotificationStore();
 
   useEffect(() => {
     initialize();
-  }, [initialize]);
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      notifySuccess('Wieder online', 'Ihre Verbindung wurde wiederhergestellt.');
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      warn('Offline-Modus', 'Sie sind nicht mit dem Internet verbunden. Änderungen werden lokal gespeichert.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [initialize, warn, notifySuccess]);
 
   if (!initialized || loading) {
     return <SplashScreen />;
@@ -105,6 +127,14 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* Offline Indicator */}
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center z-[2000] flex items-center justify-center gap-2">
+          <WifiOff className="w-3 h-3" />
+          OFFLINE-MODUS AKTIV
+        </div>
+      )}
+
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
@@ -120,6 +150,7 @@ function App() {
         </Route>
         <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   );
 }

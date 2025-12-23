@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SyncStatus from './SyncStatus';
+import Button from './common/Button';
+import { Wifi, WifiOff } from 'lucide-react';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen] = useState(window.innerWidth > 1024);
@@ -22,8 +25,18 @@ export default function Layout() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -67,8 +80,8 @@ export default function Layout() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${isActive
-                  ? 'bg-indigo-50 text-indigo-600 border border-indigo-100/50'
+                `flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
+                  ? 'bg-indigo-900 text-white shadow-xl shadow-indigo-900/20 active:scale-95'
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
@@ -99,13 +112,15 @@ export default function Layout() {
               )}
             </div>
             {sidebarOpen && (
-              <button
+              <Button
                 onClick={handleSignOut}
-                className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-red-500 hover:bg-white rounded-xl transition-all"
+                variant="danger"
+                size="sm"
+                className="w-full mt-4 rounded-xl py-3"
+                icon={<LogOut className="w-4 h-4" />}
               >
-                <LogOut className="w-4 h-4" />
                 Abmelden
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -137,9 +152,19 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 text-xs font-medium text-slate-600 shadow-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Online
+            <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors ${isOnline ? 'bg-green-50 border-green-100 text-green-600' : 'bg-amber-50 border-amber-100 text-amber-600'
+              }`}>
+              {isOnline ? (
+                <>
+                  <Wifi className="w-3 h-3" />
+                  Online
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 animate-pulse" />
+                  Offline
+                </>
+              )}
             </div>
             <button className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm relative">
               <Bell className="w-5 h-5" />
