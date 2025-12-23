@@ -21,5 +21,5 @@ export const config = {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '', // Optional for now
   },
   
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin: process.env.CORS_ORIGIN || process.env.COOLIFY_URL || '*',
 };

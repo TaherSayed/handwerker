@@ -63,6 +63,22 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
     const userId = req.user!.id;
     const { name, description, category, tags, fields } = req.body;
 
+    // Validate required fields
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Template name is required',
+        success: false 
+      });
+    }
+
+    // Validate fields array
+    if (!Array.isArray(fields)) {
+      return res.status(400).json({ 
+        error: 'Fields must be an array',
+        success: false 
+      });
+    }
+
     // Get or create user's workspace
     let { data: workspace, error: workspaceError } = await supabase.client
       .from('workspaces')
@@ -91,13 +107,20 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
         .single();
 
       if (createError || !newWorkspace) {
-        return res.status(400).json({ error: 'Failed to create workspace' });
+        console.error('Workspace creation error:', createError);
+        return res.status(500).json({ 
+          error: createError?.message || 'Failed to create workspace',
+          success: false 
+        });
       }
       workspace = newWorkspace;
     }
 
     if (!workspace || !workspace.id) {
-      return res.status(400).json({ error: 'No workspace available' });
+      return res.status(500).json({ 
+        error: 'No workspace available',
+        success: false 
+      });
     }
 
     const { data, error } = await supabase.client
@@ -105,9 +128,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       .insert({
         workspace_id: workspace.id,
         user_id: userId,
-        name,
-        description,
-        category,
+        name: name.trim(),
+        description: description || null,
+        category: category || null,
         tags: tags || [],
         fields: fields || [],
       })
@@ -115,13 +138,30 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('Template creation error:', error);
+      return res.status(500).json({ 
+        error: error.message || 'Failed to save template',
+        success: false 
+      });
     }
 
-    res.status(201).json(data);
-  } catch (error) {
+    if (!data) {
+      return res.status(500).json({ 
+        error: 'Template was not created',
+        success: false 
+      });
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      template: data 
+    });
+  } catch (error: any) {
     console.error('Create template error:', error);
-    res.status(500).json({ error: 'Failed to create template' });
+    res.status(500).json({ 
+      error: error.message || 'Failed to create template',
+      success: false 
+    });
   }
 });
 
@@ -132,13 +172,36 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
     const userId = req.user!.id;
     const { name, description, category, tags, fields, is_archived } = req.body;
 
+    // Validate template name if provided
+    if (name !== undefined && (!name || typeof name !== 'string' || name.trim().length === 0)) {
+      return res.status(400).json({ 
+        error: 'Template name cannot be empty',
+        success: false 
+      });
+    }
+
+    // Validate fields array if provided
+    if (fields !== undefined && !Array.isArray(fields)) {
+      return res.status(400).json({ 
+        error: 'Fields must be an array',
+        success: false 
+      });
+    }
+
     const updates: any = {};
-    if (name !== undefined) updates.name = name;
-    if (description !== undefined) updates.description = description;
-    if (category !== undefined) updates.category = category;
-    if (tags !== undefined) updates.tags = tags;
-    if (fields !== undefined) updates.fields = fields;
+    if (name !== undefined) updates.name = name.trim();
+    if (description !== undefined) updates.description = description || null;
+    if (category !== undefined) updates.category = category || null;
+    if (tags !== undefined) updates.tags = tags || [];
+    if (fields !== undefined) updates.fields = fields || [];
     if (is_archived !== undefined) updates.is_archived = is_archived;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ 
+        error: 'No fields to update',
+        success: false 
+      });
+    }
 
     const { data, error } = await supabase.client
       .from('form_templates')
@@ -149,13 +212,30 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('Template update error:', error);
+      return res.status(500).json({ 
+        error: error.message || 'Failed to update template',
+        success: false 
+      });
     }
 
-    res.json(data);
-  } catch (error) {
+    if (!data) {
+      return res.status(404).json({ 
+        error: 'Template not found',
+        success: false 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      template: data 
+    });
+  } catch (error: any) {
     console.error('Update template error:', error);
-    res.status(500).json({ error: 'Failed to update template' });
+    res.status(500).json({ 
+      error: error.message || 'Failed to update template',
+      success: false 
+    });
   }
 });
 

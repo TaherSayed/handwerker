@@ -16,7 +16,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Middleware
-app.use(cors({ origin: config.corsOrigin }));
+const corsOptions = {
+  origin: config.corsOrigin === '*' ? true : config.corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+console.log(`🔒 CORS configured with origin: ${config.corsOrigin === '*' ? '*' : config.corsOrigin}`);
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -67,10 +74,25 @@ if (existsSync(clientBuildPath)) {
   });
 }
 
-// Error handler
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ 
+    error: 'API endpoint not found',
+    path: req.path 
+  });
+});
+
+// Error handler - MUST return JSON
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  
+  // Ensure we always return JSON
+  if (!res.headersSent) {
+    res.status(500).json({ 
+      error: err.message || 'Internal server error',
+      success: false 
+    });
+  }
 });
 
 // Start server

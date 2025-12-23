@@ -1,6 +1,9 @@
 import { supabase } from './supabase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 
+  (window.location.origin.includes('localhost') 
+    ? 'http://localhost:3000/api' 
+    : '/api');
 
 class ApiService {
   private async getAuthHeader() {
@@ -15,25 +18,72 @@ class ApiService {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const headers = await this.getAuthHeader();
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        ...headers,
-        ...options.headers,
-      },
-    });
+    try {
+      const headers = await this.getAuthHeader();
+      const url = `${API_URL}${endpoint}`;
+      
+      // Debug logging in development
+      if (import.meta.env.DEV) {
+        console.log(`[API] ${options.method || 'GET'} ${url}`, options.body ? JSON.parse(options.body as string) : '');
+      }
+      
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...headers,
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Request failed' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        
+        if (isJson) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch (e) {
+            // Failed to parse JSON, use default error message
+          }
+        } else {
+          try {
+            const text = await response.text();
+            if (text) errorMessage = text;
+          } catch (e) {
+            // Failed to read text, use default error message
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      if (response.status === 204) {
+        return null as T;
+      }
+
+      if (!isJson) {
+        throw new Error('Expected JSON response but received non-JSON');
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      // Handle network errors
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to server. Please check your connection.');
+      }
+      
+      // Re-throw if it's already an Error with a message
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      // Otherwise wrap in Error
+      throw new Error(error.message || 'An unexpected error occurred');
     }
-
-    if (response.status === 204) {
-      return null as T;
-    }
-
-    return response.json();
   }
 
   // User

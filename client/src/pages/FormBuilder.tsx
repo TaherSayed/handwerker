@@ -83,7 +83,11 @@ export default function FormBuilder() {
       }, 500);
     } catch (error: any) {
       console.error('Save template error:', error);
-      setError(error.message || 'Failed to save template. Please try again.');
+      const errorMessage = error?.message || error?.error || 'Failed to save template. Please try again.';
+      setError(errorMessage);
+      
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
