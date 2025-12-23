@@ -27,7 +27,9 @@ export default function ContactSelection() {
       setContacts(data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
-      alert('Fehler beim Laden der Kontakte');
+      // Show user-friendly message
+      alert('Noch keine Kontakte vorhanden.\n\nBitte verwenden Sie "Kunde manuell eingeben" um einen neuen Kunden anzulegen.');
+      setShowGoogleContacts(false);
     } finally {
       setLoading(false);
     }
