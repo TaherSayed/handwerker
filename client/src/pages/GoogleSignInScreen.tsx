@@ -1,8 +1,24 @@
+import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { FileText } from 'lucide-react';
 
 export default function GoogleSignInScreen() {
   const { signIn } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await signIn();
+      // OAuth redirect will happen, so we don't need to do anything here
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      setError(err.message || 'Failed to sign in. Please try again.');
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-blue-800">
@@ -16,9 +32,15 @@ export default function GoogleSignInScreen() {
         </div>
 
         <div className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
           <button
-            onClick={signIn}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            onClick={handleSignIn}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -38,8 +60,13 @@ export default function GoogleSignInScreen() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Sign in with Google
+            {loading ? 'Signing in...' : 'Sign in with Google'}
           </button>
+          {loading && (
+            <p className="text-xs text-gray-500 text-center">
+              You will be redirected to Google to sign in...
+            </p>
+          )}
         </div>
 
         <p className="text-xs text-gray-500 text-center mt-6">
