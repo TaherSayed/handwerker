@@ -12,7 +12,7 @@ export default function PdfPreview() {
 
   useEffect(() => {
     if (!visit || !contact || !template) {
-      navigate('/dashboard');
+      navigate('/contact-selection');
       return;
     }
 
@@ -59,11 +59,11 @@ export default function PdfPreview() {
               PDF Vorschau
             </h1>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/contact-selection')}
               className="text-sm font-medium hover:opacity-70 transition"
               style={{ color: '#007AFF' }}
             >
-              ← Zurück
+              ← Neuer Besuch
             </button>
           </div>
 

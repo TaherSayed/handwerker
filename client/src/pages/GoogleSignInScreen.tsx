@@ -28,7 +28,7 @@ export default function GoogleSignInScreen() {
       } else {
         await signInWithEmail(email, password);
       }
-      navigate('/dashboard');
+      navigate('/contact-selection');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     }

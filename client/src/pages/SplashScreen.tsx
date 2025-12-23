@@ -25,7 +25,7 @@ export default function SplashScreen() {
           }, 1500);
         }
         
-        navigate('/dashboard');
+        navigate('/contact-selection');
       } else {
         navigate('/google-sign-in');
       }
