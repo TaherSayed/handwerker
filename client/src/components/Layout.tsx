@@ -13,11 +13,9 @@ import {
 import { useState, useEffect } from 'react';
 import SyncStatus from './SyncStatus';
 import Button from './common/Button';
-import { Wifi, WifiOff } from 'lucide-react';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen] = useState(window.innerWidth > 1024);
@@ -25,17 +23,11 @@ export default function Layout() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -152,20 +144,7 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm transition-colors ${isOnline ? 'bg-green-50 border-green-100 text-green-600' : 'bg-amber-50 border-amber-100 text-amber-600'
-              }`}>
-              {isOnline ? (
-                <>
-                  <Wifi className="w-3 h-3" />
-                  Online
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-3 h-3 animate-pulse" />
-                  Offline
-                </>
-              )}
-            </div>
+
             <button className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
@@ -186,32 +165,34 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 px-6 py-3 flex items-center justify-between z-40 pb-safe">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `nav-link-mobile relative ${isActive ? 'active' : ''}`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={`w-6 h-6 transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
-                <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
-                {isActive && (
-                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-600 rounded-full" />
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-        {/* Floating Action Button Concept */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-around z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.to;
+          return (
+            <button
+              key={item.to}
+              onClick={() => {
+                if (isActive) return; // Prevent double taps/redundant navigation
+                navigate(item.to);
+              }}
+              className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-2xl transition-all duration-200 min-w-[72px] ${isActive
+                ? 'text-indigo-900 bg-indigo-50 shadow-inner'
+                : 'text-slate-400 hover:text-slate-600'
+                }`}
+            >
+              <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''}`} />
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+        {/* Floating Action Button */}
         <button
           onClick={() => navigate('/templates/new')}
-          className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-indigo-300 border-4 border-slate-50 active:scale-95 transition-transform"
+          className="w-14 h-14 bg-indigo-900 rounded-full flex items-center justify-center text-white shadow-2xl shadow-indigo-200 border-4 border-white active:scale-90 transition-transform -translate-y-4"
         >
-          <PlusCircle className="w-7 h-7" />
+          <PlusCircle className="w-8 h-8" />
         </button>
       </nav>
 

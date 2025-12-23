@@ -1,53 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
-import { Save, Upload, User, Building, Mail, Trash2, ShieldCheck, Sparkles, Plus } from 'lucide-react';
+import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
 export default function Settings() {
   const { profile, refreshProfile } = useAuthStore();
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const { success, error: notifyError } = useNotificationStore();
+
+  // Local state for form fields
   const [formData, setFormData] = useState({
     full_name: '',
     company_name: '',
     company_logo_url: '',
   });
 
+  // State management for auto-save
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [logoLoading, setLogoLoading] = useState(false);
+  const mountRef = useRef(false);
+
+  // Initialize form with profile data
   useEffect(() => {
-    if (profile) {
+    if (profile && !mountRef.current) {
       setFormData({
         full_name: profile.full_name || '',
         company_name: profile.company_name || '',
         company_logo_url: profile.company_logo_url || '',
       });
+      mountRef.current = true;
     }
   }, [profile]);
 
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      await apiService.updateProfile(formData);
-      await refreshProfile();
-      success('Profil aktualisiert', 'Ihre Änderungen wurden erfolgreich gespeichert.');
-    } catch (error: any) {
-      console.error('Save settings error:', error);
-      notifyError('Speichern fehlgeschlagen', error.message || 'Die Änderungen konnten nicht übernommen werden.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Auto-save logic with debounce
+  useEffect(() => {
+    // Skip the first render or if profile isn't loaded yet
+    if (!mountRef.current || !profile) return;
+
+    const timer = setTimeout(async () => {
+      // Check if values actually changed to avoid unnecessary saves on initial load
+      if (
+        formData.full_name === (profile.full_name || '') &&
+        formData.company_name === (profile.company_name || '') &&
+        formData.company_logo_url === (profile.company_logo_url || '')
+      ) {
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        await apiService.updateProfile(formData);
+        await refreshProfile();
+        setLastSaved(new Date());
+      } catch (error: any) {
+        console.error('Auto-save error:', error);
+        notifyError('Speichern fehlgeschlagen', 'Änderungen konnten nicht automatisch gespeichert werden.');
+      } finally {
+        setIsSaving(false);
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timer);
+  }, [formData, profile, refreshProfile, notifyError]);
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
-      setLoading(true);
-
+      setLogoLoading(true);
       const { signed_url, path } = await apiService.getSignedUploadUrl(
         'company-logos',
         file.name
@@ -56,255 +80,205 @@ export default function Settings() {
       const uploadResponse = await fetch(signed_url, {
         method: 'PUT',
         body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
+        headers: { 'Content-Type': file.type },
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error('Upload fehlgeschlagen');
-      }
+      if (!uploadResponse.ok) throw new Error('Upload fehlgeschlagen');
 
       const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
-      setFormData({ ...formData, company_logo_url: data.publicUrl });
+
+      // Update form data to trigger auto-save
+      setFormData(prev => ({ ...prev, company_logo_url: data.publicUrl }));
       success('Logo hochgeladen', 'Ihre Marken-Identität wurde aktualisiert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
-      notifyError('Upload fehlgeschlagen', error.message || 'Das Bild konnte nicht verarbeitet werden.');
+      notifyError('Upload fehlgeschlagen', error.message);
     } finally {
-      setLoading(false);
+      setLogoLoading(false);
     }
   };
 
   return (
-    <div className="animate-slide-up space-y-12 pb-32 lg:pb-8">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+    <div className="animate-slide-up space-y-8 max-w-4xl mx-auto pb-32">
+      {/* Header with Auto-Save Status */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
+          <h1 className="text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">
             Einstellungen
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Personalisieren Sie Ihren Arbeitsbereich und Ihre Identität
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">
+            Personalisieren Sie Ihren Arbeitsbereich
           </p>
+        </div>
+
+        {/* Auto-save Indicator */}
+        <div className="flex items-center gap-2 h-8 px-4 bg-white/50 rounded-full border border-slate-100">
+          {isSaving ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Speichert...</span>
+            </>
+          ) : lastSaved ? (
+            <>
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Gespeichert {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </>
+          ) : (
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Bereit</span>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-8 space-y-10">
-          {/* Profile Section */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
-            <div className="flex items-center gap-4 px-2">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
-                <User className="w-6 h-6" />
+      {/* Main Content */}
+      <div className="space-y-6">
+
+        {/* Profile Identity */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <User className="w-24 h-24" />
+          </div>
+
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Profilinformationen</h2>
-                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Persönliche Identifikation</p>
+                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Persönliche Daten</h2>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Verwaltet über Google</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Full Name - Editable */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vollständiger Name</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Anzeigename</label>
                 <input
                   type="text"
                   value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="input px-6 py-4 font-bold placeholder:text-slate-200"
-                  placeholder="Ihr vollständiger Name"
+                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                  className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-300"
+                  placeholder="Ihr Name"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">System-E-Mail (Google)</label>
+              {/* Email - Read Only */}
+              <div className="space-y-2 opacity-75">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                  <span>Google Account Email</span>
+                  <span className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400">READ ONLY</span>
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                   <input
                     type="email"
                     value={profile?.email || ''}
-                    disabled
-                    className="input pl-14 pr-12 bg-slate-50 text-slate-400 cursor-not-allowed border-dashed font-bold"
+                    readOnly
+                    className="w-full bg-slate-100 border-0 rounded-2xl pl-10 pr-4 py-3 font-bold text-slate-500 cursor-not-allowed select-none"
                   />
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2">
-                    <ShieldCheck className="w-4 h-4 text-green-500" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Google Account Section */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
-            <div className="flex items-center gap-4 px-2">
-              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Google Konto & Synchronisierung</h2>
-                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Status Ihrer Cloud-Verbindung</p>
-              </div>
-            </div>
-
-            <div className="p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100 flex flex-col sm:flex-row items-center gap-8">
-              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg border border-slate-100 items-center justify-center flex overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-xl">
-                    {profile?.full_name?.charAt(0) || 'U'}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 text-center sm:text-left space-y-2">
-                <h4 className="text-xl font-black text-slate-900 leading-none">{profile?.full_name || 'Benutzer'}</h4>
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-tighter">{profile?.email}</p>
-                <div className="flex items-center justify-center sm:justify-start gap-4 mt-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-full border border-green-100 shadow-sm">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest">
                     <ShieldCheck className="w-3 h-3" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Verbunden</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 shadow-sm">
-                    <Sparkles className="w-3 h-3" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Kontakte synchronisiert</span>
+                    <span>Gesichert</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="shrink-0">
-                <Button
-                  onClick={() => window.open('https://myaccount.google.com/', '_blank')}
-                  variant="ghost"
-                  size="sm"
-                >
-                  Google Konto verwalten
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Organisation Section */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
-            <div className="flex items-center gap-4 px-2">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
-                <Building className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="font-black text-slate-900 uppercase text-xs tracking-[0.2em]">Organisation</h2>
-                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5 opacity-60">Unternehmens- & Branding-Details</p>
-              </div>
-            </div>
-
-            <div className="space-y-10">
-              <div className="space-y-2 max-w-xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Firmenname</label>
-                <input
-                  type="text"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  className="input px-6 py-4 font-bold placeholder:text-slate-200"
-                  placeholder="Firmenname eintragen..."
-                />
-                <p className="text-[10px] text-slate-400 font-bold ml-1 flex items-center gap-2 opacity-60 uppercase tracking-tighter">
-                  <Sparkles className="w-3 h-3 text-indigo-400" />
-                  Erscheint auf allen PDF-Berichten und generierten Dokumenten
+                <p className="text-[10px] text-slate-400 font-bold ml-1 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Wird vom Google-Login verwaltet.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
 
-              <div className="space-y-6">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Markenbild / Logo</label>
-                <div className="flex flex-col sm:flex-row items-center gap-10 p-10 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200 transition-all hover:bg-white hover:border-indigo-300 group">
-                  {formData.company_logo_url ? (
-                    <div className="relative group/logo shrink-0">
-                      <img
-                        src={formData.company_logo_url}
-                        alt="Unternehmenslogo"
-                        className="h-32 w-32 object-contain rounded-2xl bg-white p-4 shadow-xl border border-slate-100"
-                      />
-                      <button
-                        onClick={() => setFormData({ ...formData, company_logo_url: '' })}
-                        className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-32 h-32 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-slate-300 shadow-inner group-hover:bg-indigo-50 transition-colors">
-                      <Upload className="w-10 h-10 group-hover:scale-110 transition-transform duration-500 group-hover:text-indigo-400" />
-                    </div>
-                  )}
+        {/* Company & Branding */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Building className="w-24 h-24" />
+          </div>
 
-                  <div className="flex-1 space-y-5 text-center sm:text-left">
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-xl font-black text-slate-900 leading-none">Globale Marken-Assets</h4>
-                      <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-sm uppercase tracking-tighter opacity-70">Werten Sie Ihre Berichte mit einer klaren Markenidentität auf. SVGs oder hochauflösende PNGs empfohlen.</p>
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                <Building className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Firma & Branding</h2>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Erscheint auf Ihren Berichten</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Firmenname</label>
+              <input
+                type="text"
+                value={formData.company_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-300"
+                placeholder="Firmenname eingeben"
+              />
+            </div>
+
+            <div className="pt-4 border-t border-slate-50">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block mb-3">Firmenlogo (für PDF Berichte)</label>
+
+              <div className="flex items-center gap-6">
+                {formData.company_logo_url ? (
+                  <div className="flex items-center gap-4 bg-slate-50 p-2 pr-6 rounded-2xl border border-slate-100">
+                    <div className="h-16 w-16 bg-white rounded-xl p-2 flex items-center justify-center border border-slate-100 shadow-sm">
+                      <img src={formData.company_logo_url} className="max-h-full max-w-full object-contain" alt="Logo" />
                     </div>
-                    <div className="flex items-center justify-center sm:justify-start">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        loading={loading}
-                        onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
-                        icon={<Plus className="w-4 h-4" />}
-                      >
-                        {formData.company_logo_url ? 'Asset ersetzen' : 'Asset hochladen'}
-                      </Button>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-bold text-slate-700">Logo aktiv</span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
+                          loading={logoLoading}
+                          className="h-7 text-[10px] px-2"
+                        >
+                          Ändern
+                        </Button>
+                        <button
+                          onClick={() => setFormData(prev => ({ ...prev, company_logo_url: '' }))}
+                          className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-wider px-2"
+                        >
+                          Entfernen
+                        </button>
+                      </div>
                     </div>
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
                   </div>
-                </div>
+                ) : (
+                  <div
+                    onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
+                    className="h-16 w-16 bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-indigo-400 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-200 flex items-center justify-center cursor-pointer transition-all"
+                  >
+                    {logoLoading ? <Loader2 className="w-5 h-5 animate-spin text-indigo-500" /> : <Plus className="w-6 h-6" />}
+                  </div>
+                )}
+
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Action Sidebar */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="bg-slate-900 rounded-[3rem] p-8 md:p-10 shadow-2xl shadow-slate-900/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[4rem]" />
-            <div className="relative z-10 space-y-8">
-              <div className="space-y-3">
-                <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center">
-                  <Save className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight leading-none">Änderungen sichern</h3>
-                <p className="text-sm font-bold text-slate-400 leading-relaxed uppercase tracking-tighter opacity-80">Schließen Sie Ihre Arbeitsbereich-Konfiguration ab, indem Sie Ihre Profil-Updates bestätigen.</p>
-              </div>
-              <Button
-                onClick={handleSave}
-                loading={saving}
-                variant="primary"
-                className="w-full bg-white text-indigo-950 hover:bg-slate-50 border-none py-6"
-              >
-                Konfiguration speichern
-              </Button>
-            </div>
-          </div>
-
-          <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Identitäts-Sync</h4>
-              <div className="flex items-center gap-2 text-green-600 font-black text-xs">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                Verifiziert & Aktiv
-              </div>
-            </div>
-            <ShieldCheck className="w-8 h-8 text-green-500 opacity-20" />
-          </div>
+        {/* Connection Info */}
+        <div className="flex items-center justify-center gap-2 pt-8 opacity-50">
+          <ShieldCheck className="w-4 h-4 text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Verbunden via Google OAuth
+          </span>
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }
