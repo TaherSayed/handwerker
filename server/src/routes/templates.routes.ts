@@ -87,6 +87,20 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       .limit(1)
       .single();
 
+    // Handle case where workspaces table doesn't exist
+    if (workspaceError) {
+      const errorMessage = workspaceError.message || '';
+      if (errorMessage.includes('does not exist') || errorMessage.includes('schema cache')) {
+        console.error('❌ Database schema error: workspaces table not found');
+        console.error('📋 Please run the migration: supabase/migrations/20251223_onsite_complete_schema.sql');
+        return res.status(500).json({ 
+          error: 'Database schema not initialized. Please run the migration file in Supabase SQL Editor.',
+          success: false,
+          details: 'The workspaces table does not exist. See MIGRATION_GUIDE.md for instructions.'
+        });
+      }
+    }
+
     if (!workspace || workspaceError) {
       // Auto-create workspace if it doesn't exist
       const { data: profile } = await supabase.client
