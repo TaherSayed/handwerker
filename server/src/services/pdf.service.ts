@@ -41,9 +41,10 @@ export class PDFService {
         doc.on('end', async () => {
           const pdfBuffer = Buffer.concat(chunks);
           
-          // Upload to Supabase Storage
+          // Upload to Supabase Storage (use adminClient if available, otherwise regular client)
+          const storageClient = supabase.adminClient || supabase.client;
           const fileName = `${userId}/${submissionData.id}.pdf`;
-          const { data, error } = await supabase.adminClient.storage
+          const { data, error } = await storageClient.storage
             .from('submission-pdfs')
             .upload(fileName, pdfBuffer, {
               contentType: 'application/pdf',
@@ -56,7 +57,7 @@ export class PDFService {
           }
 
           // Get public URL
-          const { data: urlData } = supabase.adminClient.storage
+          const { data: urlData } = storageClient.storage
             .from('submission-pdfs')
             .getPublicUrl(fileName);
 
