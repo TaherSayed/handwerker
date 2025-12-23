@@ -10,97 +10,20 @@ interface Statistics {
   syncStatus: string;
 }
 
-interface GoogleContact {
-  resourceName: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  company: string;
-  avatar_url: string;
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, session } = useAuthStore();
+  const { user } = useAuthStore();
   const [statistics, setStatistics] = useState<Statistics>({
     recentVisits: 0,
     pendingReports: 0,
     syncStatus: 'Loading...',
   });
   const [userName, setUserName] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [googleContacts, setGoogleContacts] = useState<GoogleContact[]>([]);
-  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
-  const [loadingGoogleContacts, setLoadingGoogleContacts] = useState(false);
-  const [importingContacts, setImportingContacts] = useState(false);
-  const [showGoogleContacts, setShowGoogleContacts] = useState(false);
 
   useEffect(() => {
     loadUserData();
     loadStatistics();
   }, []);
-
-  const loadGoogleContacts = async () => {
-    if (!session?.provider_token) {
-      alert('Bitte melden Sie sich zuerst mit Google an, um Kontakte zu sehen');
-      return;
-    }
-
-    try {
-      setLoadingGoogleContacts(true);
-      const response = await axios.get(`/api/google/contacts/list?accessToken=${session.provider_token}`);
-      setGoogleContacts(response.data || []);
-      setShowGoogleContacts(true);
-    } catch (error: any) {
-      console.error('Failed to load Google contacts:', error);
-      alert('Fehler beim Laden der Google Kontakte: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setLoadingGoogleContacts(false);
-    }
-  };
-
-  const handleToggleContact = (resourceName: string) => {
-    setSelectedContacts(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(resourceName)) {
-        newSet.delete(resourceName);
-      } else {
-        newSet.add(resourceName);
-      }
-      return newSet;
-    });
-  };
-
-  const handleImportSelected = async () => {
-    if (selectedContacts.size === 0) {
-      alert('Bitte wählen Sie mindestens einen Kontakt aus');
-      return;
-    }
-
-    if (!session?.provider_token || !user?.id) {
-      alert('Fehler: Keine Berechtigung');
-      return;
-    }
-
-    try {
-      setImportingContacts(true);
-      const response = await axios.post('/api/google/contacts/import-selected', {
-        accessToken: session.provider_token,
-        userId: user.id,
-        resourceNames: Array.from(selectedContacts),
-      });
-      
-      alert(`✅ ${response.data?.length || 0} Kontakt(e) erfolgreich importiert`);
-      setSelectedContacts(new Set());
-      setShowGoogleContacts(false);
-      loadStatistics();
-    } catch (error: any) {
-      console.error('Failed to import contacts:', error);
-      alert('Fehler beim Importieren: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setImportingContacts(false);
-    }
-  };
 
   const loadUserData = async () => {
     try {
@@ -110,26 +33,11 @@ export default function Dashboard() {
                      user?.email?.split('@')[0] || 
                      'User';
         setUserName(name);
-
-        if (user?.id) {
-          try {
-            const response = await axios.get(`/api/user/profile?userId=${user.id}`);
-            if (response.data?.company_name) {
-              setCompanyName(response.data.company_name);
-            } else {
-              setCompanyName('Ihr Unternehmen');
-            }
-          } catch (error) {
-            setCompanyName('Ihr Unternehmen');
-          }
-        }
       } else {
         setUserName('Benutzer');
-        setCompanyName('Ihr Unternehmen');
       }
     } catch (error) {
       console.error('Failed to load user data:', error);
-      setCompanyName('Ihr Unternehmen');
     }
   };
 
@@ -165,14 +73,6 @@ export default function Dashboard() {
       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
     ];
     return `${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
-  };
-
-  const getCalendarWeek = (date: Date): number => {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   };
 
   return (
