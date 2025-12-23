@@ -63,15 +63,15 @@ export default function FormTemplates() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Form Templates</h1>
-          <p className="text-gray-600 mt-1">Create and manage your form templates</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Form Templates</h1>
+          <p className="text-gray-600 text-lg">Create and manage your form templates</p>
         </div>
         <button
           onClick={() => navigate('/templates/new')}
-          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          className="btn-primary"
         >
           <Plus className="w-5 h-5" />
           New Template
@@ -80,12 +80,12 @@ export default function FormTemplates() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-red-800">{error}</p>
+            <p className="text-red-800 font-medium">{error}</p>
             <button
               onClick={loadTemplates}
-              className="text-red-600 hover:text-red-800 font-medium"
+              className="text-red-600 hover:text-red-800 font-semibold text-sm px-4 py-2 hover:bg-red-100 rounded-lg transition-colors"
             >
               Retry
             </button>
@@ -94,23 +94,23 @@ export default function FormTemplates() {
       )}
 
       {/* Filter */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-3 mb-8">
         <button
           onClick={() => setFilter('active')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
             filter === 'active'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
           }`}
         >
           Active
         </button>
         <button
           onClick={() => setFilter('archived')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
             filter === 'archived'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
           }`}
         >
           Archived
@@ -124,16 +124,18 @@ export default function FormTemplates() {
           <p className="text-gray-600">Loading templates...</p>
         </div>
       ) : templates.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No templates yet</h3>
-          <p className="text-gray-600 mb-6">Create your first form template to get started</p>
+        <div className="card text-center py-16">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <FileText className="w-10 h-10 text-blue-600" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">No templates yet</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">Create your first form template to get started with OnSite Forms</p>
           <button
             onClick={() => navigate('/templates/new')}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="btn-primary"
           >
             <Plus className="w-5 h-5" />
-            New Template
+            Create Your First Template
           </button>
         </div>
       ) : (
@@ -141,23 +143,23 @@ export default function FormTemplates() {
           {templates.map((template) => (
             <div
               key={template.id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+              className="card p-6 hover:scale-[1.02] transition-transform duration-200"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <FileText className="w-7 h-7 text-white" />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <button
                     onClick={() => navigate(`/templates/${template.id}/edit`)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
                     title="Edit"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDuplicate(template.id)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     title="Duplicate"
                   >
                     <Copy className="w-4 h-4" />
@@ -165,7 +167,7 @@ export default function FormTemplates() {
                   {filter === 'active' ? (
                     <button
                       onClick={() => handleArchive(template.id)}
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Archive"
                     >
                       <Archive className="w-4 h-4" />
@@ -173,7 +175,7 @@ export default function FormTemplates() {
                   ) : (
                     <button
                       onClick={() => handleDelete(template.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -182,15 +184,15 @@ export default function FormTemplates() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.name}</h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{template.name}</h3>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-[2.5rem]">
                 {template.description || 'No description'}
               </p>
 
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{template.fields?.length || 0} fields</span>
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <span className="text-sm font-medium text-gray-700">{template.fields?.length || 0} fields</span>
                 {template.category && (
-                  <span className="px-2 py-1 bg-gray-100 rounded text-xs">{template.category}</span>
+                  <span className="badge bg-blue-100 text-blue-700">{template.category}</span>
                 )}
               </div>
             </div>

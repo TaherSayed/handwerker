@@ -54,20 +54,21 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome to OnSite Forms</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p className="text-gray-600 text-lg">Welcome back! Here's what's happening today.</p>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-red-800">{error}</p>
+            <p className="text-red-800 font-medium">{error}</p>
             <button
               onClick={loadDashboard}
-              className="text-red-600 hover:text-red-800 font-medium"
+              className="text-red-600 hover:text-red-800 font-semibold text-sm px-4 py-2 hover:bg-red-100 rounded-lg transition-colors"
             >
               Retry
             </button>
@@ -75,112 +76,147 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Templates</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.templates}</p>
+              <p className="text-sm font-medium text-blue-700 mb-1">Templates</p>
+              <p className="text-4xl font-bold text-gray-900">{stats.templates}</p>
+              <p className="text-xs text-blue-600 mt-1">Active forms</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6 text-blue-600" />
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <FileText className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="card p-6 bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Submissions</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.submissions}</p>
+              <p className="text-sm font-medium text-green-700 mb-1">Submissions</p>
+              <p className="text-4xl font-bold text-gray-900">{stats.submissions}</p>
+              <p className="text-xs text-green-600 mt-1">Completed</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <ClipboardList className="w-6 h-6 text-green-600" />
+            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <ClipboardList className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="card p-6 bg-gradient-to-br from-amber-50 to-amber-100/50 border-amber-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Drafts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.drafts}</p>
+              <p className="text-sm font-medium text-amber-700 mb-1">Drafts</p>
+              <p className="text-4xl font-bold text-gray-900">{stats.drafts}</p>
+              <p className="text-xs text-amber-600 mt-1">In progress</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6 text-yellow-600" />
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <FileText className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="card p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="flex gap-4">
           <button
             onClick={() => navigate('/templates/new')}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="btn-primary"
           >
             <Plus className="w-5 h-5" />
-            New Template
+            Create New Template
           </button>
         </div>
       </div>
 
-      {/* Recent Templates */}
+      {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Templates</h2>
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Templates</h2>
+            <button
+              onClick={() => navigate('/templates')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              View all →
+            </button>
+          </div>
           {recentTemplates.length === 0 ? (
-            <p className="text-gray-500 text-sm">No templates yet</p>
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No templates yet</p>
+            </div>
           ) : (
             <ul className="space-y-3">
               {recentTemplates.map((template) => (
                 <li
                   key={template.id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                   onClick={() => navigate(`/templates/${template.id}/edit`)}
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">{template.name}</p>
-                    <p className="text-sm text-gray-500">{template.description || 'No description'}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{template.name}</p>
+                      <p className="text-sm text-gray-500">{template.description || 'No description'}</p>
+                    </div>
                   </div>
-                  <FileText className="w-5 h-5 text-gray-400" />
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Recent Submissions */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Submissions</h2>
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Submissions</h2>
+            <button
+              onClick={() => navigate('/submissions')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              View all →
+            </button>
+          </div>
           {recentSubmissions.length === 0 ? (
-            <p className="text-gray-500 text-sm">No submissions yet</p>
+            <div className="text-center py-8">
+              <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No submissions yet</p>
+            </div>
           ) : (
             <ul className="space-y-3">
               {recentSubmissions.map((submission) => (
                 <li
                   key={submission.id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                   onClick={() => navigate(`/submissions/${submission.id}`)}
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {submission.customer_name || 'Unnamed'}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {submission.form_templates?.name || 'Template'}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      submission.status === 'submitted' ? 'bg-green-100' : 'bg-amber-100'
+                    }`}>
+                      <ClipboardList className={`w-5 h-5 ${
+                        submission.status === 'submitted' ? 'text-green-600' : 'text-amber-600'
+                      }`} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {submission.customer_name || 'Unnamed'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {submission.form_templates?.name || 'Template'}
+                      </p>
+                    </div>
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      submission.status === 'submitted'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
+                  <span className={`badge ${
+                    submission.status === 'submitted'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
                     {submission.status}
                   </span>
                 </li>

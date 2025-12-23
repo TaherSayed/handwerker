@@ -21,28 +21,28 @@ export default function GoogleSignInScreen() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-blue-800">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-white" />
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800">
+      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md border border-gray-100">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl mb-6 shadow-lg">
+            <FileText className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">OnSite Forms</h1>
-          <p className="text-gray-600">Field forms platform for professionals</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">OnSite Forms</h1>
+          <p className="text-gray-600 text-lg">Professional field forms for craftsmen</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
+              <p className="text-red-800 text-sm font-medium">{error}</p>
             </div>
           )}
           <button
             onClick={handleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-xl font-semibold hover:bg-gray-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -63,13 +63,13 @@ export default function GoogleSignInScreen() {
             {loading ? 'Signing in...' : 'Sign in with Google'}
           </button>
           {loading && (
-            <p className="text-xs text-gray-500 text-center">
-              You will be redirected to Google to sign in...
+            <p className="text-sm text-gray-500 text-center">
+              Redirecting to Google...
             </p>
           )}
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-6">
+        <p className="text-xs text-gray-500 text-center mt-8">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
