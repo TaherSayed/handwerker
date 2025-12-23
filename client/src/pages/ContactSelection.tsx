@@ -14,7 +14,6 @@ interface Contact {
 
 export default function ContactSelection() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const [showGoogleContacts, setShowGoogleContacts] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
