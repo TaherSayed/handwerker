@@ -39,18 +39,7 @@ export default function ContactsManagement() {
     }
   };
 
-  const handleDelete = async (contactId: string) => {
-    if (!confirm('Kontakt wirklich löschen?')) return;
-
-    try {
-      // Note: Per spec "No manual contact CRUD", but keeping for now
-      // Contacts are primarily from Google Contacts import
-      alert('Kontakte werden über Google Contacts verwaltet');
-    } catch (error) {
-      console.error('Failed to delete contact:', error);
-      alert('Fehler beim Löschen');
-    }
-  };
+  // Per spec: "No manual contact CRUD" - contacts are managed via Google Contacts only
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
@@ -68,16 +57,10 @@ export default function ContactsManagement() {
                 }
               }}
               disabled={importingContacts}
-              className="btn-outlined"
+              className="btn-primary"
               style={{ opacity: importingContacts ? 0.6 : 1 }}
             >
               {importingContacts ? 'Importiere...' : 'Google Kontakte importieren'}
-            </button>
-            <button
-              onClick={() => navigate('/contact-selection')}
-              className="btn-primary"
-            >
-              Neuer Kontakt
             </button>
           </div>
         </div>
@@ -123,16 +106,7 @@ export default function ContactsManagement() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {contacts.map((contact) => (
               <div key={contact.id} className="card p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold" style={{ color: '#0F172A', fontSize: '16px' }}>{contact.full_name}</h3>
-                  <button
-                    onClick={() => handleDelete(contact.id)}
-                    className="text-sm font-medium transition hover:opacity-80"
-                    style={{ color: '#DC2626' }}
-                  >
-                    Löschen
-                  </button>
-                </div>
+                <h3 className="font-semibold mb-2" style={{ color: '#0F172A', fontSize: '16px' }}>{contact.full_name}</h3>
                 {contact.email && <p className="text-sm mb-1" style={{ color: '#475569' }}>{contact.email}</p>}
                 {contact.phone && <p className="text-sm mb-1" style={{ color: '#475569' }}>{contact.phone}</p>}
                 {contact.company && <p className="text-sm" style={{ color: '#475569' }}>{contact.company}</p>}
