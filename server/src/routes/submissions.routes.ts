@@ -9,9 +9,12 @@ const router = Router();
 router.get('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const { status, template_id } = req.query;
 
-    let query = supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    let query = userClient
       .from('submissions')
       .select('*, form_templates(name), submission_photos(count)')
       .eq('user_id', userId)
@@ -42,8 +45,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
 
-    const { data, error } = await supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { data, error } = await userClient
       .from('submissions')
       .select('*, form_templates(*), submission_photos(*)')
       .eq('id', id)
@@ -65,6 +71,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const {
       template_id,
       customer_name,
@@ -77,8 +84,10 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       status,
     } = req.body;
 
+    const userClient = supabase.getClientForUser(accessToken);
+
     // Get or create user's workspace
-    let { data: workspace, error: workspaceError } = await supabase.client
+    let { data: workspace, error: workspaceError } = await userClient
       .from('workspaces')
       .select('id')
       .eq('owner_id', userId)
@@ -101,7 +110,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
     if (!workspace || workspaceError) {
       // Auto-create workspace if it doesn't exist
-      const { data: profile } = await supabase.client
+      const { data: profile } = await userClient
         .from('user_profiles')
         .select('full_name, company_name')
         .eq('id', userId)
@@ -109,7 +118,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
       const workspaceName = profile?.company_name || profile?.full_name || 'My Workspace';
       
-      const { data: newWorkspace, error: createError } = await supabase.client
+      const { data: newWorkspace, error: createError } = await userClient
         .from('workspaces')
         .insert({
           owner_id: userId,
@@ -128,7 +137,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'No workspace available' });
     }
 
-    const { data, error } = await supabase.client
+    const { data, error } = await userClient
       .from('submissions')
       .insert({
         template_id,
@@ -163,6 +172,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const {
       customer_name,
       customer_email,
@@ -173,6 +183,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       signature_url,
       status,
     } = req.body;
+
+    const userClient = supabase.getClientForUser(accessToken);
 
     const updates: any = {};
     if (customer_name !== undefined) updates.customer_name = customer_name;
@@ -189,7 +201,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       }
     }
 
-    const { data, error } = await supabase.client
+    const { data, error } = await userClient
       .from('submissions')
       .update(updates)
       .eq('id', id)
@@ -213,8 +225,11 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
 
-    const { error } = await supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { error } = await userClient
       .from('submissions')
       .delete()
       .eq('id', id)
@@ -236,9 +251,12 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
+
+    const userClient = supabase.getClientForUser(accessToken);
 
     // Fetch submission with template and user data
-    const { data: submission, error: fetchError } = await supabase.client
+    const { data: submission, error: fetchError } = await userClient
       .from('submissions')
       .select(`
         *,
@@ -275,7 +293,7 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
     });
 
     // Update submission with PDF URL
-    const { data: updated, error: updateError } = await supabase.client
+    const { data: updated, error: updateError } = await userClient
       .from('submissions')
       .update({ pdf_url: pdfUrl })
       .eq('id', id)

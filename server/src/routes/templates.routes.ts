@@ -8,9 +8,12 @@ const router = Router();
 router.get('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const { is_archived } = req.query;
 
-    let query = supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    let query = userClient
       .from('form_templates')
       .select('*')
       .eq('user_id', userId)
@@ -38,8 +41,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
 
-    const { data, error } = await supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { data, error } = await userClient
       .from('form_templates')
       .select('*')
       .eq('id', id)
@@ -61,6 +67,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const { name, description, category, tags, fields } = req.body;
 
     // Validate required fields
@@ -79,8 +86,11 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       });
     }
 
+    // Get Supabase client with user's token for RLS
+    const userClient = supabase.getClientForUser(accessToken);
+
     // Get or create user's workspace
-    let { data: workspace, error: workspaceError } = await supabase.client
+    let { data: workspace, error: workspaceError } = await userClient
       .from('workspaces')
       .select('id')
       .eq('owner_id', userId)
@@ -103,7 +113,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
     if (!workspace || workspaceError) {
       // Auto-create workspace if it doesn't exist
-      const { data: profile } = await supabase.client
+      const { data: profile } = await userClient
         .from('user_profiles')
         .select('full_name, company_name')
         .eq('id', userId)
@@ -111,7 +121,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 
       const workspaceName = profile?.company_name || profile?.full_name || 'My Workspace';
       
-      const { data: newWorkspace, error: createError } = await supabase.client
+      const { data: newWorkspace, error: createError } = await userClient
         .from('workspaces')
         .insert({
           owner_id: userId,
@@ -137,7 +147,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       });
     }
 
-    const { data, error } = await supabase.client
+    const { data, error } = await userClient
       .from('form_templates')
       .insert({
         workspace_id: workspace.id,
@@ -184,7 +194,10 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
     const { name, description, category, tags, fields, is_archived } = req.body;
+
+    const userClient = supabase.getClientForUser(accessToken);
 
     // Validate template name if provided
     if (name !== undefined && (!name || typeof name !== 'string' || name.trim().length === 0)) {
@@ -217,7 +230,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       });
     }
 
-    const { data, error } = await supabase.client
+    const { data, error } = await userClient
       .from('form_templates')
       .update(updates)
       .eq('id', id)
@@ -258,8 +271,11 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
 
-    const { error } = await supabase.client
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { error } = await userClient
       .from('form_templates')
       .delete()
       .eq('id', id)
@@ -281,9 +297,12 @@ router.post('/:id/duplicate', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
+    const accessToken = req.accessToken!;
+
+    const userClient = supabase.getClientForUser(accessToken);
 
     // Get original template
-    const { data: original, error: fetchError } = await supabase.client
+    const { data: original, error: fetchError } = await userClient
       .from('form_templates')
       .select('*')
       .eq('id', id)
@@ -295,7 +314,7 @@ router.post('/:id/duplicate', authMiddleware, async (req: AuthRequest, res) => {
     }
 
     // Create duplicate
-    const { data, error } = await supabase.client
+    const { data, error } = await userClient
       .from('form_templates')
       .insert({
         workspace_id: original.workspace_id,
