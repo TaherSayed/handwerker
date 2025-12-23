@@ -73,11 +73,12 @@ export class DatabaseService {
     return data;
   }
 
-  async updateFormTemplate(templateId: string, updates: any) {
+  async updateFormTemplate(templateId: string, updates: any, userId: string) {
     const { data, error } = await supabase
       .from('form_templates')
       .update(updates)
       .eq('id', templateId)
+      .eq('user_id', userId)
       .select()
       .single();
 
@@ -85,11 +86,12 @@ export class DatabaseService {
     return data;
   }
 
-  async deleteFormTemplate(templateId: string) {
+  async deleteFormTemplate(templateId: string, userId: string) {
     const { error } = await supabase
       .from('form_templates')
       .delete()
-      .eq('id', templateId);
+      .eq('id', templateId)
+      .eq('user_id', userId);
 
     if (error) throw error;
   }
@@ -100,7 +102,7 @@ export class DatabaseService {
       .from('visits')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false});
 
     if (limit) {
       query = query.limit(limit);
@@ -109,6 +111,18 @@ export class DatabaseService {
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
+  }
+
+  async getVisitById(visitId: string, userId: string) {
+    const { data, error } = await supabase
+      .from('visits')
+      .select('*')
+      .eq('id', visitId)
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
   }
 
   async createVisit(userId: string, visit: any) {
@@ -122,11 +136,12 @@ export class DatabaseService {
     return data;
   }
 
-  async updateVisit(visitId: string, updates: any) {
+  async updateVisit(visitId: string, updates: any, userId: string) {
     const { data, error } = await supabase
       .from('visits')
       .update(updates)
       .eq('id', visitId)
+      .eq('user_id', userId)
       .select()
       .single();
 

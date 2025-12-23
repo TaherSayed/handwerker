@@ -1,25 +1,29 @@
 import express from 'express';
 import { databaseService } from '../services/database.service.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// Get all visits
-router.get('/', async (req, res) => {
+// Apply auth middleware to all routes
+router.use(authMiddleware);
+
+// Create visit
+router.post('/', async (req, res) => {
   try {
-    const userId = req.query.userId as string;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    const visits = await databaseService.getVisits(userId, limit);
-    res.json(visits);
+    const visit = await databaseService.createVisit(req.userId!, req.body);
+    res.json(visit);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Create visit
-router.post('/', async (req, res) => {
+// Get visit by ID
+router.get('/:id', async (req, res) => {
   try {
-    const userId = req.body.userId;
-    const visit = await databaseService.createVisit(userId, req.body);
+    const visit = await databaseService.getVisitById(req.params.id, req.userId!);
+    if (!visit) {
+      return res.status(404).json({ error: 'Visit not found' });
+    }
     res.json(visit);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -29,18 +33,8 @@ router.post('/', async (req, res) => {
 // Update visit
 router.put('/:id', async (req, res) => {
   try {
-    const visit = await databaseService.updateVisit(req.params.id, req.body);
+    const visit = await databaseService.updateVisit(req.params.id, req.body, req.userId!);
     res.json(visit);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Delete visit
-router.delete('/:id', async (req, res) => {
-  try {
-    await databaseService.deleteVisit(req.params.id);
-    res.json({ success: true });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

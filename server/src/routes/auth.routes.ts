@@ -1,7 +1,22 @@
 import express from 'express';
 import { authService } from '../services/auth.service.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+
+// Verify Supabase access token
+router.post('/verify', authMiddleware, async (req, res) => {
+  try {
+    // If we reach here, token is valid (middleware passed)
+    res.json({ 
+      valid: true, 
+      userId: req.userId,
+      user: req.user 
+    });
+  } catch (error: any) {
+    res.status(401).json({ error: error.message });
+  }
+});
 
 // Google OAuth sign in
 router.post('/google', async (req, res) => {

@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes.js';
 import contactsRoutes from './routes/contacts.routes.js';
 import formsRoutes from './routes/forms.routes.js';
 import visitsRoutes from './routes/visits.routes.js';
+import pdfRoutes from './routes/pdf.routes.js';
 import googleRoutes from './routes/google.routes.js';
 import userRoutes from './routes/user.routes.js';
 import { env } from './config/env.js';
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/forms', formsRoutes);
 app.use('/api/visits', visitsRoutes);
+app.use('/api/pdf', pdfRoutes);
 app.use('/api/google', googleRoutes);
 app.use('/api/user', userRoutes);
 
