@@ -23,16 +23,3 @@ export const config = {
   
   corsOrigin: process.env.CORS_ORIGIN || '*',
 };
-
-// Validate required env vars
-const required = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'SUPABASE_SERVICE_ROLE_KEY',
-];
-
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-}
