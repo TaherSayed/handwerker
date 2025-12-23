@@ -115,7 +115,7 @@ export default function Settings() {
         <div className="flex items-center gap-2 h-8 px-4 bg-white/50 rounded-full border border-slate-100">
           {isSaving ? (
             <>
-              <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
+              <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Speichert...</span>
             </>
           ) : lastSaved ? (
@@ -141,13 +141,25 @@ export default function Settings() {
           </div>
 
           <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                <User className="w-5 h-5" />
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-16 h-16 rounded-full border-4 border-slate-50 shadow-sm overflow-hidden flex items-center justify-center bg-blue-50 text-blue-600">
+                {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture ? (
+                  <img
+                    src={profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture}
+                    alt="Google Profile"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <User className="w-8 h-8" />
+                )}
               </div>
               <div>
-                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Persönliche Daten</h2>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Verwaltet über Google</p>
+                <h2 className="font-black text-slate-900 text-lg">{profile?.full_name || 'Benutzer'}</h2>
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <p className="text-xs font-medium">Google Account verbunden</p>
+                </div>
               </div>
             </div>
 
@@ -159,7 +171,7 @@ export default function Settings() {
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                  className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-300"
+                  className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300"
                   placeholder="Ihr Name"
                 />
               </div>
@@ -200,7 +212,7 @@ export default function Settings() {
 
           <div className="relative z-10 space-y-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                 <Building className="w-5 h-5" />
               </div>
               <div>
@@ -215,7 +227,7 @@ export default function Settings() {
                 type="text"
                 value={formData.company_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-300"
+                className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300"
                 placeholder="Firmenname eingeben"
               />
             </div>
@@ -253,9 +265,9 @@ export default function Settings() {
                 ) : (
                   <div
                     onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
-                    className="h-16 w-16 bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-indigo-400 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-200 flex items-center justify-center cursor-pointer transition-all"
+                    className="h-16 w-16 bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-blue-400 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-200 flex items-center justify-center cursor-pointer transition-all"
                   >
-                    {logoLoading ? <Loader2 className="w-5 h-5 animate-spin text-indigo-500" /> : <Plus className="w-6 h-6" />}
+                    {logoLoading ? <Loader2 className="w-5 h-5 animate-spin text-blue-500" /> : <Plus className="w-6 h-6" />}
                   </div>
                 )}
 

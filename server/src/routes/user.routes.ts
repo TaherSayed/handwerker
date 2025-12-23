@@ -19,7 +19,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
 
     const fullProfile = {
       ...profile,
-      workspaces: workspace ? [workspace] : []
+      workspaces: workspace ? [workspace] : [],
+      auth_metadata: req.user!.metadata,
     };
 
     res.json(fullProfile);
