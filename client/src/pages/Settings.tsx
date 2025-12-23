@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
-import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info } from 'lucide-react';
+import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info, FileText } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -280,6 +280,44 @@ export default function Settings() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Legal & Compliance */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ShieldCheck className="w-24 h-24" />
+          </div>
+
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Rechtliches</h2>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Pflichtangaben & Datenschutz</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a href="#" className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl hover:bg-blue-50 hover:text-blue-700 transition-colors group/link">
+                <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover/link:text-blue-500">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-sm">Impressum</span>
+              </a>
+              <a href="#" className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl hover:bg-blue-50 hover:text-blue-700 transition-colors group/link">
+                <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover/link:text-blue-500">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-sm">Datenschutz</span>
+              </a>
+            </div>
+
+            <p className="text-[10px] text-slate-400 font-medium leading-relaxed px-1">
+              Diese Anwendung wird von <strong>OnSite Forms</strong> bereitgestellt. Bei Fragen zum Datenschutz wenden Sie sich bitte an Ihren Administrator.
+            </p>
           </div>
         </div>
 

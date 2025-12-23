@@ -53,13 +53,13 @@ export default function Layout() {
         {/* Sidebar Logo */}
         <div className="h-20 flex items-center px-6 border-b border-slate-100">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
+            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
               <FileText className="w-5 h-5 text-white" />
             </div>
             {sidebarOpen && (
               <div className="animate-slide-up">
                 <h1 className="font-bold text-lg leading-tight">OnSite</h1>
-                <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Formulare</p>
+                <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Formulare</p>
               </div>
             )}
           </div>
@@ -95,7 +95,7 @@ export default function Layout() {
         <div className="p-4 border-t border-slate-100">
           <div className={`p-3 rounded-2xl bg-slate-50 border border-slate-100 ${!sidebarOpen && 'flex justify-center'}`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm shrink-0">
                 {profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}
               </div>
               {sidebarOpen && (
@@ -129,7 +129,7 @@ export default function Layout() {
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-4 lg:hidden">
-            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
               <FileText className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-lg">OnSite</span>
@@ -153,7 +153,7 @@ export default function Layout() {
             </button>
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm"
+              className="lg:hidden w-10 h-10 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm"
             >
               <UserIcon className="w-5 h-5" />
             </button>
@@ -178,7 +178,7 @@ export default function Layout() {
                 navigate(item.to);
               }}
               className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-2xl transition-all duration-200 min-w-[72px] ${isActive
-                ? 'text-indigo-900 bg-indigo-50 shadow-inner'
+                ? 'text-blue-900 bg-blue-50 shadow-inner'
                 : 'text-slate-400 hover:text-slate-600'
                 }`}
             >
@@ -192,7 +192,7 @@ export default function Layout() {
         {/* Floating Action Button */}
         <button
           onClick={() => navigate('/templates/new')}
-          className="w-14 h-14 bg-indigo-900 rounded-full flex items-center justify-center text-white shadow-2xl shadow-indigo-200 border-4 border-white active:scale-90 transition-transform -translate-y-4"
+          className="w-14 h-14 bg-blue-900 rounded-full flex items-center justify-center text-white shadow-2xl shadow-blue-200 border-4 border-white active:scale-90 transition-transform -translate-y-4"
         >
           <PlusCircle className="w-8 h-8" />
         </button>
