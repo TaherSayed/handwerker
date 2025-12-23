@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
-import { Save, Send, ArrowLeft, User, Zap, ClipboardList, Info, Plus, Trash2 } from 'lucide-react';
+import { Save, Send, ArrowLeft, User, Zap, ClipboardList, Plus, Trash2 } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
