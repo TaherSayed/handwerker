@@ -5,17 +5,17 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Plus, GripVertical, Trash2, Save, X, Edit } from 'lucide-react';
 
 const FIELD_TYPES = [
-  { value: 'section', label: 'Section Header' },
+  { value: 'section', label: 'Abschnittsüberschrift' },
   { value: 'text', label: 'Text' },
-  { value: 'number', label: 'Number' },
+  { value: 'number', label: 'Zahl' },
   { value: 'checkbox', label: 'Checkbox' },
-  { value: 'toggle', label: 'Yes/No Toggle' },
-  { value: 'dropdown', label: 'Dropdown' },
-  { value: 'date', label: 'Date' },
-  { value: 'datetime', label: 'Date & Time' },
-  { value: 'notes', label: 'Notes' },
-  { value: 'signature', label: 'Signature' },
-  { value: 'photo', label: 'Photo' },
+  { value: 'toggle', label: 'Ja/Nein Schalter' },
+  { value: 'dropdown', label: 'Auswahlliste' },
+  { value: 'date', label: 'Datum' },
+  { value: 'datetime', label: 'Datum & Zeit' },
+  { value: 'notes', label: 'Notizen' },
+  { value: 'signature', label: 'Unterschrift' },
+  { value: 'photo', label: 'Foto' },
 ];
 
 export default function FormBuilder() {
@@ -89,7 +89,7 @@ export default function FormBuilder() {
     const newField = {
       id: `field_${Date.now()}`,
       type,
-      label: type === 'section' ? 'New Section' : `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      label: type === 'section' ? 'Neuer Abschnitt' : `${type.charAt(0).toUpperCase() + type.slice(1)} Feld`,
       required: false,
       options: type === 'dropdown' ? ['Option 1', 'Option 2'] : undefined,
       placeholder: '',
@@ -145,13 +145,13 @@ export default function FormBuilder() {
             className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-4 transition-colors"
           >
             <X className="w-4 h-4" />
-            Discard Changes
+            Änderungen verwerfen
           </button>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-2 uppercase tracking-tighter leading-none">
-            {id ? 'Refine' : 'Architect'} Template
+            {id ? 'Vorlage bearbeiten' : 'Vorlage erstellen'}
           </h1>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Standardise your service delivery flow
+            Standardisieren Sie Ihre Arbeitsabläufe
           </p>
         </div>
         <button
@@ -164,7 +164,7 @@ export default function FormBuilder() {
           ) : (
             <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
           )}
-          {saving ? 'Saving...' : 'Publish Template'}
+          {saving ? 'Speichert...' : 'Vorlage speichern'}
         </button>
       </div>
 
@@ -176,37 +176,37 @@ export default function FormBuilder() {
               <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
                 <Edit className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Identity</h2>
+              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Basisdaten</h2>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Template Name *</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vorlagen Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="input px-6 py-4 text-lg font-bold placeholder:text-slate-200"
-                  placeholder="e.g., Installation Audit"
+                  placeholder="z.B. Installations Protokoll"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category / Group</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategorie / Gruppe</label>
                 <input
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="input px-6 py-4 font-bold placeholder:text-slate-200"
-                  placeholder="e.g., Safety & Compliance"
+                  placeholder="z.B. Sicherheit & Wartung"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vision / Description</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Beschreibung</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input px-6 py-4 font-bold placeholder:text-slate-200 min-h-[100px]"
-                  placeholder="What is this form for?"
+                  placeholder="Wofür wird dieses Formular verwendet?"
                 />
               </div>
             </div>
@@ -219,7 +219,7 @@ export default function FormBuilder() {
               <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center">
                 <Plus className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-black text-white uppercase tracking-tight leading-none">Elements</h2>
+              <h2 className="text-lg font-black text-white uppercase tracking-tight leading-none">Elemente</h2>
             </div>
 
             <div className="grid grid-cols-2 gap-3 relative z-10">
@@ -247,7 +247,7 @@ export default function FormBuilder() {
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
               <GripVertical className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Blueprint</h2>
+            <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Struktur</h2>
           </div>
 
           <DragDropContext onDragEnd={onDragEnd}>
@@ -259,7 +259,7 @@ export default function FormBuilder() {
                       <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Plus className="w-10 h-10 opacity-20" />
                       </div>
-                      <p className="font-black uppercase tracking-[0.2em] text-sm">Add your first element from the sidebar</p>
+                      <p className="font-black uppercase tracking-[0.2em] text-sm">Fügen Sie Ihr erstes Element hinzu</p>
                     </div>
                   ) : (
                     formData.fields.map((field, index) => (
@@ -284,7 +284,7 @@ export default function FormBuilder() {
                                     onChange={(e) => updateField(index, { label: e.target.value })}
                                     className={`flex-1 bg-transparent border-none focus:ring-0 font-black p-0 placeholder:text-slate-200 transition-colors
                                       ${field.type === 'section' ? 'text-2xl text-slate-900 uppercase' : 'text-xl text-slate-800'}`}
-                                    placeholder={field.type === 'section' ? 'New Section' : 'Field Label'}
+                                    placeholder={field.type === 'section' ? 'Neuer Abschnitt' : 'Feld Bezeichnung'}
                                   />
 
                                   <div className="flex items-center gap-4">
@@ -305,7 +305,7 @@ export default function FormBuilder() {
                                             {field.required && <div className="w-2 h-2 bg-white rounded-full m-auto mt-1" />}
                                           </div>
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover/req:text-slate-600 transition-colors">Required</span>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover/req:text-slate-600 transition-colors">Pflichtfeld</span>
                                       </label>
                                     )}
                                     <button
@@ -319,7 +319,7 @@ export default function FormBuilder() {
 
                                 {field.type === 'dropdown' && (
                                   <div className="pl-6 border-l-4 border-indigo-100 py-2 animate-in slide-in-from-left-4">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Choice Options (comma separated)</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Auswahlmöglichkeiten (kommagetrennt)</label>
                                     <input
                                       type="text"
                                       value={field.options?.join(', ') || ''}
@@ -327,7 +327,7 @@ export default function FormBuilder() {
                                         options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
                                       })}
                                       className="input px-6 py-4 font-bold text-sm bg-slate-50 border-none placeholder:text-slate-300"
-                                      placeholder="Ex: Success, Maintenance Needed, Critial Failure..."
+                                      placeholder="z.B. Erfolg, Wartung nötig, Kritischer Fehler..."
                                     />
                                   </div>
                                 )}

@@ -11,6 +11,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNotificationStore } from '../store/notificationStore';
 import SyncStatus from './SyncStatus';
 
 export default function Layout() {
@@ -96,8 +97,12 @@ export default function Layout() {
             {sidebarOpen ? (
               <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200">
-                    {profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}
+                  <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
+                    {profile?.auth_metadata?.avatar_url ? (
+                      <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span>{profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-900 truncate">{profile?.full_name || 'Benutzer'}</p>
@@ -155,16 +160,23 @@ export default function Layout() {
               <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Online</span>
             </div>
 
-            <button className="relative p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group">
+            <button
+              onClick={() => useNotificationStore.getState().info('Mitteilungen', 'Keine neuen Benachrichtigungen')}
+              className="relative p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group"
+            >
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white group-hover:scale-110 transition-transform" />
             </button>
 
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all"
+              className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
             >
-              <UserIcon className="w-5 h-5" />
+              {profile?.auth_metadata?.avatar_url ? (
+                <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <UserIcon className="w-5 h-5" />
+              )}
             </button>
           </div>
         </header>

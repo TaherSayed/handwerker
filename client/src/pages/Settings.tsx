@@ -179,8 +179,8 @@ export default function Settings() {
               {/* Email - Read Only */}
               <div className="space-y-2 opacity-75">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                  <span>Google Account Email</span>
-                  <span className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400">READ ONLY</span>
+                  <span>Google Konto E-Mail</span>
+                  <span className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400">GESCHÜTZT</span>
                 </label>
                 <div className="relative">
                   <input

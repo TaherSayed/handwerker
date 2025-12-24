@@ -421,7 +421,7 @@ export default function FormFilling() {
                 onClick={() => setShowContactSelector(true)}
                 icon={<Zap className="w-4 h-4 text-amber-500 fill-amber-500" />}
               >
-                Google Import
+                Aus Google importieren
               </Button>
             </div>
 

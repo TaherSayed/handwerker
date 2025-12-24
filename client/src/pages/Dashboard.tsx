@@ -78,7 +78,7 @@ export default function Dashboard() {
       {/* Hero / Quick Actions Section */}
       <section className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 card flex flex-col justify-center bg-gradient-to-br from-white to-slate-50">
-          <h1 className="text-xl font-bold text-slate-900">Hallo, {profile?.full_name?.split(' ')[0] || 'Handwerker'}</h1>
+          <h1 className="text-xl font-bold text-slate-900">Hallo, {profile?.full_name || 'Handwerker'}</h1>
           <p className="text-sm text-slate-500 font-medium mt-1">Sie haben {stats.drafts} offene Entwürfe und {stats.submissions} erledigte Aufträge.</p>
         </div>
         <div className="md:w-auto">

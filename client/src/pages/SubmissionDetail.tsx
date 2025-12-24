@@ -129,7 +129,7 @@ export default function SubmissionDetail() {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-3">
         <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Lade Vorgang...</p>
+        <p className="text-sm font-medium text-slate-500">Ladevorgang...</p>
       </div>
     );
   }
