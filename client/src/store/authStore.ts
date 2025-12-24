@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
+import { apiService } from '../services/api.service';
 import { User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -22,12 +23,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (session?.user) {
         set({ user: session.user });
         await get().refreshProfile();
       }
-      
+
       set({ loading: false, initialized: true });
 
       // Listen for auth changes
@@ -77,17 +78,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshProfile: async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/user/me`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const profile = await response.json();
+      const profile = await apiService.getMe();
+      if (profile) {
         set({ profile });
       }
     } catch (error) {
