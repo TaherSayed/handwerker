@@ -26,7 +26,8 @@
   }
 
   .card {
-    @apply bg-white dark:bg-card border border-border rounded-xl shadow-sm text-card-foreground;
+    @apply bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border rounded-xl shadow-sm text-slate-900 dark:text-white;
+
   }
 
   .heading-lg {

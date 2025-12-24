@@ -55,6 +55,11 @@ export default {
             dark: '#64748B',
           },
         },
+        card: {
+          DEFAULT: '#FFFFFF',
+          foreground: '#0F172A',
+        },
+        'card-foreground': '#0F172A',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
