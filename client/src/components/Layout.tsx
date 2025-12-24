@@ -6,7 +6,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
-  PlusCircle,
+
   Bell,
   User as UserIcon,
 } from 'lucide-react';
@@ -190,12 +190,7 @@ export default function Layout() {
           );
         })}
         {/* Floating Action Button */}
-        <button
-          onClick={() => navigate('/templates/new')}
-          className="w-14 h-14 bg-blue-900 rounded-full flex items-center justify-center text-white shadow-2xl shadow-blue-200 border-4 border-white active:scale-90 transition-transform -translate-y-4"
-        >
-          <PlusCircle className="w-8 h-8" />
-        </button>
+
       </nav>
 
       <SyncStatus />
