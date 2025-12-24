@@ -15,6 +15,7 @@ import VisitWorkflow from './pages/VisitWorkflow';
 import { supabase } from './services/supabase';
 import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
+import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
 
 
@@ -109,6 +110,16 @@ function App() {
       window.removeEventListener('offline', handleOffline);
     };
   }, [initialize, warn, notifySuccess]);
+
+  // Theme support
+  const { theme } = useThemeStore();
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   if (!initialized || loading) {
     return <SplashScreen />;

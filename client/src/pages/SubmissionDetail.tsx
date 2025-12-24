@@ -241,7 +241,7 @@ export default function SubmissionDetail() {
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-400 block mb-0.5">Name</label>
-            <p className="text-base font-bold text-slate-900">{submission.customer_name || 'Kein Name'}</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{submission.customer_name || 'Kein Name'}</p>
           </div>
 
           {(submission.customer_email || submission.customer_phone) && (
@@ -286,13 +286,13 @@ export default function SubmissionDetail() {
           </span>
         </div>
 
-        <div className="flex flex-col gap-5 divide-y divide-slate-50">
+        <div className="flex flex-col gap-5 divide-y divide-slate-50 dark:divide-slate-700">
           {submission.form_templates?.fields?.map((field: any) => (
             <div key={field.id} className="pt-4 first:pt-0">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+              <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1.5">
                 {field.label}
               </label>
-              <div className="text-sm">
+              <div className="text-sm text-slate-900 dark:text-slate-100">
                 {renderFieldValue(field, submission.field_values[field.id])}
               </div>
             </div>
@@ -305,15 +305,15 @@ export default function SubmissionDetail() {
         Erstellt: {format(new Date(submission.created_at), 'dd.MM.yyyy HH:mm')} Uhr
       </div>
 
-      {/* Safe Bottom Action Area */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-white border-t border-slate-200 lg:static lg:bg-transparent lg:border-0 lg:p-0 z-30">
+      {/* Safe Bottom Action Area - Mobile Optimized */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 lg:static lg:bg-transparent lg:border-0 lg:p-0 z-30">
         <div className="max-w-2xl mx-auto flex gap-3">
           {submission.status === 'draft' ? (
             <>
               <Button
                 onClick={handleDelete}
                 variant="ghost"
-                className="text-red-500 hover:bg-red-50 hover:text-red-700 shrink-0"
+                className="w-14 justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 shrink-0"
                 icon={<Trash2 className="w-5 h-5" />}
               >
               </Button>
@@ -321,7 +321,7 @@ export default function SubmissionDetail() {
                 onClick={handleGeneratePDF}
                 loading={generating}
                 variant="primary"
-                className="flex-1 w-full justify-center shadow-lg shadow-blue-500/20"
+                className="flex-1 w-full justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
                 size="lg"
                 icon={<Zap className="w-5 h-5" />}
               >
@@ -333,7 +333,7 @@ export default function SubmissionDetail() {
               onClick={submission.pdf_url ? handleViewPDF : handleGeneratePDF}
               loading={generating}
               variant="primary"
-              className="w-full justify-center shadow-lg shadow-blue-500/20"
+              className="w-full justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
               size="lg"
               icon={<Download className="w-5 h-5" />}
             >

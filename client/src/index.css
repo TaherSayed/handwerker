@@ -21,78 +21,98 @@
     --background: 248 250 252;
     /* Slate 50 */
     --surface: 255 255 255;
-    --border: 226 232 240;
+
     /* Slate 200 */
+    html {
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      @apply antialiased transition-colors duration-200;
+    }
+
+    /* Improved Typography Scaling */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      @apply tracking-tight font-bold text-slate-900 dark:text-white;
+    }
   }
 
-  * {
-    @apply box-border;
-    -webkit-tap-highlight-color: transparent;
+  @layer components {
+
+    /* Card Component - Softer Shadows */
+    .card {
+      @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-200;
+    }
+
+    /* Button Components - Bolder Mobile Touch Targets */
+    .btn-primary {
+      @apply bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold px-4 py-2 rounded-lg;
+    }
+
+    .btn-secondary {
+      @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold px-4 py-2 rounded-lg;
+    }
+
+    .btn-ghost {
+      @apply text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-medium px-3 py-2 rounded-lg;
+    }
+
+    /* Inputs - Larger Touch Areas */
+    .input {
+      @apply w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 placeholder:text-slate-400 transition-all font-medium;
+    }
+
+    .label {
+      @apply block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5 ml-0.5;
+    }
+
+    /* Badges - Refined */
+    .badge {
+      @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide;
+    }
+
+    .badge-success {
+      @apply bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400;
+    }
+
+    .badge-warning {
+      @apply bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400;
+    }
   }
 
-  body {
-    @apply m-0 font-sans antialiased text-slate-900 bg-slate-50;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.01em;
-    /* Tighter, more precise look */
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-bold tracking-tight text-slate-900;
-  }
-}
-
-@layer components {
-
-  /* Cards: Strict, Bordered, No heavy shadows */
-  .card {
-    @apply bg-white rounded-md border border-[rgb(var(--border))] shadow-sm p-4;
+  .animate-fade-in {
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .card-hover {
-    @apply hover:border-slate-300 transition-colors duration-150;
+  /* Mobile Safe Area Utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Buttons: Solid, Rectangular, High Legibility */
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-[rgb(var(--primary))] text-white font-medium text-sm rounded-md shadow-sm hover:bg-[rgb(var(--primary-hover))] active:translate-y-[1px] transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 font-medium text-sm rounded-md border border-slate-300 shadow-sm hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 transition-all;
-  }
-
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-slate-600 font-medium text-sm rounded-md hover:bg-slate-100 hover:text-slate-900 transition-colors;
-  }
-
-  /* Form Elements: Standardized, High Contrast Inputs */
-  .input {
-    @apply w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[rgb(var(--primary))] focus:ring-1 focus:ring-[rgb(var(--primary))] transition-shadow shadow-sm;
-  }
-
-  /* Badges: Technical Labels */
-  .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tabular-nums;
-  }
-
-  /* Mobile Navigation: Simplified */
-  .nav-link-mobile {
-    @apply flex flex-col items-center justify-center gap-1 p-2 rounded-md text-slate-500 transition-colors;
-  }
-
-  .nav-link-mobile.active {
-    @apply text-[rgb(var(--primary))] bg-blue-50 font-medium;
-  }
-}
-
-/* Utilities */
-.tabular-nums {
-  font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }

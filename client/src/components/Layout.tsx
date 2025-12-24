@@ -40,10 +40,10 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex min-h-screen font-sans text-slate-900">
+    <div className="flex min-h-screen font-sans text-slate-900 dark:text-slate-100">
       {/* Sidebar (Desktop Only) - Solid Professional Look */}
       <aside
-        className={`hidden lg:flex flex-col sticky top-0 h-screen bg-white border-r border-slate-200 z-30 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
+        className={`hidden lg:flex flex-col sticky top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-30 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
           }`}
       >
         {/* Sidebar Logo */}
@@ -133,7 +133,7 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0 relative">
         {/* Top Header */}
         <header
-          className={`sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16 transition-all duration-200 ${scrolled ? 'bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm' : 'bg-transparent'
+          className={`sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16 transition-all duration-200 ${scrolled ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-transparent'
             }`}
         >
           {/* Mobile Menu & Logo */}
@@ -188,7 +188,7 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation - Solid & Robust */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-1 flex items-center justify-around z-40 pb-safe shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-2 py-1 flex items-center justify-around z-40 pb-safe shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (

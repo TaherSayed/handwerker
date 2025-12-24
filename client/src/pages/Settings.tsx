@@ -2,13 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
-import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info, FileText } from 'lucide-react';
+import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info, FileText, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
+import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
 export default function Settings() {
   const { profile, refreshProfile } = useAuthStore();
   const { success, error: notifyError } = useNotificationStore();
+  const { theme, toggleTheme } = useThemeStore();
 
   // Local state for form fields
   const [formData, setFormData] = useState({
@@ -103,16 +105,16 @@ export default function Settings() {
       {/* Header with Auto-Save Status */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
             Einstellungen
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">
+          <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">
             Personalisieren Sie Ihren Arbeitsbereich
           </p>
         </div>
 
         {/* Auto-save Indicator */}
-        <div className="flex items-center gap-2 h-8 px-4 bg-white/50 rounded-full border border-slate-100">
+        <div className="flex items-center gap-2 h-8 px-4 bg-white/50 dark:bg-slate-800/50 rounded-full border border-slate-100 dark:border-slate-700">
           {isSaving ? (
             <>
               <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
@@ -126,13 +128,48 @@ export default function Settings() {
               </span>
             </>
           ) : (
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Bereit</span>
+            <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">Bereit</span>
           )}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="space-y-6">
+
+        {/* Appearance Settings */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <SettingsIcon className="w-24 h-24 dark:text-white" />
+          </div>
+
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                <SettingsIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-wider">Erscheinungsbild</h2>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Darstellung anpassen</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Dunkelmodus</span>
+              <button
+                onClick={toggleTheme}
+                className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 ease-in-out ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+              >
+                <div className={`w-6 h-6 rounded-full bg-white shadow-sm transform transition-transform duration-200 ease-in-out flex items-center justify-center ${theme === 'dark' ? 'translate-x-6' : 'translate-x-0'}`}>
+                  {theme === 'dark' ? (
+                    <Moon className="w-3 h-3 text-blue-600" />
+                  ) : (
+                    <Sun className="w-3 h-3 text-amber-500" />
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Profile Identity */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">

@@ -74,13 +74,13 @@ export default function FormTemplates() {
   return (
     <div className="space-y-8 pb-32 lg:pb-8">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
             Formularvorlagen
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Verwalten Sie Ihre Vorlagen für Berichte und Protokolle.
+          <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+            Verwalten Sie Ihre Berichtsstrukturen
           </p>
         </div>
         <Button
@@ -156,28 +156,28 @@ export default function FormTemplates() {
           {templates.map((template) => (
             <div
               key={template.id}
-              onClick={() => navigate(`/templates/${template.id}/fill`)}
-              className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer group flex flex-col h-full"
+              onClick={() => navigate(`/visits/new?templateId=${template.id}`)}
+              className="card group hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer transition-all hover:shadow-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 flex flex-col h-full p-6"
             >
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
-                  <FileText className="w-6 h-6" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center shrink-0">
+                  <FileText className="w-5 h-5" />
                 </div>
                 {template.category && (
-                  <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg">
+                  <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-lg">
                     {template.category}
                   </span>
                 )}
               </div>
 
-              <div className="flex-1 mb-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-2 truncate">{template.name}</h3>
-                <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
+              <div className="flex-1 mb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 truncate">{template.name}</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">
                   {template.description || 'Keine Beschreibung verfügbar.'}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-auto">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700 mt-auto">
                 <div className="text-xs text-slate-400 font-medium">
                   {template.fields?.length || 0} Felder
                 </div>
@@ -185,14 +185,14 @@ export default function FormTemplates() {
                 <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                     title="Bearbeiten"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={(e) => handleDuplicate(template.id, e)}
-                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     title="Kopieren"
                   >
                     <Copy className="w-4 h-4" />
@@ -200,7 +200,7 @@ export default function FormTemplates() {
                   {filter === 'active' ? (
                     <button
                       onClick={(e) => handleArchive(template.id, true, e)}
-                      className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
                       title="Archivieren"
                     >
                       <Archive className="w-4 h-4" />
@@ -208,7 +208,7 @@ export default function FormTemplates() {
                   ) : (
                     <button
                       onClick={(e) => handleDelete(template.id, e)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Löschen"
                     >
                       <Trash2 className="w-4 h-4" />
