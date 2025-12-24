@@ -167,31 +167,27 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-around z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-between z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.02)] rounded-t-[2rem]">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
             <button
               key={item.to}
               onClick={() => {
-                if (isActive) return; // Prevent double taps/redundant navigation
+                if (isActive) return;
                 navigate(item.to);
               }}
-              className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-2xl transition-all duration-200 min-w-[72px] ${isActive
-                ? 'text-blue-900 bg-blue-50 shadow-inner'
-                : 'text-slate-400 hover:text-slate-600'
-                }`}
+              className={`nav-link-mobile ${isActive ? 'active' : ''}`}
             >
-              <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''}`} />
-              <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-60'}`}>
-                {item.label}
+              <item.icon className={`w-6 h-6 ${isActive ? 'fill-current' : 'stroke-[2px]'}`} />
+              <span className={`text-[10px] font-bold ${isActive ? 'block' : 'hidden'}`}>
+                {isActive && '•'}
               </span>
             </button>
           );
         })}
-        {/* Floating Action Button */}
-
       </nav>
+
 
       <SyncStatus />
     </div >

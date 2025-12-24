@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { ClipboardList, FileText, Download, Calendar, ChevronRight, Zap, Clock, RefreshCw, CheckCircle2 } from 'lucide-react';
-import Button from '../components/common/Button';
-import { useNotificationStore } from '../store/notificationStore';
+import { ClipboardList, Download, ChevronRight, Zap, Clock, CheckCircle2 } from 'lucide-react';
+
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -13,7 +12,6 @@ export default function Submissions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'draft' | 'submitted'>('all');
   const [error, setError] = useState<string | null>(null);
-  const { success, error: notifyError } = useNotificationStore();
 
   useEffect(() => {
     loadSubmissions();
@@ -39,32 +37,6 @@ export default function Submissions() {
       setSubmissions([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGeneratePDF = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      success('PDF Erstellung', 'Ihr Dokument wird generiert...');
-      const result = await apiService.generatePDF(id) as any;
-      window.open(result.pdf_url, '_blank');
-      loadSubmissions();
-    } catch (error: any) {
-      console.error('Generate PDF error:', error);
-      notifyError('Fehler', 'PDF konnte nicht erstellt werden. ' + (error.message || ''));
-    }
-  };
-
-
-
-  const handleViewPDF = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const { url } = await apiService.getPDFDownloadUrl(id) as any;
-      window.open(url, '_blank');
-    } catch (error: any) {
-      console.error('Download PDF error:', error);
-      notifyError('Fehler', 'PDF konnte nicht geöffnet werden. ' + (error.message || ''));
     }
   };
 
@@ -165,72 +137,54 @@ export default function Submissions() {
             <div
               key={sub.id}
               onClick={() => navigate(`/submissions/${sub.id}`)}
-              className="group bg-white rounded-3xl p-6 border border-slate-200 hover:border-indigo-600 hover:shadow-xl hover:shadow-indigo-500/5 active:scale-[0.98] active:bg-slate-50 transition-all cursor-pointer flex flex-col h-full relative overflow-hidden"
+              className="group relative bg-white rounded-[2rem] p-5 shadow-sm border border-slate-100/50 hover:shadow-xl hover:shadow-indigo-100/40 transition-all duration-300 active:scale-[0.98] cursor-pointer"
             >
-              {/* Header with Icon and Status */}
-              <div className="flex items-start justify-between mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${getStatusDisplay(sub).iconBg}`}>
-                  {React.createElement(getStatusDisplay(sub).icon, { className: 'w-7 h-7' })}
+              {/* Top Section: Icon, Info, Bookmark */}
+              <div className="flex items-start gap-4 mb-4">
+                {/* Icon Box */}
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${getStatusDisplay(sub).iconBg}`}>
+                  {React.createElement(getStatusDisplay(sub).icon, { className: 'w-6 h-6' })}
                 </div>
-                <div className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm ${getStatusDisplay(sub).color}`}>
-                  {getStatusDisplay(sub).label}
-                </div>
-              </div>
 
-              {/* Content */}
-              <div className="flex-1 space-y-4 mb-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded">
-                      {format(new Date(sub.created_at), 'HH:mm')} Uhr
-                    </span>
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate mb-1.5 uppercase tracking-tight">
+                {/* Title & Subtitle */}
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                     {sub.customer_name || 'Anonymer Einsatz'}
                   </h3>
-                  <div className="flex items-center gap-2 text-indigo-900 font-bold text-[10px] uppercase tracking-wider">
-                    <FileText className="w-3.5 h-3.5" />
-                    {sub.form_templates?.name || 'Formular'}
-                  </div>
+                  <p className="text-xs font-medium text-slate-400 truncate mt-0.5">
+                    {sub.customer_email || 'Keine E-Mail angegeben'}
+                  </p>
                 </div>
 
-                <div className="space-y-2 pt-2 border-t border-slate-50">
-                  {sub.customer_email && (
-                    <div className="flex items-center gap-2.5 text-xs text-slate-500 font-bold uppercase tracking-wide truncate">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                      {sub.customer_email}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2.5 text-xs text-slate-500 font-bold uppercase tracking-wide">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    {format(new Date(sub.created_at), 'do MMMM yyyy', { locale: de })}
-                  </div>
+                {/* Action / Bookmark */}
+                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                  {sub.pdf_url ? <Download className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                 </div>
               </div>
 
-              {/* Footer Actions */}
-              <div className="flex items-center justify-between gap-4 mt-auto pt-4 border-t border-slate-100/50">
-                {sub.pdf_url ? (
-                  <button
-                    onClick={(e) => handleViewPDF(sub.id, e)}
-                    className="flex-1 flex items-center justify-center gap-2 text-blue-900 hover:text-blue-700 font-black text-[10px] uppercase tracking-widest group/btn transition-colors px-4 py-3 bg-blue-50/50 hover:bg-blue-50 rounded-xl"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>PDF</span>
-                  </button>
-                ) : (
-                  <Button
-                    onClick={(e) => handleGeneratePDF(sub.id, e)}
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1 py-3 px-4 rounded-xl text-[10px]"
-                    icon={<RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />}
-                  >
-                    Finalisieren
-                  </Button>
+              {/* Tags Row */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider ${getStatusDisplay(sub).color}`}>
+                  {getStatusDisplay(sub).label}
+                </span>
+                <span className="px-3 py-1.5 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                  {sub.form_templates?.name || 'Formular'}
+                </span>
+                {sub.is_offline && (
+                  <span className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                    Offline
+                  </span>
                 )}
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all shadow-sm">
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+
+              {/* Bottom Info: Date & Price/Status placeholder */}
+              <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{format(new Date(sub.created_at), 'd. MMM yyyy', { locale: de })}</span>
+                </div>
+                <div className="text-sm font-black text-slate-900">
+                  {format(new Date(sub.created_at), 'HH:mm')} Uhr
                 </div>
               </div>
             </div>
