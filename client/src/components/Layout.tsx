@@ -175,7 +175,7 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-between z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.02)] rounded-t-[2rem]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-2 flex items-center justify-between z-40 pb-safe">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
@@ -185,11 +185,11 @@ export default function Layout() {
                 if (isActive) return;
                 navigate(item.to);
               }}
-              className={`nav-link-mobile ${isActive ? 'active' : ''}`}
+              className={`flex flex-col items-center justify-center gap-1 w-16 py-2 rounded-xl transition-all duration-200 ${isActive ? 'text-blue-600 bg-blue-50/50' : 'text-slate-500 hover:bg-slate-50'}`}
             >
-              <item.icon className={`w-6 h-6 ${isActive ? 'fill-current' : 'stroke-[2px]'}`} />
-              <span className={`text-[10px] font-bold ${isActive ? 'block' : 'hidden'}`}>
-                {isActive && '•'}
+              <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px] scale-105' : 'stroke-[1.5px]'}`} />
+              <span className="text-[10px] font-medium leading-none">
+                {item.label}
               </span>
             </button>
           );

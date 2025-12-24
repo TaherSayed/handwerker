@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { Plus, FileText, Copy, Trash2, Archive, Edit, Play } from 'lucide-react';
+import { Plus, FileText, Copy, Trash2, Archive, Edit } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -72,31 +72,30 @@ export default function FormTemplates() {
   };
 
   return (
-    <div className="animate-slide-up space-y-12 pb-32 lg:pb-8">
+    <div className="space-y-8 pb-32 lg:pb-8">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
+          <h1 className="text-2xl font-bold text-slate-900 leading-tight">
             Formularvorlagen
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Erstellen und verwalten Sie Ihre professionellen Einsatz-Formulare
+          <p className="text-slate-500 text-sm mt-1">
+            Verwalten Sie Ihre Vorlagen für Berichte und Protokolle.
           </p>
         </div>
         <Button
           onClick={() => navigate('/templates/new')}
-          variant="primary"
-          size="lg"
-          icon={<Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />}
+          variant="secondary"
+          className="w-full md:w-auto justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
+          icon={<Plus className="w-4 h-4 text-slate-500" />}
         >
-          Neu erstellen
+          Neue Vorlage
         </Button>
       </div>
 
-      {/* Filter & Actions Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        {/* Filter Tabs */}
-        <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit">
+      {/* Filter Tabs */}
+      <div className="border-b border-slate-200">
+        <div className="flex gap-6">
           {[
             { id: 'active', label: 'Aktiv' },
             { id: 'archived', label: 'Archiviert' }
@@ -104,9 +103,9 @@ export default function FormTemplates() {
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f.id
-                ? 'bg-white text-indigo-600 shadow-xl shadow-slate-200'
-                : 'text-slate-400 hover:text-slate-600'
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${filter === f.id
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
             >
               {f.label}
@@ -117,65 +116,83 @@ export default function FormTemplates() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 rounded-3xl p-6 shadow-sm flex items-center justify-between animate-in slide-in-from-top-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
-            <p className="text-red-800 font-bold text-sm tracking-tight">{error}</p>
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <p className="text-red-700 text-sm font-medium">{error}</p>
           </div>
-          <button onClick={loadTemplates} className="text-red-600 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Wiederholen</button>
+          <button onClick={loadTemplates} className="text-red-600 text-xs font-bold hover:underline">Wiederholen</button>
         </div>
       )}
 
-      {/* Templates Display */}
+      {/* Templates Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map(i => (
-            <div key={i} className="card h-80 bg-slate-50 border-none animate-pulse" />
+            <div key={i} className="h-64 bg-slate-50 rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : templates.length === 0 ? (
-        <div className="p-16 md:p-32 bg-white rounded-[3rem] border border-slate-100 flex flex-col items-center text-center shadow-2xl shadow-slate-200/50">
-          <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-10 transform -rotate-6">
-            <FileText className="w-14 h-14" />
+        <div className="py-20 text-center">
+          <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8" />
           </div>
-          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">Keine {filter === 'active' ? 'aktiven' : 'archivierten'} Vorlagen</h3>
-          <p className="text-slate-400 font-medium max-w-sm mx-auto mb-12 text-lg">
+          <h3 className="text-lg font-bold text-slate-900 mb-2">Keine {filter === 'active' ? 'aktiven' : 'archivierten'} Vorlagen</h3>
+          <p className="text-slate-500 max-w-sm mx-auto mb-8 text-sm">
             {filter === 'active'
-              ? "Bereit für mehr Struktur? Erstellen Sie Ihre erste professionelle Berichts-Vorlage."
-              : "Archivierte Vorlagen werden hier zur Referenz angezeigt."}
+              ? "Erstellen Sie Ihre erste Vorlage, um standardisierte Berichte zu ermöglichen."
+              : "Hier finden Sie Ihre archivierten Vorlagen."}
           </p>
           {filter === 'active' && (
-            <button onClick={() => navigate('/templates/new')} className="btn-primary px-12 py-6 rounded-[2.5rem] bg-indigo-900 text-lg">
-              <Plus className="w-6 h-6" />
-              Jetzt erstellen
-            </button>
+            <Button
+              onClick={() => navigate('/templates/new')}
+              variant="primary"
+            >
+              Erste Vorlage erstellen
+            </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
             <div
               key={template.id}
               onClick={() => navigate(`/templates/${template.id}/fill`)}
-              className="group bg-white rounded-[3rem] p-8 border border-slate-100 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all cursor-pointer flex flex-col h-full relative overflow-hidden"
+              className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer group flex flex-col h-full"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/20 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-500 -z-0" />
-
-              <div className="flex items-start justify-between mb-8 relative z-10">
-                <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
-                  <FileText className="w-8 h-8" />
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                  <FileText className="w-6 h-6" />
                 </div>
-                <div className="flex gap-2">
+                {template.category && (
+                  <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg">
+                    {template.category}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex-1 mb-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-2 truncate">{template.name}</h3>
+                <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
+                  {template.description || 'Keine Beschreibung verfügbar.'}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-auto">
+                <div className="text-xs text-slate-400 font-medium">
+                  {template.fields?.length || 0} Felder
+                </div>
+
+                <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                    className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                    title="Struktur bearbeiten"
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Bearbeiten"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={(e) => handleDuplicate(template.id, e)}
-                    className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
+                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
                     title="Kopieren"
                   >
                     <Copy className="w-4 h-4" />
@@ -183,7 +200,7 @@ export default function FormTemplates() {
                   {filter === 'active' ? (
                     <button
                       onClick={(e) => handleArchive(template.id, true, e)}
-                      className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-amber-600 hover:border-amber-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
+                      className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                       title="Archivieren"
                     >
                       <Archive className="w-4 h-4" />
@@ -191,51 +208,13 @@ export default function FormTemplates() {
                   ) : (
                     <button
                       onClick={(e) => handleDelete(template.id, e)}
-                      className="w-11 h-11 bg-white border border-slate-100 text-slate-400 hover:text-red-600 hover:border-red-100 hover:shadow-lg rounded-xl flex items-center justify-center transition-all"
-                      title="Endgültig löschen"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Löschen"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>
-              </div>
-
-              <div className="flex-1 relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  {template.category && (
-                    <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-lg">
-                      {template.category}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-2xl font-black text-slate-900 mb-3 truncate group-hover:text-indigo-600 transition-colors uppercase tracking-tight leading-none">{template.name}</h3>
-                <p className="text-slate-400 text-sm font-bold line-clamp-2 leading-relaxed uppercase tracking-tight opacity-70">
-                  {template.description || 'Professionelles Formular, bereit für den Einsatz.'}
-                </p>
-              </div>
-
-              <div className="mt-8 pt-8 border-t-2 border-slate-50/50 flex items-center justify-between relative z-10">
-                <div className="flex items-end gap-2">
-                  <span className="text-3xl font-black text-slate-900 leading-none">{template.fields?.length || 0}</span>
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Felder</span>
-                </div>
-                <div className="flex -space-x-3">
-                  {[1, 2].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-4 border-white" />
-                  ))}
-                  <div className="w-8 h-8 rounded-full bg-indigo-50 border-4 border-white flex items-center justify-center text-[10px] font-black text-indigo-600">+</div>
-                </div>
-              </div>
-
-              <div className="mt-8 relative z-10">
-                <Button
-                  onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/fill`); }}
-                  variant="primary"
-                  className="w-full bg-slate-900 text-white hover:bg-indigo-600 py-5"
-                  icon={<Play className="w-4 h-4 fill-current group-hover:translate-x-1 transition-transform" />}
-                >
-                  Einsatz starten
-                </Button>
               </div>
             </div>
           ))}
