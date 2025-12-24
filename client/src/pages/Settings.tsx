@@ -4,7 +4,7 @@ import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
 import {
   User, Building, ShieldCheck, CheckCircle2, Loader2, Info,
-  Settings as SettingsIcon, Sun, Moon, Database, Smartphone, Palette, LogOut, ChevronRight, FileJson, Trash2
+  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight, FileJson, Trash2
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
@@ -14,7 +14,7 @@ type Tab = 'general' | 'profile' | 'company' | 'data' | 'info';
 
 export default function Settings() {
   const { profile, refreshProfile, signOut } = useAuthStore();
-  const { success, error: notifyError, info } = useNotificationStore();
+  const { success, error: notifyError } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
   const [activeTab, setActiveTab] = useState<Tab>('general');
 
