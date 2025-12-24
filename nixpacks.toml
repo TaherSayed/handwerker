@@ -3,9 +3,7 @@ nixPkgs = ["nodejs_22", "curl", "wget"]
 
 [phases.install]
 cmds = [
-  "npm install",
-  "cd server && npm install",
-  "cd client && npm install"
+  "npm install"
 ]
 
 [phases.build]

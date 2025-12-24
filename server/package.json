@@ -17,7 +17,8 @@
     "pdfkit": "^0.13.0",
     "sharp": "^0.33.1",
     "uuid": "^9.0.1",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -26,7 +27,6 @@
     "@types/node": "^20.10.6",
     "@types/pdfkit": "^0.13.4",
     "@types/uuid": "^9.0.7",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "tsx": "^4.7.0"
   }
 }
