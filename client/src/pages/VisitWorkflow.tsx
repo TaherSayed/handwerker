@@ -39,6 +39,7 @@ export default function VisitWorkflow() {
     });
 
     const [templates, setTemplates] = useState<any[]>([]);
+    const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
 
     const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
@@ -64,11 +65,21 @@ export default function VisitWorkflow() {
     };
 
     const loadTemplates = async () => {
+        setIsLoadingTemplates(true);
         try {
-            const data = await apiService.getTemplates({ is_archived: false });
+            // Add a timeout to prevent infinite loading
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout')), 15000)
+            );
+            const fetchPromise = apiService.getTemplates({ is_archived: false });
+
+            const data = await Promise.race([fetchPromise, timeoutPromise]) as any[];
             setTemplates(data || []);
         } catch (err) {
             console.error('Failed to load templates:', err);
+            // Don't show critical error for templates load fail, just empty list
+        } finally {
+            setIsLoadingTemplates(false);
         }
     };
 
@@ -420,26 +431,39 @@ export default function VisitWorkflow() {
                             <p className="text-slate-500 font-medium">Which form protocol matches this visit?</p>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
-                            {templates.map(t => (
-                                <button
-                                    key={t.id}
-                                    onClick={() => handleTemplateSelect(t)}
-                                    className="group flex items-center gap-5 p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all text-left"
-                                >
-                                    <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                        <FileText className="w-8 h-8" />
+                        {isLoadingTemplates ? (
+                            <div className="grid grid-cols-1 gap-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-24 bg-slate-50 rounded-[2.5rem] animate-pulse border border-slate-100" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4">
+                                {templates.map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => handleTemplateSelect(t)}
+                                        className="group flex items-center gap-5 p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all text-left"
+                                    >
+                                        <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                            <FileText className="w-8 h-8" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-indigo-600 transition-colors truncate">{t.name}</h4>
+                                            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1 truncate">{t.description || 'Service record template'}</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all shrink-0">
+                                            <ArrowRight className="w-5 h-5" />
+                                        </div>
+                                    </button>
+                                ))}
+                                {templates.length === 0 && (
+                                    <div className="text-center py-12 bg-slate-50 rounded-[2.5rem]">
+                                        <p className="text-slate-400 font-bold">No templates found.</p>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{t.name}</h4>
-                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1 truncate">{t.description || 'Service record template'}</p>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
-                                        <ArrowRight className="w-5 h-5" />
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
 
