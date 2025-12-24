@@ -92,7 +92,7 @@ export default function Settings() {
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
       // DIRECT UPLOAD: Bypasses backend signed-url generation issues
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('company-logos')
         .upload(fileName, file, {
           cacheControl: '3600',
