@@ -2,38 +2,35 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
-import { User, Building, Mail, ShieldCheck, Plus, CheckCircle2, Loader2, Info, FileText, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
+import {
+  User, Building, ShieldCheck, CheckCircle2, Loader2, Info,
+  Settings as SettingsIcon, Sun, Moon, Database, Smartphone, Palette, LogOut, ChevronRight, FileJson, Trash2
+} from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
+type Tab = 'general' | 'profile' | 'company' | 'data' | 'info';
+
 export default function Settings() {
   const { profile, refreshProfile, signOut } = useAuthStore();
-  const { success, error: notifyError } = useNotificationStore();
+  const { success, error: notifyError, info } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
+  const [activeTab, setActiveTab] = useState<Tab>('general');
 
-  const handleLogout = async () => {
-    if (confirm('Möchten Sie sich wirklich abmelden?')) {
-      await signOut();
-      window.location.reload();
-    }
-  };
-
-
-  // Local state for form fields
+  // Form State
   const [formData, setFormData] = useState({
     full_name: '',
     company_name: '',
     company_logo_url: '',
   });
 
-  // State management for auto-save
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [logoLoading, setLogoLoading] = useState(false);
   const mountRef = useRef(false);
 
-  // Initialize form with profile data
+  // Initialize Data
   useEffect(() => {
     if (profile && !mountRef.current) {
       setFormData({
@@ -45,20 +42,16 @@ export default function Settings() {
     }
   }, [profile]);
 
-  // Auto-save logic with debounce
+  // Auto-Save
   useEffect(() => {
-    // Skip the first render or if profile isn't loaded yet
     if (!mountRef.current || !profile) return;
 
     const timer = setTimeout(async () => {
-      // Check if values actually changed to avoid unnecessary saves on initial load
       if (
         formData.full_name === (profile.full_name || '') &&
         formData.company_name === (profile.company_name || '') &&
         formData.company_logo_url === (profile.company_logo_url || '')
-      ) {
-        return;
-      }
+      ) return;
 
       setIsSaving(true);
       try {
@@ -67,14 +60,21 @@ export default function Settings() {
         setLastSaved(new Date());
       } catch (error: any) {
         console.error('Auto-save error:', error);
-        notifyError('Speichern fehlgeschlagen', 'Änderungen konnten nicht automatisch gespeichert werden.');
+        notifyError('Fehler', 'Speichern fehlgeschlagen.');
       } finally {
         setIsSaving(false);
       }
-    }, 1000); // 1 second debounce
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [formData, profile, refreshProfile, notifyError]);
+
+  const handleLogout = async () => {
+    if (confirm('Möchten Sie sich wirklich abmelden?')) {
+      await signOut();
+      window.location.href = '/';
+    }
+  };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -82,335 +82,349 @@ export default function Settings() {
 
     try {
       setLogoLoading(true);
-      const { signed_url, path } = await apiService.getSignedUploadUrl(
-        'company-logos',
-        file.name
-      ) as any;
-
-      const uploadResponse = await fetch(signed_url, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-
-      if (!uploadResponse.ok) throw new Error('Upload fehlgeschlagen');
-
+      const { signed_url, path } = await apiService.getSignedUploadUrl('company-logos', file.name) as any;
+      await fetch(signed_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
       const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
-
-      // Update form data to trigger auto-save
       setFormData(prev => ({ ...prev, company_logo_url: data.publicUrl }));
-      success('Logo hochgeladen', 'Ihre Marken-Identität wurde aktualisiert.');
+      success('Logo aktualisiert', 'Ihr neues Firmenlogo wurde gespeichert.');
     } catch (error: any) {
-      console.error('Logo upload error:', error);
-      notifyError('Upload fehlgeschlagen', error.message);
+      notifyError('Fehler', 'Upload fehlgeschlagen.');
     } finally {
       setLogoLoading(false);
     }
   };
 
+  const tabs: { id: Tab; label: string; icon: any }[] = [
+    { id: 'general', label: 'Allgemein', icon: SettingsIcon },
+    { id: 'profile', label: 'Profil', icon: User },
+    { id: 'company', label: 'Firma', icon: Building },
+    { id: 'data', label: 'Daten', icon: Database },
+  ];
+
   return (
-    <div className="animate-slide-up space-y-8 max-w-4xl mx-auto pb-32">
-      {/* Header with Auto-Save Status */}
+    <div className="animate-fade-in space-y-6 pb-24">
+      {/* Header with Save Status */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
-            <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Konto</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">
-              Persönliche Einstellungen
-            </p>
-          </div>
-        </div>    {/* Auto-save Indicator */}
-        <div className="flex items-center gap-2 h-8 px-4 bg-white/50 dark:bg-slate-800/50 rounded-full border border-slate-100 dark:border-slate-700">
+        <div>
+          <h1 className="heading-xl text-slate-900 dark:text-white mb-1">Einstellungen</h1>
+          <p className="text-slate-500 font-medium text-sm">Verwalten Sie Ihre App-Präferenzen</p>
+        </div>
+
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm self-start md:self-auto">
           {isSaving ? (
             <>
-              <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Speichert...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Speichert...</span>
             </>
           ) : lastSaved ? (
             <>
-              <CheckCircle2 className="w-3 h-3 text-green-500" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Gespeichert {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </>
           ) : (
-            <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">Bereit</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Bereit</span>
           )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="space-y-6">
+      {/* Tabs Navigation */}
+      <div className="flex overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 gap-2">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 border ${isActive
+                ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+            >
+              <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Appearance Settings */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-            <SettingsIcon className="w-24 h-24 dark:text-white" />
-          </div>
+      {/* Content Area */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 md:p-8 min-h-[400px]">
 
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                <SettingsIcon className="w-5 h-5" />
+        {/* GENERAL TAB */}
+        {activeTab === 'general' && (
+          <div className="space-y-8 animate-slide-up">
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                  <Palette className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Erscheinungsbild</h2>
+                  <p className="text-sm text-slate-500">Passen Sie das Design der App an</p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-wider">Erscheinungsbild</h2>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Darstellung anpassen</p>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-between group cursor-pointer" onClick={toggleTheme}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-amber-100 text-amber-600'}`}>
+                    {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 dark:text-white">{theme === 'dark' ? 'Dunkelmodus' : 'Heller Modus'}</span>
+                    <span className="text-xs text-slate-500">Klicken zum Wechseln</span>
+                  </div>
+                </div>
+                <div className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-300'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${theme === 'dark' ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Developer Zone (Hidden for now, or exposed as advanced) */}
-            <div className="card p-5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <h2 className="heading-lg text-lg mb-4">Erweiterte Optionen</h2>
+            <hr className="border-slate-100 dark:border-slate-700" />
 
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={async () => {
-                    if (!confirm('Möchten Sie 20 Standard-Vorlagen importieren?')) return;
-                    try {
-                      // alert('Import temporarily disabled for build debugging');
-                      const { seedService } = await import('../services/seed.service');
-                      const count = await seedService.seedTemplates();
-                      alert(`${count} Vorlagen wurden erfolgreich erstellt!`);
-                    } catch (e) {
-
-
-                      alert('Fehler beim Importieren');
-                      console.error(e);
-                    }
-                  }}
-                  variant="secondary"
-                  className="w-full justify-start"
-                >
-                  <span className="mr-2">⚡</span> Standard-Vorlagen importieren (20 Stk.)
-                </Button>
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center">
+                  <Info className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Über die App</h2>
+                  <p className="text-sm text-slate-500">Version & Rechtliches</p>
+                </div>
               </div>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <a href="#" className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between group">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Impressum</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                </a>
+                <a href="#" className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between group">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Datenschutz</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                </a>
+              </div>
+              <div className="px-1 pt-2 flex justify-between items-center text-xs font-medium text-slate-400">
+                <span>OnSite Forms Pro</span>
+                <span>v1.2.0 (Build 2404)</span>
+              </div>
+            </section>
 
-            <div className="flex justify-center pt-8">
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                Abmelden
+            <div className="pt-4 flex justify-center mobile:justify-stretch">
+              <Button variant="ghost" className="text-red-500 w-full md:w-auto" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Ausloggen
               </Button>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Dunkelmodus</span>
-              <button
-                onClick={toggleTheme}
-                className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 ease-in-out ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
-              >
-                <div className={`w-6 h-6 rounded-full bg-white shadow-sm transform transition-transform duration-200 ease-in-out flex items-center justify-center ${theme === 'dark' ? 'translate-x-6' : 'translate-x-0'}`}>
-                  {theme === 'dark' ? (
-                    <Moon className="w-3 h-3 text-blue-600" />
-                  ) : (
-                    <Sun className="w-3 h-3 text-amber-500" />
-                  )}
-                </div>
-              </button>
-            </div>
           </div>
-        </div>
+        )}
 
-        {/* Profile Identity */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-            <User className="w-24 h-24" />
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-16 h-16 rounded-full border-4 border-slate-50 shadow-sm overflow-hidden flex items-center justify-center bg-blue-50 text-blue-600">
-                {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture ? (
-                  <img
-                    src={profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture}
-                    alt="Google Profile"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+        {/* PROFILE TAB */}
+        {activeTab === 'profile' && (
+          <div className="space-y-8 animate-slide-up">
+            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+              <div className="w-16 h-16 rounded-full border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden bg-white">
+                {profile?.auth_metadata?.avatar_url ? (
+                  <img src={profile.auth_metadata.avatar_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <User className="w-8 h-8" />
+                  <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xl">
+                    {formData.full_name?.[0]}
+                  </div>
                 )}
               </div>
               <div>
-                <h2 className="font-black text-slate-900 text-lg">{profile?.full_name || 'Benutzer'}</h2>
-                <div className="flex items-center gap-1.5 text-slate-500">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                  <p className="text-xs font-medium">Google Account verbunden</p>
-                </div>
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white">{formData.full_name}</h3>
+                <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
+                  Google Konto verbunden
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name - Editable */}
+            <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Anzeigename</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Anzeigename</label>
                 <input
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                  className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300"
-                  placeholder="Ihr Name"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium dark:text-white transition-all"
                 />
               </div>
-
-              {/* Email - Read Only */}
               <div className="space-y-2 opacity-75">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                  <span>Google Konto E-Mail</span>
-                  <span className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400">GESCHÜTZT</span>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex justify-between">
+                  <span>E-Mail (Google)</span>
+                  <span className="text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 rounded text-slate-400">READ ONLY</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={profile?.email || ''}
-                    readOnly
-                    className="w-full bg-slate-100 border-0 rounded-2xl pl-10 pr-4 py-3 font-bold text-slate-500 cursor-not-allowed select-none"
-                  />
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest">
-                    <ShieldCheck className="w-3 h-3" />
-                    <span>Gesichert</span>
-                  </div>
-                </div>
-                <p className="text-[10px] text-slate-400 font-bold ml-1 flex items-center gap-1">
-                  <Info className="w-3 h-3" />
-                  Wird vom Google-Login verwaltet.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Company & Branding */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Building className="w-24 h-24" />
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                <Building className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Firma & Branding</h2>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Erscheint auf Ihren Berichten</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Firmenname</label>
-              <input
-                type="text"
-                value={formData.company_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                className="w-full bg-slate-50 border-0 rounded-2xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-300"
-                placeholder="Firmenname eingeben"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-slate-50">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block mb-3">Firmenlogo (für PDF Berichte)</label>
-
-              <div className="flex items-center gap-6">
-                {formData.company_logo_url ? (
-                  <div className="flex items-center gap-4 bg-slate-50 p-2 pr-6 rounded-2xl border border-slate-100">
-                    <div className="h-16 w-16 bg-white rounded-xl p-2 flex items-center justify-center border border-slate-100 shadow-sm">
-                      <img src={formData.company_logo_url} className="max-h-full max-w-full object-contain" alt="Logo" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-slate-700">Logo aktiv</span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
-                          loading={logoLoading}
-                          className="h-7 text-[10px] px-2"
-                        >
-                          Ändern
-                        </Button>
-                        <button
-                          onClick={() => setFormData(prev => ({ ...prev, company_logo_url: '' }))}
-                          className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-wider px-2"
-                        >
-                          Entfernen
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => (document.getElementById('logo-upload') as HTMLInputElement).click()}
-                    className="h-16 w-16 bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-blue-400 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-200 flex items-center justify-center cursor-pointer transition-all"
-                  >
-                    {logoLoading ? <Loader2 className="w-5 h-5 animate-spin text-blue-500" /> : <Plus className="w-6 h-6" />}
-                  </div>
-                )}
-
                 <input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
+                  type="text"
+                  readOnly
+                  value={profile?.email || ''}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-950 border-0 text-slate-500 font-medium cursor-not-allowed select-none"
                 />
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Legal & Compliance */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-            <ShieldCheck className="w-24 h-24" />
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-black text-slate-900 text-sm uppercase tracking-wider">Rechtliches</h2>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Pflichtangaben & Datenschutz</p>
-              </div>
+        {/* COMPANY TAB */}
+        {activeTab === 'company' && (
+          <div className="space-y-8 animate-slide-up">
+            <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl flex gap-4 items-start border border-blue-100 dark:border-blue-900/30">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                Diese Informationen erscheinen automatisch auf allen Ihren PDF-Berichten und Exporten.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <a href="#" className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl hover:bg-blue-50 hover:text-blue-700 transition-colors group/link">
-                <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover/link:text-blue-500">
-                  <FileText className="w-4 h-4" />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Firmenname</label>
+                <input
+                  type="text"
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="z.B. Mustermann Handwerk GmbH"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium dark:text-white transition-all"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Firmenlogo</label>
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                  <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center p-2 shadow-sm relative group overflow-hidden">
+                    {formData.company_logo_url ? (
+                      <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
+                    ) : (
+                      <Building className="w-8 h-8 text-slate-300" />
+                    )}
+                    {logoLoading && (
+                      <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => document.getElementById('logo-upload')?.click()}
+                      disabled={logoLoading}
+                    >
+                      Logo hochladen
+                    </Button>
+                    {formData.company_logo_url && (
+                      <button
+                        onClick={() => setFormData(prev => ({ ...prev, company_logo_url: '' }))}
+                        className="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1"
+                      >
+                        Logo löschen
+                      </button>
+                    )}
+                    <p className="text-xs text-slate-400 mt-1">Empfohlen: PNG oder JPG, quadratisch.</p>
+                    <input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                  </div>
                 </div>
-                <span className="font-bold text-sm">Impressum</span>
-              </a>
-              <a href="#" className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl hover:bg-blue-50 hover:text-blue-700 transition-colors group/link">
-                <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover/link:text-blue-500">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <span className="font-bold text-sm">Datenschutz</span>
-              </a>
+              </div>
             </div>
-
-            <p className="text-[10px] text-slate-400 font-medium leading-relaxed px-1">
-              Diese Anwendung wird von <strong>OnSite Forms</strong> bereitgestellt. Bei Fragen zum Datenschutz wenden Sie sich bitte an Ihren Administrator.
-            </p>
           </div>
-        </div>
+        )}
 
-        {/* Connection Info */}
-        <div className="flex items-center justify-center gap-2 pt-8 opacity-50">
-          <ShieldCheck className="w-4 h-4 text-slate-400" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Verbunden via Google OAuth
-          </span>
-        </div>
+        {/* DATA TAB */}
+        {activeTab === 'data' && (
+          <div className="space-y-8 animate-slide-up">
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Datenmanagement</h2>
+                  <p className="text-sm text-slate-500">Import & Export von Vorlagen und Berichten</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {/* Import Templates */}
+                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Standard-Vorlagen</h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                      Installieren Sie 20 professionelle Handwerker-Vorlagen (Rapporte, Abnahmen, Protokolle).
+                    </p>
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm('20 Standard-Vorlagen werden importiert. Fortfahren?')) return;
+                      try {
+                        const { seedService } = await import('../services/seed.service');
+                        const count = await seedService.seedTemplates();
+                        success('Import erfolgreich', `${count} Vorlagen erstellt.`);
+                      } catch (e) {
+                        notifyError('Fehler', 'Import fehlgeschlagen.');
+                      }
+                    }}
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                  >
+                    <Database className="w-4 h-4 mr-2" />
+                    Vorlagen importieren
+                  </Button>
+                </div>
+
+                {/* Cache Cleanup */}
+                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Lokalen Speicher bereinigen</h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                      Löscht temporäre Dateien und Cache. Es gehen keine gespeicherten Daten verloren.
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (confirm('Cache wirklich leeren? Die Seite wird neu geladen.')) {
+                        localStorage.clear();
+                        window.location.reload();
+                      }
+                    }}
+                    size="sm"
+                    className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Cache leeren
+                  </Button>
+                </div>
+
+                {/* JSON Export (Stub) */}
+                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-75 grayscale">
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Backup erstellen (Coming Soon)</h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                      Laden Sie alle Ihre Berichte und Einstellungen als JSON-Archiv herunter.
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    disabled
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    <FileJson className="w-4 h-4 mr-2" />
+                    Exportieren
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
       </div>
     </div>
   );

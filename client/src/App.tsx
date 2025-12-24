@@ -1,22 +1,24 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import SplashScreen from './pages/SplashScreen';
-import GoogleSignInScreen from './pages/GoogleSignInScreen';
-import Dashboard from './pages/Dashboard';
-import FormTemplates from './pages/FormTemplates';
-import FormBuilder from './pages/FormBuilder';
-import FormFilling from './pages/FormFilling';
-import Submissions from './pages/Submissions';
-import SubmissionDetail from './pages/SubmissionDetail';
-import Settings from './pages/Settings';
-import VisitWorkflow from './pages/VisitWorkflow';
 import { supabase } from './services/supabase';
 import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
+
+// Lazy load pages for better performance
+const GoogleSignInScreen = lazy(() => import('./pages/GoogleSignInScreen'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const FormTemplates = lazy(() => import('./pages/FormTemplates'));
+const FormBuilder = lazy(() => import('./pages/FormBuilder'));
+const FormFilling = lazy(() => import('./pages/FormFilling'));
+const Submissions = lazy(() => import('./pages/Submissions'));
+const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
+const Settings = lazy(() => import('./pages/Settings'));
+const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
 
 
 // OAuth callback handler
@@ -128,10 +130,12 @@ function App() {
   if (!user) {
     return (
       <BrowserRouter>
-        <Routes>
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="*" element={<GoogleSignInScreen />} />
-        </Routes>
+        <Suspense fallback={<SplashScreen />}>
+          <Routes>
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="*" element={<GoogleSignInScreen />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     );
   }
@@ -146,21 +150,23 @@ function App() {
         </div>
       )}
 
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="visits/new" element={<VisitWorkflow />} />
-          <Route path="templates" element={<FormTemplates />} />
-          <Route path="templates/new" element={<FormBuilder />} />
-          <Route path="templates/:id/edit" element={<FormBuilder />} />
-          <Route path="templates/:templateId/fill" element={<FormFilling />} />
-          <Route path="submissions" element={<Submissions />} />
-          <Route path="submissions/:id" element={<SubmissionDetail />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-        <Route path="/auth/callback" element={<AuthCallback />} />
-      </Routes>
+      <Suspense fallback={<SplashScreen />}>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="visits/new" element={<VisitWorkflow />} />
+            <Route path="templates" element={<FormTemplates />} />
+            <Route path="templates/new" element={<FormBuilder />} />
+            <Route path="templates/:id/edit" element={<FormBuilder />} />
+            <Route path="templates/:templateId/fill" element={<FormFilling />} />
+            <Route path="submissions" element={<Submissions />} />
+            <Route path="submissions/:id" element={<SubmissionDetail />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          <Route path="/auth/callback" element={<AuthCallback />} />
+        </Routes>
+      </Suspense>
       <Toaster />
     </BrowserRouter>
   );
