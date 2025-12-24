@@ -137,7 +137,7 @@ export default function SubmissionDetail() {
   if (error || !submission) {
     return (
       <div className="p-4 flex flex-col items-center text-center">
-        <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-4">!</div>
+        <div className="w-16 h-16 bg-red-50 text-red-600 rounded-md flex items-center justify-center mb-4">!</div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">Fehler</h2>
         <p className="text-slate-500 mb-6 text-sm">{error || 'Bericht nicht gefunden'}</p>
         <Button onClick={() => navigate('/submissions')} variant="secondary" size="sm" icon={<ArrowLeft className="w-4 h-4" />}>

@@ -49,7 +49,7 @@ export default function Layout() {
         {/* Sidebar Logo */}
         <div className="h-16 flex items-center px-5 mb-2 border-b border-slate-50">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-blue-700/50">
+            <div className="w-9 h-9 bg-blue-600 rounded flex items-center justify-center shrink-0 shadow-sm border border-blue-700/50">
               <FileText className="w-5 h-5 text-white" />
             </div>
             {sidebarOpen && (
@@ -68,7 +68,7 @@ export default function Layout() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group relative font-medium ${isActive
+                `flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 group relative font-medium ${isActive
                   ? 'text-blue-700 bg-blue-50 border border-blue-100 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-200 border border-transparent'
                 }`
@@ -97,7 +97,7 @@ export default function Layout() {
             {sidebarOpen ? (
               <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
+                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
                     {profile?.auth_metadata?.avatar_url ? (
                       <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
@@ -138,7 +138,7 @@ export default function Layout() {
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9 bg-blue-600 rounded flex items-center justify-center shadow-sm">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg text-slate-900">OnSite</span>
@@ -162,7 +162,7 @@ export default function Layout() {
 
             <button
               onClick={() => useNotificationStore.getState().info('Mitteilungen', 'Keine neuen Benachrichtigungen')}
-              className="relative p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group"
+              className="relative p-2 bg-white border border-slate-200 rounded text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group"
             >
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white group-hover:scale-110 transition-transform" />
@@ -170,7 +170,7 @@ export default function Layout() {
 
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
+              className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
             >
               {profile?.auth_metadata?.avatar_url ? (
                 <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />

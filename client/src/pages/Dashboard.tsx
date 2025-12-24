@@ -68,7 +68,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-2xl" />)}
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-100 rounded border border-slate-200" />)}
       </div>
     );
   }
@@ -77,8 +77,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Hero / Quick Actions Section */}
       <section className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 card flex flex-col justify-center bg-gradient-to-br from-white to-slate-50">
-          <h1 className="text-xl font-bold text-slate-900">Hallo, {profile?.full_name || 'Handwerker'}</h1>
+        <div className="flex-1 card flex flex-col justify-center bg-white border border-slate-200 shadow-sm rounded">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Hallo, {profile?.full_name || 'Handwerker'}</h1>
           <p className="text-sm text-slate-500 font-medium mt-1">Sie haben {stats.drafts} offene Entwürfe und {stats.submissions} erledigte Aufträge.</p>
         </div>
         <div className="md:w-auto">
