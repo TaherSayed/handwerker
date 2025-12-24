@@ -57,9 +57,11 @@ export default function GoogleSignInScreen() {
 
         {/* Brand */}
         <div className="text-center">
-          <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
-            OnSite
-          </h1>
+          <img
+            src="/logo.jpg"
+            alt="OnSite Logo"
+            className="h-32 w-auto object-contain drop-shadow-xl"
+          />
         </div>
 
         {/* Login Button */}
