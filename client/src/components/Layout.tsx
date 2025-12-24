@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SyncStatus from './SyncStatus';
-import Button from './common/Button';
 
 export default function Layout() {
   const { profile, signOut } = useAuthStore();
@@ -47,44 +46,48 @@ export default function Layout() {
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* Sidebar (Desktop Only) */}
       <aside
-        className={`hidden lg:flex flex-col sticky top-0 h-screen bg-white border-r border-slate-200 transition-all duration-300 z-30 ${sidebarOpen ? 'w-72' : 'w-24'
+        className={`hidden lg:flex flex-col sticky top-0 h-screen bg-white/50 backdrop-blur-xl border-r border-slate-200/60 transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-20'
           }`}
       >
         {/* Sidebar Logo */}
-        <div className="h-20 flex items-center px-6 border-b border-slate-100">
+        <div className="h-16 flex items-center px-5 mb-2">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 text-white" />
             </div>
             {sidebarOpen && (
-              <div className="animate-slide-up">
-                <h1 className="font-bold text-lg leading-tight">OnSite</h1>
-                <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Formulare</p>
-              </div>
+              <span className="font-semibold text-slate-900 tracking-tight text-sm">OnSite</span>
             )}
           </div>
         </div>
 
         {/* Sidebar Nav */}
-        <nav className="flex-1 py-6 px-4 space-y-2">
+        <nav className="flex-1 px-3 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative ${isActive
-                  ? 'bg-slate-100 text-slate-900 font-medium'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${isActive
+                  ? 'text-slate-900 bg-slate-100/50'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
+                  {/* Subtle Active Indicator */}
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-slate-900 rounded-r-full opacity-100" />
                   )}
-                  <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                  {sidebarOpen && <span className="text-sm">{item.label}</span>}
+
+                  <item.icon className={`w-4 h-4 shrink-0 transition-all ${isActive ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'}`} />
+
+                  {sidebarOpen && (
+                    <span className={`text-sm truncate transition-colors ${isActive ? 'font-medium' : 'font-normal'}`}>
+                      {item.label}
+                    </span>
+                  )}
                 </>
               )}
             </NavLink>
@@ -92,29 +95,34 @@ export default function Layout() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-slate-100">
-          <div className={`p-3 rounded-2xl bg-slate-50 border border-slate-100 ${!sidebarOpen && 'flex justify-center'}`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm shrink-0">
-                {profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}
-              </div>
-              {sidebarOpen && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">{profile?.full_name || 'Benutzer'}</p>
-                  <p className="text-[10px] text-slate-500 truncate">{profile?.email}</p>
+        <div className="p-3 mt-auto">
+          <div className={`rounded-xl border border-slate-100 bg-white/50 p-1 ${!sidebarOpen && 'flex justify-center'}`}>
+            {sidebarOpen ? (
+              <div className="flex items-center justify-between p-2">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs font-bold shrink-0">
+                    {profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-900 truncate">{profile?.full_name || 'Benutzer'}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-            {sidebarOpen && (
-              <Button
+                <button
+                  onClick={handleSignOut}
+                  className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                  title="Abmelden"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
                 onClick={handleSignOut}
-                variant="danger"
-                size="sm"
-                className="w-full mt-4 rounded-xl py-3"
-                icon={<LogOut className="w-4 h-4" />}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
+                title="Abmelden"
               >
-                Abmelden
-              </Button>
+                <LogOut className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
