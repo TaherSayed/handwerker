@@ -1,4 +1,3 @@
-import { supabase } from '../services/supabase';
 import { SEED_TEMPLATES } from '../data/templates.seed';
 import { apiService } from '../services/api.service';
 

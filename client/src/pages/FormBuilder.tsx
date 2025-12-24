@@ -52,16 +52,17 @@ export default function FormBuilder() {
       });
     } catch (error: any) {
       console.error('Load template error:', error);
-      setError('Failed to load template');
+      setError('Fehler beim Laden der Vorlage');
       navigate('/templates');
     } finally {
       setLoading(false);
     }
+
   };
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      setError('Please enter a template name');
+      setError('Bitte geben Sie einen Vorlagennamen ein');
       return;
     }
 
@@ -78,7 +79,8 @@ export default function FormBuilder() {
       navigate('/templates');
     } catch (error: any) {
       console.error('Save template error:', error);
-      setError(error?.message || 'Failed to save template');
+      setError(error?.message || 'Fehler beim Speichern der Vorlage');
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);

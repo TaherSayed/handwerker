@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
+import { generatePDF } from '../utils/pdfGenerator';
+import Skeleton from '../components/common/Skeleton';
+
 import {
   ArrowLeft,
   Download,
@@ -24,50 +27,54 @@ export default function SubmissionDetail() {
   const { success, error: notifyError } = useNotificationStore();
 
   const [submission, setSubmission] = useState<any>(null);
+  const [companySettings, setCompanySettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSubmission();
+    loadData();
   }, [id]);
 
-  const loadSubmission = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiService.getSubmission(id!) as any;
-      setSubmission(data);
+
+      const [submissionData, profileData] = await Promise.all([
+        apiService.getSubmission(id!) as any,
+        apiService.getMe() as any
+      ]);
+
+      setSubmission(submissionData);
+      setCompanySettings(profileData.company_info || {});
+
     } catch (error: any) {
-      console.error('Load submission error:', error);
+      console.error('Load data error:', error);
       setError(error.message || 'Laden des Einsatzberichts fehlgeschlagen');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGeneratePDF = async () => {
+  const handleDownloadPDF = async () => {
+    if (!submission) return;
+
     try {
       setGenerating(true);
-      success('PDF Erstellung', 'Vorgang wird gestartet...');
-      const result = await apiService.generatePDF(id!) as any;
-      window.open(result.pdf_url, '_blank');
-      loadSubmission();
+      success('PDF Export', 'Bericht wird erstellt...');
+
+      await generatePDF(submission, companySettings);
+      // console.log('PDF Generation disabled manually for debugging build');
+
+
+
+      success('Erfolgreich', 'PDF wurde heruntergeladen');
     } catch (error: any) {
       console.error('Generate PDF error:', error);
       notifyError('Fehler', error.message || 'PDF konnte nicht erstellt werden');
     } finally {
       setGenerating(false);
-    }
-  };
-
-  const handleViewPDF = async () => {
-    try {
-      const { url } = await apiService.getPDFDownloadUrl(id!) as any;
-      window.open(url, '_blank');
-    } catch (error: any) {
-      console.error('Download PDF error:', error);
-      notifyError('Fehler', 'PDF konnte nicht geöffnet werden. ' + (error.message || ''));
     }
   };
 
@@ -86,7 +93,7 @@ export default function SubmissionDetail() {
     const shareData = {
       title: `Einsatzbericht - ${submission.customer_name}`,
       text: `Einsatzbericht für ${submission.customer_name} vom ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`,
-      url: submission.pdf_url || window.location.href,
+      url: window.location.href,
     };
 
     try {
@@ -94,7 +101,7 @@ export default function SubmissionDetail() {
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(shareData.url);
-        success('Link kopiert', 'Dokumenten-Link wurde in die Zwischenablage kopiert');
+        success('Link kopiert', 'Link zum Bericht wurde in die Zwischenablage kopiert');
       }
     } catch (err) {
       console.error('Share error:', err);
@@ -127,12 +134,63 @@ export default function SubmissionDetail() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[50vh] gap-3">
-        <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Ladevorgang...</p>
+      <div className="pb-32 max-w-2xl mx-auto space-y-4 animate-in fade-in duration-500">
+        <div className="flex items-center justify-between py-2 -mx-2 px-2">
+          <Skeleton variant="circular" width="40px" height="40px" />
+          <Skeleton variant="text" width="150px" height="24px" />
+          <div className="flex gap-1">
+            <Skeleton variant="circular" width="40px" height="40px" />
+            <Skeleton variant="circular" width="40px" height="40px" />
+          </div>
+        </div>
+
+        <div className="card p-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton variant="rectangular" width="32px" height="32px" className="rounded-lg" />
+              <div>
+                <Skeleton variant="text" width="40px" height="10px" className="mb-1" />
+                <Skeleton variant="text" width="80px" height="16px" />
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <Skeleton variant="text" width="20px" height="10px" className="mb-1" />
+              <Skeleton variant="text" width="60px" height="16px" />
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Skeleton variant="text" width="100px" height="20px" className="mb-4" />
+          <div className="space-y-4">
+            <Skeleton variant="text" width="40%" height="12px" />
+            <Skeleton variant="text" width="70%" height="20px" />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton variant="text" width="100%" height="40px" />
+              <Skeleton variant="text" width="100%" height="40px" />
+            </div>
+            <Skeleton variant="text" width="90%" height="20px" />
+          </div>
+        </div>
+
+        <div className="card p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <div className="flex justify-between mb-4">
+            <Skeleton variant="text" width="120px" height="20px" />
+            <Skeleton variant="text" width="80px" height="20px" />
+          </div>
+          <div className="space-y-6">
+            {[1, 2, 3].map(i => (
+              <div key={i}>
+                <Skeleton variant="text" width="30%" height="12px" className="mb-2" />
+                <Skeleton variant="text" width="90%" height="16px" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
+
 
   if (error || !submission) {
     return (
@@ -182,7 +240,7 @@ export default function SubmissionDetail() {
   const status = getStatusDisplay(submission);
 
   return (
-    <div className="pb-32 max-w-2xl mx-auto space-y-4">
+    <div className="pb-32 max-w-2xl mx-auto space-y-4 animate-in slide-in-from-bottom-4">
       {/* Mobile Header */}
       <div className="flex items-center justify-between py-2 -mx-2 px-2">
         <button
@@ -318,26 +376,26 @@ export default function SubmissionDetail() {
               >
               </Button>
               <Button
-                onClick={handleGeneratePDF}
+                onClick={handleDownloadPDF}
                 loading={generating}
                 variant="primary"
                 className="flex-1 w-full justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
                 size="lg"
                 icon={<Zap className="w-5 h-5" />}
               >
-                Abschließen & PDF
+                Abschließen & Export
               </Button>
             </>
           ) : (
             <Button
-              onClick={submission.pdf_url ? handleViewPDF : handleGeneratePDF}
+              onClick={handleDownloadPDF}
               loading={generating}
               variant="primary"
               className="w-full justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
               size="lg"
               icon={<Download className="w-5 h-5" />}
             >
-              {submission.pdf_url ? 'PDF Anzeigen' : 'PDF Generieren'}
+              PDF Herunterladen
             </Button>
           )}
         </div>

@@ -8,9 +8,17 @@ import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
 export default function Settings() {
-  const { profile, refreshProfile } = useAuthStore();
+  const { profile, refreshProfile, signOut } = useAuthStore();
   const { success, error: notifyError } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
+
+  const handleLogout = async () => {
+    if (confirm('Möchten Sie sich wirklich abmelden?')) {
+      await signOut();
+      window.location.reload();
+    }
+  };
+
 
   // Local state for form fields
   const [formData, setFormData] = useState({
@@ -163,10 +171,13 @@ export default function Settings() {
                   onClick={async () => {
                     if (!confirm('Möchten Sie 20 Standard-Vorlagen importieren?')) return;
                     try {
+                      // alert('Import temporarily disabled for build debugging');
                       const { seedService } = await import('../services/seed.service');
                       const count = await seedService.seedTemplates();
                       alert(`${count} Vorlagen wurden erfolgreich erstellt!`);
                     } catch (e) {
+
+
                       alert('Fehler beim Importieren');
                       console.error(e);
                     }

@@ -1,0 +1,243 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
+
+interface CompanySettings {
+    company_name?: string;
+    logo_url?: string;
+    address?: string;
+    website?: string;
+    email?: string;
+    phone?: string;
+}
+
+interface Submission {
+    id: string;
+    created_at: string;
+    customer_name: string;
+    customer_address?: string;
+    customer_email?: string;
+    customer_phone?: string;
+    form_templates: {
+        name: string;
+        fields: any[];
+    };
+    field_values: Record<string, any>;
+    signature_url?: string;
+}
+
+export const generatePDF = async (submission: Submission, companySettings?: CompanySettings): Promise<void> => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+
+    // Color Palette (Professional Blue/Grey)
+    const primaryColor = '#1e3a8a'; // Blue 900
+    const secondaryColor = '#64748b'; // Slate 500
+    const lightGrey = '#f8fafc'; // Slate 50
+
+    let currentY = 20;
+
+    // --- Header Section ---
+
+    // Company Logo (Left)
+    if (companySettings?.logo_url) {
+        try {
+            // Fetch image to get base64 or blob if needed, but jspdf headers can handle urls often if CORS allows. 
+            // Safest is to add image if we have base64. 
+            // For now, assuming URL might be accessible or base64. 
+            // If it fails, we catch it.
+            // doc.addImage(companySettings.logo_url, 'PNG', margin, currentY, 30, 30);
+
+            // Since we can't easily fetch and convert here without async overhead/CORS issues in a pure util often,
+            // we'll try to add it if it's a data URL. If it's http, it might fail in browser without proxy.
+            // We will skip logo if it's not a data string for this MVP or use a placeholder.
+            if (companySettings.logo_url.startsWith('data:')) {
+                doc.addImage(companySettings.logo_url, 'JPEG', margin, currentY, 25, 25);
+            }
+        } catch (e) {
+            console.warn('Could not add logo to PDF', e);
+        }
+    }
+
+    // Company Info (Right)
+    doc.setFontSize(8);
+    doc.setTextColor(secondaryColor);
+    doc.text(companySettings?.company_name || 'Mein Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
+    if (companySettings?.address) doc.text(companySettings.address, pageWidth - margin, currentY + 10, { align: 'right' });
+    if (companySettings?.phone) doc.text(`Tel: ${companySettings.phone}`, pageWidth - margin, currentY + 15, { align: 'right' });
+    if (companySettings?.email) doc.text(companySettings.email, pageWidth - margin, currentY + 20, { align: 'right' });
+    if (companySettings?.website) doc.text(companySettings.website, pageWidth - margin, currentY + 25, { align: 'right' });
+
+    // Title & Subject
+    currentY += 40;
+    doc.setFontSize(22);
+    doc.setTextColor(primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Einsatzbericht', margin, currentY);
+
+    doc.setFontSize(12);
+    doc.setTextColor(secondaryColor);
+    doc.setFont('helvetica', 'normal');
+    doc.text(submission.form_templates.name, margin, currentY + 7);
+
+    // Meta Data Ticket Badge
+    doc.setFillColor(lightGrey);
+    doc.setDrawColor(secondaryColor);
+    doc.roundedRect(pageWidth - margin - 60, currentY - 5, 60, 20, 2, 2, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(secondaryColor);
+    doc.text('Bericht Nr.', pageWidth - margin - 55, currentY + 2);
+    doc.setFontSize(11);
+    doc.setTextColor('#0f172a'); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text(`#${submission.id.slice(0, 8).toUpperCase()}`, pageWidth - margin - 55, currentY + 8);
+
+    currentY += 25;
+
+    // --- Customer Block ---
+    doc.setFillColor('#f1f5f9'); // Slate 100
+    doc.rect(margin, currentY, pageWidth - (margin * 2), 35, 'F');
+
+    doc.setFontSize(10);
+    doc.setTextColor(secondaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Kundeninformationen', margin + 5, currentY + 8);
+
+    doc.setFontSize(11);
+    doc.setTextColor('#334155');
+    doc.setFont('helvetica', 'bold');
+    doc.text(submission.customer_name, margin + 5, currentY + 16);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    if (submission.customer_address) doc.text(submission.customer_address, margin + 5, currentY + 22);
+
+    let contactInfo = [];
+    if (submission.customer_phone) contactInfo.push(submission.customer_phone);
+    if (submission.customer_email) contactInfo.push(submission.customer_email);
+    if (contactInfo.length > 0) doc.text(contactInfo.join('  •  '), margin + 5, currentY + 28);
+
+    // Date
+    doc.setFontSize(10);
+    doc.text(`Datum: ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`, pageWidth - margin - 5, currentY + 16, { align: 'right' });
+
+    currentY += 45;
+
+    // --- Content Table ---
+    const tableBody = submission.form_templates.fields.map(field => {
+        const value = submission.field_values[field.id];
+
+        // Skip sections in table body effectively, or render them as headers
+        if (field.type === 'section') {
+            return [{ content: field.label.toUpperCase(), colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 58, 138] } }];
+        }
+
+        let displayValue = value;
+        if (value === true) displayValue = 'Ja';
+        if (value === false) displayValue = 'Nein';
+        if (field.type === 'date' && value) displayValue = format(new Date(value), 'dd.MM.yyyy', { locale: de });
+        if (field.type === 'photo') displayValue = value ? 'Foto im Anhang' : '-';
+        if (field.type === 'signature') displayValue = value ? 'Unterschrieben' : '-';
+        if (!value) displayValue = '-';
+
+        return [field.label, displayValue];
+    });
+
+    autoTable(doc, {
+        startY: currentY,
+        head: [['Beschreibung', 'Wert / Details']],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: { fillColor: primaryColor, textColor: '#ffffff', fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 5, lineColor: [226, 232, 240] },
+        alternateRowStyles: { fillColor: '#ffffff' },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+        margin: { left: margin, right: margin }
+    });
+
+    currentY = (doc as any).lastAutoTable.finalY + 20;
+
+    // --- Photos Section ---
+    const photoFields = submission.form_templates.fields.filter(f => f.type === 'photo' && submission.field_values[f.id]);
+
+    if (photoFields.length > 0) {
+        if (currentY + 60 > pageHeight) { doc.addPage(); currentY = 20; }
+
+        doc.setFontSize(12);
+        doc.setTextColor(primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Foto-Dokumentation', margin, currentY);
+        currentY += 10;
+
+        let xOffset = margin;
+        photoFields.forEach((field) => {
+            const base64Img = submission.field_values[field.id];
+            if (base64Img && base64Img.startsWith('data:')) {
+                // Check fit
+                if (currentY + 50 > pageHeight) { doc.addPage(); currentY = 20; xOffset = margin; }
+
+                try {
+                    doc.addImage(base64Img, 'JPEG', xOffset, currentY, 45, 45, undefined, 'FAST');
+                    doc.setFontSize(8);
+                    doc.text(field.label, xOffset, currentY + 50);
+
+                    xOffset += 55;
+                    if (xOffset + 45 > pageWidth) {
+                        xOffset = margin;
+                        currentY += 60;
+                    }
+                } catch (e) {
+                    console.error('Error adding image to PDF', e);
+                }
+            }
+        });
+        currentY += 60;
+    }
+
+    // --- Signatures Section ---
+    if (currentY + 60 > pageHeight) { doc.addPage(); currentY = 20; }
+
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Unterschriften', margin, currentY);
+    currentY += 10;
+
+    // Technician Signature (Placeholder or User Profile Sig if we had it)
+    // For now just a line
+
+    // Customer Signature
+    const customerSigUrl = submission.signature_url || submission.field_values['signature_customer'] ||
+        submission.form_templates.fields.find(f => f.type === 'signature' && submission.field_values[f.id]) ? submission.field_values[submission.form_templates.fields.find(f => f.type === 'signature' && submission.field_values[f.id])!.id] : null;
+
+    const sigBoxY = currentY;
+
+    // Box 1: Auftraggeber / Kunde
+    doc.setDrawColor('#cbd5e1');
+    doc.rect(margin, sigBoxY, 80, 40);
+    doc.setFontSize(8);
+    doc.setTextColor(secondaryColor);
+    doc.text('Auftraggeber / Kunde', margin + 2, sigBoxY + 5);
+
+    if (customerSigUrl && customerSigUrl.startsWith('data:')) {
+        doc.addImage(customerSigUrl, 'PNG', margin + 5, sigBoxY + 10, 70, 25);
+    }
+
+    // Box 2: Auftragnehmer
+    const leftX = pageWidth - margin - 80;
+    doc.rect(leftX, sigBoxY, 80, 40);
+    doc.text('Auftragnehmer / Monteur', leftX + 2, sigBoxY + 5);
+
+    // Footer Stuff
+    currentY = pageHeight - 15;
+    doc.setFontSize(8);
+    doc.setTextColor('#94a3b8');
+    doc.text(`Generiert mit OnSite Formulare am ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, margin, currentY);
+    doc.text('Seite 1/1', pageWidth - margin, currentY, { align: 'right' }); // Todo simple page count
+
+    // Save
+    doc.save(`Einsatzbericht_${submission.customer_name.replace(/\s+/g, '_')}_${format(new Date(submission.created_at), 'yyyyMMdd')}.pdf`);
+};

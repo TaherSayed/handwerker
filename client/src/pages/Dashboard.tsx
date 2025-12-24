@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { FileText, Clock, AlertTriangle, Plus, ArrowRight, ChevronRight, Zap, Settings } from 'lucide-react';
 import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 import { supabase } from '../services/supabase';
 import { db } from '../services/db.service';
 import { useAuthStore } from '../store/authStore';
@@ -17,6 +18,7 @@ export default function Dashboard() {
   });
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -56,8 +59,57 @@ export default function Dashboard() {
 
     } catch (error) {
       console.error('Error loading dashboard:', error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 pb-20 lg:pb-0 animate-in fade-in duration-500">
+        <div className="card p-5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
+          <Skeleton variant="text" width="60%" className="h-7 mb-2" />
+          <Skeleton variant="text" width="40%" height="16px" />
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+            <Skeleton variant="rectangular" height="44px" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="card p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <Skeleton variant="text" width="50%" height="10px" className="mb-2" />
+              <div className="flex items-end justify-between mt-1">
+                <Skeleton variant="text" width="30px" height="24px" />
+                <Skeleton variant="circular" width="20px" height="20px" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <Skeleton variant="text" width="100px" height="16px" />
+              <Skeleton variant="text" width="40px" height="20px" />
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="card p-3 flex items-center gap-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <Skeleton variant="circular" width="40px" height="40px" />
+                  <div className="flex-1">
+                    <Skeleton variant="text" width="60%" height="14px" className="mb-2" />
+                    <Skeleton variant="text" width="30%" height="10px" />
+                  </div>
+                  <Skeleton variant="circular" width="20px" height="20px" />
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0">
@@ -204,3 +256,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
