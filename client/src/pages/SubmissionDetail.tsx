@@ -7,17 +7,11 @@ import {
   Trash2,
   Share2,
   Edit3,
-  Calendar,
   Clock,
   User,
-  Mail,
-  Phone,
   MapPin,
-  FileText,
   CheckCircle2,
-  Zap,
-  RefreshCw,
-  ClipboardList
+  Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -113,277 +107,238 @@ export default function SubmissionDetail() {
     if (sub.status === 'draft') {
       return {
         label: 'Entwurf',
-        color: 'bg-amber-100 text-amber-700',
-        icon: Clock,
-        iconBg: 'bg-amber-50 text-amber-600'
+        color: 'text-amber-600 bg-amber-50',
+        icon: Clock
       };
     }
-
     if (isSynced) {
       return {
         label: 'Synchronisiert',
-        color: 'bg-indigo-100 text-indigo-700',
-        icon: CheckCircle2,
-        iconBg: 'bg-indigo-50 text-indigo-600'
+        color: 'text-indigo-600 bg-indigo-50',
+        icon: CheckCircle2
       };
     }
-
     return {
       label: 'Eingereicht',
-      color: 'bg-green-100 text-green-700',
-      icon: Zap,
-      iconBg: 'bg-green-50 text-green-600'
+      color: 'text-green-600 bg-green-50',
+      icon: Zap
     };
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Daten werden geladen...</p>
+      <div className="flex flex-col items-center justify-center h-[50vh] gap-3">
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+        <p className="text-sm font-medium text-slate-500">Lade Vorgang...</p>
       </div>
     );
   }
 
   if (error || !submission) {
     return (
-      <div className="p-8 max-w-4xl mx-auto text-center">
-        <div className="bg-white rounded-[3rem] p-16 border border-slate-100 shadow-2xl">
-          <div className="w-20 h-20 bg-red-50 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-8 font-black text-2xl">!</div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase">Fehler</h2>
-          <p className="text-slate-500 mb-10 font-medium">{error || 'Bericht nicht gefunden'}</p>
-          <Button onClick={() => navigate('/submissions')} variant="secondary" icon={<ArrowLeft className="w-5 h-5" />}>
-            Zurück zum Verlauf
-          </Button>
-        </div>
+      <div className="p-4 flex flex-col items-center text-center">
+        <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-4">!</div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Fehler</h2>
+        <p className="text-slate-500 mb-6 text-sm">{error || 'Bericht nicht gefunden'}</p>
+        <Button onClick={() => navigate('/submissions')} variant="secondary" size="sm" icon={<ArrowLeft className="w-4 h-4" />}>
+          Zurück
+        </Button>
       </div>
     );
   }
 
   const renderFieldValue = (field: any, value: any) => {
-    if (value === undefined || value === null || value === '') return '-';
+    if (value === undefined || value === null || value === '') return <span className="text-slate-400">-</span>;
 
     switch (field.type) {
       case 'checkbox':
       case 'toggle':
         return (
-          <div className={`px-4 py-2 rounded-xl font-bold text-sm w-fit ${value ? 'bg-green-50 text-green-700' : 'bg-slate-50 text-slate-500'}`}>
-            {value ? 'Aktiviert' : 'Deaktiviert'}
+          <div className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+            {value ? 'Ja' : 'Nein'}
           </div>
         );
       case 'date':
-        return format(new Date(value), 'do MMMM yyyy', { locale: de });
+        return format(new Date(value), 'dd.MM.yyyy', { locale: de });
       case 'datetime':
-        return format(new Date(value), 'do MMMM yyyy HH:mm', { locale: de }) + ' Uhr';
+        return format(new Date(value), 'dd.MM.yyyy HH:mm', { locale: de });
       case 'photo':
         return (
-          <div className="relative group/photo w-full max-w-md">
-            <img src={value} alt="Dokumentation" className="rounded-3xl border border-slate-200 shadow-lg group-hover/photo:scale-[1.02] transition-transform duration-500" />
+          <div className="mt-2">
+            <img src={value} alt="Foto" className="h-32 w-auto rounded-lg border border-slate-200 shadow-sm object-cover bg-slate-50" />
           </div>
         );
       case 'signature':
         return (
-          <div className="bg-slate-50 rounded-3xl p-6 border-2 border-dashed border-slate-200 inline-block">
-            <img src={value} alt="Unterschrift" className="max-h-32 object-contain" />
+          <div className="mt-2 p-2 bg-white border border-slate-200 rounded-lg inline-block">
+            <img src={value} alt="Unterschrift" className="h-16 object-contain" />
           </div>
         );
       default:
-        return <span className="text-slate-900 font-medium break-words leading-relaxed">{value}</span>;
+        return <span className="text-slate-900 font-medium break-words">{value}</span>;
     }
   };
 
   const status = getStatusDisplay(submission);
 
   return (
-    <div className="animate-slide-up space-y-8 pb-32">
-      {/* Premium Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
+    <div className="pb-32 max-w-2xl mx-auto space-y-4">
+      {/* Mobile Header */}
+      <div className="flex items-center justify-between py-2 -mx-2 px-2">
+        <button
+          onClick={() => navigate('/submissions')}
+          className="p-2 -ml-2 text-slate-500 hover:text-slate-900 active:bg-slate-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-lg font-bold text-slate-900">Einsatzdetails</h1>
+
+        {/* Secondary Actions (Top Right) */}
+        <div className="flex gap-1">
+          {submission.status === 'draft' && (
+            <button
+              onClick={() => navigate(`/fill/${submission.template_id}?edit=${submission.id}`)}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Bearbeiten"
+            >
+              <Edit3 className="w-5 h-5" />
+            </button>
+          )}
           <button
-            onClick={() => navigate('/submissions')}
-            className="w-14 h-14 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm active:scale-90"
+            onClick={handleShare}
+            className="p-2 text-slate-500 hover:text-blue-600 active:bg-slate-100 rounded-lg transition-colors"
+            title="Teilen"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <Share2 className="w-5 h-5" />
           </button>
+        </div>
+      </div>
+
+      {/* Meta Status Card */}
+      <div className="card flex items-center justify-between p-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${status.color}`}>
+            <status.icon className="w-4 h-4" />
+          </div>
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm ${status.color}`}>
-                {status.label}
-              </span>
-              <span className="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-1">
-                <FileText className="w-3 h-3" />
-                {submission.id.slice(0, 8)}...
-              </span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">
-              Einsatz-Details
-            </h1>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status</p>
+            <p className="text-sm font-bold text-slate-900">{status.label}</p>
           </div>
         </div>
+        <div className="text-right">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ID</p>
+          <p className="text-sm font-mono text-slate-600 font-medium">#{submission.id.slice(0, 6)}</p>
+        </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            onClick={handleShare}
-            variant="secondary"
-            className="rounded-2xl py-4"
-            icon={<Share2 className="w-5 h-5 text-indigo-600" />}
-          >
-            Teilen
-          </Button>
+      {/* Customer Information */}
+      <div className="card p-5 space-y-4">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-50">
+          <User className="w-4 h-4 text-slate-400" />
+          Kunde
+        </h2>
 
-          {submission.status === 'draft' && (
-            <Button
-              onClick={() => navigate(`/fill/${submission.template_id}?edit=${submission.id}`)}
-              variant="secondary"
-              className="rounded-2xl py-4 border-indigo-200 bg-indigo-50/50"
-              icon={<Edit3 className="w-5 h-5 text-indigo-600" />}
-            >
-              Bearbeiten
-            </Button>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-400 block mb-0.5">Name</label>
+            <p className="text-base font-bold text-slate-900">{submission.customer_name || 'Kein Name'}</p>
+          </div>
+
+          {(submission.customer_email || submission.customer_phone) && (
+            <div className="grid grid-cols-2 gap-4">
+              {submission.customer_email && (
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 block mb-0.5">Email</label>
+                  <a href={`mailto:${submission.customer_email}`} className="text-sm font-medium text-blue-600 hover:underline truncate block">
+                    {submission.customer_email}
+                  </a>
+                </div>
+              )}
+              {submission.customer_phone && (
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 block mb-0.5">Telefon</label>
+                  <a href={`tel:${submission.customer_phone}`} className="text-sm font-medium text-slate-700 hover:text-blue-600 block">
+                    {submission.customer_phone}
+                  </a>
+                </div>
+              )}
+            </div>
           )}
 
-          {submission.pdf_url ? (
-            <Button
-              onClick={handleViewPDF}
-              className="rounded-2xl py-4 shadow-indigo-500/20"
-              icon={<Download className="w-5 h-5" />}
-            >
-              PDF Öffnen
-            </Button>
-          ) : (
-            <Button
-              onClick={handleGeneratePDF}
-              loading={generating}
-              className="rounded-2xl py-4 shadow-indigo-500/20"
-              icon={<RefreshCw className="w-5 h-5" />}
-            >
-              Finalisieren
-            </Button>
+          {submission.customer_address && (
+            <div>
+              <label className="text-xs font-semibold text-slate-400 block mb-0.5">Adresse</label>
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <p className="text-sm font-medium text-slate-700 leading-snug">{submission.customer_address}</p>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Main Info */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Customer Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-indigo-900 rounded-2xl flex items-center justify-center text-white">
-                <User className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Kundeninformationen</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Kunde</label>
-                <p className="text-xl font-black text-slate-900 uppercase">{submission.customer_name || 'Kein Name'}</p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Vorlagentyp</label>
-                <p className="text-xl font-black text-indigo-900 bg-indigo-50 w-fit px-3 py-1 rounded-xl uppercase">
-                  {submission.form_templates?.name}
-                </p>
-              </div>
-
-              <div className="space-y-4 md:col-span-2">
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <Mail className="w-5 h-5 text-slate-400" />
-                  <span className="font-bold text-slate-700">{submission.customer_email || 'Nicht hinterlegt'}</span>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <Phone className="w-5 h-5 text-slate-400" />
-                  <span className="font-bold text-slate-700">{submission.customer_phone || 'Nicht hinterlegt'}</span>
-                </div>
-                <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <MapPin className="w-5 h-5 text-slate-400 mt-1" />
-                  <span className="font-bold text-slate-700 break-words flex-1">
-                    {submission.customer_address || 'Keine Adresse hinterlegt'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Response Details */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
-                <ClipboardList className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Einsatzprotokoll</h2>
-            </div>
-
-            <div className="space-y-10">
-              {submission.form_templates?.fields?.map((field: any) => (
-                <div key={field.id} className="group/field">
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1 group-hover/field:text-indigo-600 transition-colors">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover/field:bg-indigo-600" />
-                    {field.label}
-                  </label>
-                  <div className="pl-4 border-l-2 border-slate-100 group-hover/field:border-indigo-200 transition-all">
-                    {renderFieldValue(field, submission.field_values[field.id])}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Form Data */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-50">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Protokoll</h2>
+          <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
+            {submission.form_templates?.name}
+          </span>
         </div>
 
-        {/* Right Column - Meta & Actions */}
-        <div className="space-y-8">
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200">
-            <h3 className="text-lg font-black uppercase tracking-widest mb-8 text-indigo-400">Zeitstempel</h3>
-
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Erstellt am</p>
-                  <p className="font-bold">{format(new Date(submission.created_at), 'Pp', { locale: de })}</p>
-                </div>
-              </div>
-
-              {submission.submitted_at && (
-                <div className="flex items-start gap-4 text-green-400">
-                  <div className="w-10 h-10 bg-green-400/10 rounded-xl flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-green-400/40 mb-1">Eingereicht am</p>
-                    <p className="font-bold text-white">{format(new Date(submission.submitted_at), 'Pp', { locale: de })}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-8 border-t border-white/10">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3">Einsatz-ID</p>
-                <code className="bg-white/5 px-4 py-3 rounded-xl block text-xs font-mono break-all border border-white/5 text-indigo-300">
-                  {submission.id}
-                </code>
+        <div className="flex flex-col gap-5 divide-y divide-slate-50">
+          {submission.form_templates?.fields?.map((field: any) => (
+            <div key={field.id} className="pt-4 first:pt-0">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                {field.label}
+              </label>
+              <div className="text-sm">
+                {renderFieldValue(field, submission.field_values[field.id])}
               </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {submission.status === 'draft' && (
-            <div className="bg-red-50 rounded-[2.5rem] p-8 border border-red-100">
-              <h3 className="text-lg font-black uppercase tracking-widest mb-4 text-red-600">Gefahrenzone</h3>
-              <p className="text-red-700/70 text-sm font-medium mb-6 leading-relaxed">
-                Der Entwurf ist noch nicht synchronisiert. Das Löschen entfernt alle lokalen Daten.
-              </p>
+      {/* Timestamp Footer */}
+      <div className="px-4 py-2 text-center text-xs text-slate-400 font-medium">
+        Erstellt: {format(new Date(submission.created_at), 'dd.MM.yyyy HH:mm')} Uhr
+      </div>
+
+      {/* Safe Bottom Action Area */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-white border-t border-slate-200 lg:static lg:bg-transparent lg:border-0 lg:p-0 z-30">
+        <div className="max-w-2xl mx-auto flex gap-3">
+          {submission.status === 'draft' ? (
+            <>
               <Button
                 onClick={handleDelete}
-                variant="danger"
-                className="w-full py-4 rounded-2xl shadow-red-200 shadow-xl"
+                variant="ghost"
+                className="text-red-500 hover:bg-red-50 hover:text-red-700 shrink-0"
                 icon={<Trash2 className="w-5 h-5" />}
               >
-                Einsatz Löschen
               </Button>
-            </div>
+              <Button
+                onClick={handleGeneratePDF}
+                loading={generating}
+                variant="primary"
+                className="flex-1 w-full justify-center shadow-lg shadow-blue-500/20"
+                size="lg"
+                icon={<Zap className="w-5 h-5" />}
+              >
+                Abschließen & PDF
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={submission.pdf_url ? handleViewPDF : handleGeneratePDF}
+              loading={generating}
+              variant="primary"
+              className="w-full justify-center shadow-lg shadow-blue-500/20"
+              size="lg"
+              icon={<Download className="w-5 h-5" />}
+            >
+              {submission.pdf_url ? 'PDF Anzeigen' : 'PDF Generieren'}
+            </Button>
           )}
         </div>
       </div>
