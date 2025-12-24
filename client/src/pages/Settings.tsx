@@ -104,16 +104,17 @@ export default function Settings() {
     <div className="animate-slide-up space-y-8 max-w-4xl mx-auto pb-32">
       {/* Header with Auto-Save Status */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
-            Einstellungen
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-            Personalisieren Sie Ihren Arbeitsbereich
-          </p>
-        </div>
-
-        {/* Auto-save Indicator */}
+        <div className="flex items-center gap-3">
+          <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+            <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Konto</h1>
+            <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">
+              Persönliche Einstellungen
+            </p>
+          </div>
+        </div>    {/* Auto-save Indicator */}
         <div className="flex items-center gap-2 h-8 px-4 bg-white/50 dark:bg-slate-800/50 rounded-full border border-slate-100 dark:border-slate-700">
           {isSaving ? (
             <>
@@ -153,6 +154,40 @@ export default function Settings() {
               </div>
             </div>
 
+            {/* Developer Zone (Hidden for now, or exposed as advanced) */}
+            <div className="card p-5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <h2 className="heading-lg text-lg mb-4">Erweiterte Optionen</h2>
+
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={async () => {
+                    if (!confirm('Möchten Sie 20 Standard-Vorlagen importieren?')) return;
+                    try {
+                      const { seedService } = await import('../services/seed.service');
+                      const count = await seedService.seedTemplates();
+                      alert(`${count} Vorlagen wurden erfolgreich erstellt!`);
+                    } catch (e) {
+                      alert('Fehler beim Importieren');
+                      console.error(e);
+                    }
+                  }}
+                  variant="secondary"
+                  className="w-full justify-start"
+                >
+                  <span className="mr-2">⚡</span> Standard-Vorlagen importieren (20 Stk.)
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-8">
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
+              >
+                Abmelden
+              </Button>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Dunkelmodus</span>
               <button
