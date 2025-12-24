@@ -88,7 +88,8 @@ export default function Settings() {
       setFormData(prev => ({ ...prev, company_logo_url: data.publicUrl }));
       success('Logo aktualisiert', 'Ihr neues Firmenlogo wurde gespeichert.');
     } catch (error: any) {
-      notifyError('Fehler', 'Upload fehlgeschlagen.');
+      console.error('Logo upload error:', error);
+      notifyError('Upload fehlgeschlagen', error.message || 'Bitte versuchen Sie es später erneut.');
     } finally {
       setLogoLoading(false);
     }
