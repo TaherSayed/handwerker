@@ -58,7 +58,7 @@ export default function GoogleSignInScreen() {
         {/* Brand */}
         <div className="text-center">
           <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
-            SiteOs
+            OnSite
           </h1>
         </div>
 
@@ -107,7 +107,7 @@ export default function GoogleSignInScreen() {
         <div className="flex items-center justify-center gap-2 text-slate-500">
           <ShieldCheck className="w-3 h-3" />
           <span className="text-[10px] font-bold uppercase tracking-widest">
-            SiteOs Secure Access
+            OnSite Secure Access
           </span>
         </div>
       </div>
