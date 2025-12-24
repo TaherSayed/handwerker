@@ -64,14 +64,15 @@ class FormFieldWidget extends StatelessWidget {
             labelText: field.label,
             border: const OutlineInputBorder(),
           ),
-          value: value,
+          initialValue: value,
           items: field.options
               ?.map((option) => DropdownMenuItem(
                     value: option,
                     child: Text(option),
                   ))
               .toList(),
-          validator: field.required ? (val) => val == null ? 'Required' : null : null,
+          validator:
+              field.required ? (val) => val == null ? 'Required' : null : null,
           onChanged: onChanged,
         );
 
@@ -150,7 +151,8 @@ class FormFieldWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(field.label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             if (value != null)
               Image.network(value, height: 200, fit: BoxFit.cover)
@@ -174,7 +176,8 @@ class FormFieldWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(field.label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             if (value != null)
               Image.network(value, height: 100, fit: BoxFit.contain)
@@ -185,7 +188,8 @@ class FormFieldWidget extends StatelessWidget {
               onPressed: () {
                 // Signature pad implementation would go here
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Signature pad not implemented')),
+                  const SnackBar(
+                      content: Text('Signature pad not implemented')),
                 );
               },
               icon: const Icon(Icons.edit),
@@ -206,4 +210,3 @@ class FormFieldWidget extends StatelessWidget {
     }
   }
 }
-

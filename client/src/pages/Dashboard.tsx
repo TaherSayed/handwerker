@@ -31,10 +31,15 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Get Stats
+      // 1. Get Stats (with timeout)
       const today = new Date().toISOString().split('T')[0];
-      const subs = await apiService.getSubmissions();
-      const temps = await apiService.getTemplates();
+
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000));
+
+      const [subs, temps] = await Promise.race([
+        Promise.all([apiService.getSubmissions(), apiService.getTemplates()]),
+        timeoutPromise
+      ]) as [any[], any[]];
 
       const todayCount = subs.filter((s: any) => s.created_at.startsWith(today)).length;
       const activeCount = subs.filter((s: any) => s.status !== 'submitted').length;
@@ -59,6 +64,10 @@ export default function Dashboard() {
 
     } catch (error) {
       console.error('Error loading dashboard:', error);
+      // Fallback values on error
+      setStats({ todayVisits: 0, activeVisits: 0, templates: 0, openTasks: 0 });
+      setRecentSubmissions([]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
