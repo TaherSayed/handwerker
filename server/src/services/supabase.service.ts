@@ -8,7 +8,7 @@ export class SupabaseService {
 
   private constructor() {
     this.client = createClient(config.supabase.url, config.supabase.anonKey);
-    
+
     // Only create admin client if service role key is provided
     if (config.supabase.serviceRoleKey) {
       this.adminClient = createClient(config.supabase.url, config.supabase.serviceRoleKey);
@@ -33,6 +33,49 @@ export class SupabaseService {
         },
       },
     });
+  }
+  public async ensureStorageBuckets() {
+    if (!this.adminClient) {
+      console.warn('⚠️ Cannot ensure storage buckets: Admin client not available');
+      return;
+    }
+
+    const buckets = ['company-logos', 'submission-pdfs', 'submission-photos', 'visit-pdfs'];
+    console.log('📦 Verifying storage buckets...');
+
+    try {
+      const { data: existingBuckets, error } = await this.adminClient.storage.listBuckets();
+
+      if (error) {
+        console.error('❌ Failed to list buckets:', error);
+        return;
+      }
+
+      const existingNames = existingBuckets?.map(b => b.name) || [];
+
+      for (const bucket of buckets) {
+        if (!existingNames.includes(bucket)) {
+          console.log(`   → Creating missing bucket: ${bucket}`);
+          const { error: createError } = await this.adminClient.storage.createBucket(bucket, {
+            public: true, // Make them public by default for simpler access
+            fileSizeLimit: 5242880, // 5MB limit
+            allowedMimeTypes: bucket.includes('pdf') ? ['application/pdf'] : ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+          });
+
+          if (createError) {
+            console.error(`   ❌ Failed to create bucket ${bucket}:`, createError);
+          } else {
+            console.log(`   ✅ Created bucket: ${bucket}`);
+          }
+        } else {
+          // Ensure public setting is true if possible, though updateBucket is limited
+          // For now, just log presence
+          console.log(`   ✓ Bucket exists: ${bucket}`);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error in bucket verification:', err);
+    }
   }
 }
 

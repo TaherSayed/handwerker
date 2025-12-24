@@ -58,7 +58,7 @@ console.log(`📁 Looking for client build at: ${clientBuildPath}`);
 if (existsSync(clientBuildPath)) {
   console.log('✅ Client build directory found');
   app.use(express.static(clientBuildPath));
-  
+
   // Handle client-side routing - serve index.html for all non-API routes
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
@@ -66,7 +66,7 @@ if (existsSync(clientBuildPath)) {
 } else {
   console.warn('⚠️ Client build directory not found, serving API only');
   app.get('*', (req, res) => {
-    res.json({ 
+    res.json({
       error: 'Client build not found',
       message: 'API is running but web interface is unavailable',
       apiEndpoints: ['/api/user', '/api/templates', '/api/submissions', '/api/uploads']
@@ -76,27 +76,32 @@ if (existsSync(clientBuildPath)) {
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'API endpoint not found',
-    path: req.path 
+    path: req.path
   });
 });
 
 // Error handler - MUST return JSON
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled error:', err);
-  
+
   // Ensure we always return JSON
   if (!res.headersSent) {
-    res.status(500).json({ 
+    res.status(500).json({
       error: err.message || 'Internal server error',
-      success: false 
+      success: false
     });
   }
 });
 
 // Start server
 app.listen(config.port, config.host, () => {
+  // Ensure storage buckets exist
+  supabase.ensureStorageBuckets().then(() => {
+    console.log('✅ Storage initialization complete');
+  });
+
   console.log('🚀 OnSite Forms API Server Started!');
   console.log(`   → URL: http://${config.host}:${config.port}`);
   console.log(`   → Environment: ${config.nodeEnv}`);
