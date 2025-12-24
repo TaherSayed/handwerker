@@ -1,66 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { FileText, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 export default function GoogleSignInScreen() {
   const { signIn } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getWeekNumber = (d: Date) => {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
 
   const handleSignIn = async () => {
     try {
       setLoading(true);
       setError(null);
       await signIn();
-      // OAuth redirect will happen, so we don't need to do anything here
     } catch (err: any) {
       console.error('Sign in error:', err);
-      setError(err.message || 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      setError(err.message || 'Anmeldung fehlgeschlagen.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#F8FAFC] px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo & Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-xl shadow-sm mb-6">
-            <FileText className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-semibold text-slate-900 mb-2 tracking-tight">OnSite Forms</h1>
-          <p className="text-slate-500 font-medium text-sm">Professionelle Einsatzformulare</p>
+    <div className="flex flex-col items-center justify-between min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+
+      {/* Top Section: Date & Time */}
+      <div className="w-full max-w-sm pt-12 flex flex-col items-center space-y-1">
+        <h2 className="text-4xl font-light text-slate-800 dark:text-slate-100 tracking-tight">
+          {format(currentTime, 'HH:mm')}
+        </h2>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          {format(currentTime, 'EEEE, d. MMMM', { locale: de })}
+        </p>
+        <div className="px-3 py-1 bg-slate-200 dark:bg-slate-800 rounded-full mt-2">
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 tracking-wider">
+            KW {getWeekNumber(currentTime)}
+          </span>
+        </div>
+      </div>
+
+      {/* Middle Section: Brand & Login */}
+      <div className="w-full max-w-sm flex flex-col items-center space-y-12">
+
+        {/* Brand */}
+        <div className="text-center">
+          <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
+            SiteOs
+          </h1>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+        {/* Login Button */}
+        <div className="w-full space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 animate-fade-in">
-              <p className="text-red-800 text-sm font-medium mb-1">{error}</p>
-              {error.toLowerCase().includes('unverified') && (
-                <p className="text-xs text-red-600 mt-1">
-                  Klicken Sie auf "Erweitert" → "OnSite Forms besuchen (unsicher)".
-                </p>
-              )}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg p-3 text-center">
+              <p className="text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
-
-          {/* Info about unverified app */}
-          <div className="bg-[#FEF3C7] border border-[#FCD34D] rounded-lg p-4 flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#B45309] shrink-0" />
-            <div className="space-y-1">
-              <p className="text-sm text-[#92400E] font-medium">Testmodus aktiv</p>
-              <p className="text-xs text-[#92400E] opacity-90 leading-relaxed">
-                Falls Google "nicht verifizierte App" meldet: Klicken Sie auf "Erweitert" und dann "Zu OnSite Forms wechseln".
-              </p>
-            </div>
-          </div>
 
           <button
             onClick={handleSignIn}
             disabled={loading}
-            className="w-full relative flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-medium px-4 py-3 rounded-lg transition-all active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="w-full group relative flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md text-slate-700 dark:text-slate-200 font-medium px-4 py-4 rounded-2xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div className="absolute left-4 w-5 h-5">
+            <div className="absolute left-6 w-5 h-5">
               <svg viewBox="0 0 24 24" className="w-full h-full">
                 <path
                   fill="#4285F4"
@@ -80,23 +95,20 @@ export default function GoogleSignInScreen() {
                 />
               </svg>
             </div>
-            <span className="text-sm font-medium text-[#1F2937]">
-              {loading ? 'Weiterleitung zu Google...' : 'Mit Google anmelden'}
+            <span className="text-base">
+              {loading ? 'Verbinde...' : 'Anmelden mit Google'}
             </span>
           </button>
         </div>
+      </div>
 
-        <div className="mt-8 text-center space-y-4">
-          <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-            Mit der Anmeldung akzeptieren Sie unsere <span className="text-blue-600 font-medium cursor-pointer hover:underline">Nutzungsbedingungen</span> und <span className="text-blue-600 font-medium cursor-pointer hover:underline">Datenschutzrichtlinien</span>
-          </p>
-
-          <div className="flex items-center justify-center gap-2 text-slate-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-medium uppercase tracking-wider">
-              Sicherer OAuth2 Zugang
-            </span>
-          </div>
+      {/* Footer */}
+      <div className="pb-8 text-center space-y-4 opacity-40 hover:opacity-100 transition-opacity duration-300">
+        <div className="flex items-center justify-center gap-2 text-slate-500">
+          <ShieldCheck className="w-3 h-3" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">
+            SiteOs Secure Access
+          </span>
         </div>
       </div>
     </div>
