@@ -75,6 +75,3 @@
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }
-
-font-variant-numeric: tabular-nums;
-}
