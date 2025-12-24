@@ -85,7 +85,15 @@ export default function Settings() {
       const { signed_url, path } = await apiService.getSignedUploadUrl('company-logos', file.name) as any;
       await fetch(signed_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
       const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
-      setFormData(prev => ({ ...prev, company_logo_url: data.publicUrl }));
+      const newLogoUrl = data.publicUrl;
+
+      // Update local state immediately
+      setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
+
+      // Persist to backend immediately
+      await apiService.updateProfile({ ...formData, company_logo_url: newLogoUrl });
+      await refreshProfile();
+
       success('Logo aktualisiert', 'Ihr neues Firmenlogo wurde gespeichert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
