@@ -82,10 +82,33 @@ export default function Settings() {
 
     try {
       setLogoLoading(true);
-      const { signed_url, path } = await apiService.getSignedUploadUrl('company-logos', file.name) as any;
-      await fetch(signed_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-      const { data } = supabase.storage.from('company-logos').getPublicUrl(path);
-      const newLogoUrl = data.publicUrl;
+
+      const fileExt = file.name.split('.').pop();
+      // Simple path structure: userId/timestamp.ext
+      // We can use the current user's ID from auth state if available, or just a random ID if not critical for path
+      // But typically we want user ID. Let's assume user is logged in.
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || 'unknown';
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      // DIRECT UPLOAD: Bypasses backend signed-url generation issues
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Supabase direct upload failed:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      const newLogoUrl = publicUrlData.publicUrl;
 
       // Update local state immediately
       setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
