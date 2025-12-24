@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { config } from './config/env.js';
+import { supabase } from './services/supabase.service.js';
 import userRoutes from './routes/user.routes.js';
 import templatesRoutes from './routes/templates.routes.js';
 import submissionsRoutes from './routes/submissions.routes.js';
