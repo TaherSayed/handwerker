@@ -33,10 +33,12 @@ export default function VisitWorkflow() {
     useEffect(() => {
         console.log('VisitWorkflow component mounted');
         console.log('Current URL:', window.location.pathname);
+        console.log('Current step:', currentStep);
+        // Prevent any accidental redirects
         return () => {
             console.log('VisitWorkflow component unmounting');
         };
-    }, []);
+    }, [currentStep]);
 
     // Workflow State
     const [customer, setCustomer] = useState<GoogleContact | null>(null);
