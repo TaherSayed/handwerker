@@ -563,6 +563,7 @@ export default function VisitWorkflow() {
 function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBack: () => void }) {
     const [localPdfUrl, setLocalPdfUrl] = useState<string | null>(null);
     const [loadingPdf, setLoadingPdf] = useState(false);
+    const [pdfError, setPdfError] = useState<string | null>(null);
 
     useEffect(() => {
         // Check if PDF is stored locally
@@ -586,9 +587,13 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
 
     const handleViewPDF = async () => {
         try {
+            setLoadingPdf(true);
+            setPdfError(null);
+
             // First, try local PDF if available
             if (localPdfUrl) {
                 window.open(localPdfUrl, '_blank', 'noopener,noreferrer');
+                setLoadingPdf(false);
                 return;
             }
 
@@ -598,52 +603,96 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 if (url) {
                     setLocalPdfUrl(url);
                     window.open(url, '_blank', 'noopener,noreferrer');
+                    setLoadingPdf(false);
                     return;
                 }
             }
 
             // Get remote URL (either from remote_pdf_url or pdf_url)
-            const remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
+            let remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
+            
+            // If no URL, try to generate PDF
+            if (!remoteUrl && submissionResult.id) {
+                try {
+                    const pdfResult = await apiService.generatePDF(submissionResult.id) as any;
+                    remoteUrl = pdfResult.pdf_url;
+                } catch (genError) {
+                    console.error('Failed to generate PDF:', genError);
+                    setPdfError('PDF konnte nicht generiert werden. Bitte versuchen Sie es später erneut.');
+                    setLoadingPdf(false);
+                    return;
+                }
+            }
             
             if (remoteUrl && typeof remoteUrl === 'string' && remoteUrl.startsWith('http')) {
-                // Open remote PDF immediately
-                const newWindow = window.open(remoteUrl, '_blank', 'noopener,noreferrer');
-                
-                // If popup was blocked, try direct navigation
-                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                    // Fallback: create a temporary link and click it
-                    const link = document.createElement('a');
-                    link.href = remoteUrl;
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-                
-                // Try to download and store it locally in background
-                if (submissionResult.id) {
-                    setLoadingPdf(true);
-                    apiService.downloadAndStorePDF(submissionResult.id, remoteUrl)
-                        .then(async (fileId) => {
-                            const url = await secureStorage.getFileUrl(fileId);
-                            if (url) setLocalPdfUrl(url);
-                        })
-                        .catch((error) => {
-                            console.warn('Failed to store PDF locally:', error);
-                        })
-                        .finally(() => {
-                            setLoadingPdf(false);
-                        });
+                // Download PDF as blob to handle 404 errors and CORS
+                try {
+                    const response = await fetch(remoteUrl);
+                    
+                    if (!response.ok) {
+                        // If 404, try to regenerate PDF
+                        if (response.status === 404 && submissionResult.id) {
+                            try {
+                                const pdfResult = await apiService.generatePDF(submissionResult.id) as any;
+                                remoteUrl = pdfResult.pdf_url;
+                                // Retry with new URL
+                                const retryResponse = await fetch(pdfResult.pdf_url);
+                                if (!retryResponse.ok) throw new Error('PDF generation failed');
+                                const blob = await retryResponse.blob();
+                                await handlePDFBlob(blob, submissionResult.id);
+                                return;
+                            } catch (regenerateError) {
+                                throw new Error('PDF konnte nicht generiert werden');
+                            }
+                        }
+                        throw new Error(`PDF nicht gefunden (${response.status})`);
+                    }
+
+                    const blob = await response.blob();
+                    await handlePDFBlob(blob, submissionResult.id);
+                } catch (fetchError: any) {
+                    console.error('Failed to fetch PDF:', fetchError);
+                    setPdfError(fetchError.message || 'PDF konnte nicht geladen werden');
+                    setLoadingPdf(false);
                 }
             } else {
-                console.error('No valid PDF URL found:', submissionResult);
-                alert('PDF konnte nicht geöffnet werden. Bitte versuchen Sie es später erneut.');
+                setPdfError('Keine gültige PDF-URL gefunden');
+                setLoadingPdf(false);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error opening PDF:', error);
-            alert('Fehler beim Öffnen des PDFs. Bitte versuchen Sie es erneut.');
+            setPdfError(error.message || 'Fehler beim Öffnen des PDFs');
+            setLoadingPdf(false);
         }
+    };
+
+    const handlePDFBlob = async (blob: Blob, submissionId: string) => {
+        // Create blob URL for viewing
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Open in new tab
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        
+        // Also trigger download
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `Einsatzbericht_${submissionId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Store locally for future use
+        try {
+            const fileId = await apiService.downloadAndStorePDF(submissionId, blobUrl);
+            const localUrl = await secureStorage.getFileUrl(fileId);
+            if (localUrl) {
+                setLocalPdfUrl(localUrl);
+            }
+        } catch (storeError) {
+            console.warn('Failed to store PDF locally:', storeError);
+        }
+        
+        setLoadingPdf(false);
     };
 
     return (
@@ -664,7 +713,21 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
             </div>
 
             <div className="max-w-xs mx-auto space-y-4 pt-6">
-                {(submissionResult.pdf_url || localPdfUrl) && (
+                {pdfError && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                        <p className="text-red-800 text-sm font-medium">{pdfError}</p>
+                        {submissionResult.id && (
+                            <button
+                                onClick={handleViewPDF}
+                                className="mt-2 text-red-600 text-xs font-medium hover:underline"
+                            >
+                                Erneut versuchen
+                            </button>
+                        )}
+                    </div>
+                )}
+                
+                {(submissionResult.pdf_url || localPdfUrl || submissionResult.id) && !pdfError && (
                     <button
                         onClick={handleViewPDF}
                         disabled={loadingPdf}
@@ -675,7 +738,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                         ) : (
                             <>
                                 <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                PDF-Bericht ansehen
+                                PDF öffnen & herunterladen
                             </>
                         )}
                     </button>

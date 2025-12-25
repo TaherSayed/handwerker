@@ -386,13 +386,43 @@ class ApiService {
     return this.request(`/submissions/${id}/download-pdf`);
   }
 
-  async downloadAndStorePDF(submissionId: string, pdfUrl: string): Promise<string> {
+  async downloadAndStorePDF(submissionId: string, pdfUrl: string | Blob): Promise<string> {
     try {
-      // Download PDF
-      const response = await fetch(pdfUrl);
-      if (!response.ok) throw new Error('Failed to download PDF');
+      let blob: Blob;
       
-      const blob = await response.blob();
+      // If it's already a blob, use it directly
+      if (pdfUrl instanceof Blob) {
+        blob = pdfUrl;
+      } else if (pdfUrl.startsWith('blob:')) {
+        // If it's a blob URL, fetch it
+        const response = await fetch(pdfUrl);
+        if (!response.ok) throw new Error('Failed to download PDF from blob URL');
+        blob = await response.blob();
+      } else {
+        // Regular HTTP URL
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+          // If 404, try to get signed URL from API
+          if (response.status === 404) {
+            try {
+              const signedUrlData = await this.request(`/submissions/${submissionId}/download-pdf`) as any;
+              if (signedUrlData.url) {
+                const signedResponse = await fetch(signedUrlData.url);
+                if (!signedResponse.ok) throw new Error('Failed to download PDF with signed URL');
+                blob = await signedResponse.blob();
+              } else {
+                throw new Error('No signed URL available');
+              }
+            } catch (signedError) {
+              throw new Error(`PDF nicht verfügbar: ${response.status} ${response.statusText}`);
+            }
+          } else {
+            throw new Error(`Failed to download PDF: ${response.status} ${response.statusText}`);
+          }
+        } else {
+          blob = await response.blob();
+        }
+      }
       
       // Store locally using secure storage
       const { secureStorage } = await import('./secure-storage.service');
@@ -406,7 +436,8 @@ class ApiService {
 
       // Update submission record with local PDF reference if it exists in local DB
       try {
-        const { db } = await import('./db.service');
+        const { getDB } = await import('./db.service');
+        const db = getDB();
         const submission = await db.submissions.where('uuid').equals(submissionId).first();
         if (submission && submission.id) {
           await db.submissions.update(submission.id, { pdf_url: fileId });
