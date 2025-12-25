@@ -34,8 +34,19 @@ export default defineConfig({
     port: 5173,
     host: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'supabase-vendor': ['@supabase/supabase-js'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable'],
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js', 'jspdf', 'jspdf-autotable'],
   },
 });
 

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@types/react-beautiful-dnd": "^13.1.8",
+    "onsite-forms-api": "file:..",
+    "react-beautiful-dnd": "^13.1.1"
+  }
+}

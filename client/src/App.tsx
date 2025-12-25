@@ -23,7 +23,6 @@ const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
 const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
 
-
 // OAuth callback handler
 function AuthCallback() {
   const { initialize } = useAuthStore();
