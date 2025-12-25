@@ -191,10 +191,10 @@ export default function FormTemplates() {
             <div
               key={template.id}
               onClick={() => navigate(`/visits/new?templateId=${template.id}`)}
-              className="card group hover:border-primary-light dark:hover:border-primary-dark cursor-pointer transition-all hover:shadow-xl hover:shadow-primary-light/5 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke flex flex-col h-full p-6 lg:p-7 rounded-3xl"
+              className="card card-hover card-compact flex flex-col h-full group"
             >
               <div className="flex items-start justify-between mb-5">
-                <div className="w-12 h-12 bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark rounded-2xl flex items-center justify-center shrink-0 border border-primary-light/10">
+                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400 rounded-lg flex items-center justify-center shrink-0">
                   <FileText className="w-6 h-6" />
                 </div>
                 {template.category && (
@@ -219,15 +219,15 @@ export default function FormTemplates() {
                     className="w-full px-3 py-1.5 rounded-lg border-2 border-primary-light outline-none bg-white dark:bg-dark-input dark:text-white font-bold mb-2"
                   />
                 ) : (
-                  <h3 className="text-lg font-medium text-slate-900 dark:text-dark-text-head mb-2 truncate group-hover:text-primary-light transition-colors">{template.name}</h3>
+                  <h3 className="heading-sm mb-2 truncate group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">{template.name}</h3>
                 )}
-                <p className="text-slate-500 dark:text-dark-text-muted text-sm line-clamp-2 leading-relaxed font-medium">
+                <p className="text-body text-sm line-clamp-2 leading-relaxed">
                   {template.description || 'Keine Beschreibung verfügbar.'}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-5 border-t border-border-light dark:border-dark-stroke mt-auto">
-                <div className="text-[11px] text-slate-400 dark:text-dark-text-muted font-medium">
+              <div className="flex items-center justify-between pt-5 border-t border-border-subtle mt-auto">
+                <div className="text-caption font-medium">
                   {template.fields?.length || 0} Felder
                 </div>
 
@@ -238,19 +238,19 @@ export default function FormTemplates() {
                       e.stopPropagation();
                       setOpenMenuId(openMenuId === template.id ? null : template.id);
                     }}
-                    className="p-3 -mr-3 text-slate-400 dark:text-dark-text-muted hover:text-primary-light dark:hover:text-primary-dark rounded-full hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all active:scale-90"
+                    className="btn-ghost p-3 -mr-3 rounded-full"
                   >
                     <MoreVertical className="w-6 h-6" />
                   </button>
 
                   {openMenuId === template.id && (
-                    <div className="absolute right-0 bottom-full mb-3 w-56 bg-white dark:bg-dark-card rounded-2xl shadow-2xl shadow-black/20 border border-border-light dark:border-dark-stroke z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-right">
+                    <div className="absolute right-0 bottom-full mb-3 w-56 card shadow-xl z-popover overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-right">
                       <div className="p-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                          className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm font-medium text-text-secondary hover:bg-neutral-100 dark:hover:bg-dark-highlight rounded-lg flex items-center gap-3 transition-colors"
                         >
-                          <Edit className="w-4 h-4 text-slate-400" />
+                          <Edit className="w-4 h-4 text-text-tertiary" />
                           Design Bearbeiten
                         </button>
 
