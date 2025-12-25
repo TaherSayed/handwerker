@@ -12,16 +12,17 @@
   }
 
   /* Global Mobile Typography Scale */
+  /* Global Mobile Typography Scale */
   h1 {
-    @apply text-[22px] leading-tight font-semibold lg:text-4xl text-slate-900 dark:text-dark-text-head;
+    @apply text-xl leading-tight font-bold text-slate-900 dark:text-dark-text-head;
   }
 
   h2 {
-    @apply text-lg leading-snug font-semibold lg:text-2xl text-slate-900 dark:text-dark-text-head;
+    @apply text-lg leading-snug font-bold text-slate-900 dark:text-dark-text-head;
   }
 
   h3 {
-    @apply text-base leading-snug font-semibold lg:text-xl text-slate-900 dark:text-dark-text-head;
+    @apply text-base leading-snug font-semibold text-slate-900 dark:text-dark-text-head;
   }
 
   /* Inputs minimum 16px to prevent iOS zoom */

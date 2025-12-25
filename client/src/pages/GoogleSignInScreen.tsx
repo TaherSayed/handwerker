@@ -114,7 +114,7 @@ export default function GoogleSignInScreen() {
       {/* Footer */}
       <div className="absolute bottom-6 left-0 right-0 text-center z-10">
         <p className="text-white/40 text-[10px] font-medium uppercase tracking-widest">
-          Powered by Innofino
+          HuKo
         </p>
       </div>
 

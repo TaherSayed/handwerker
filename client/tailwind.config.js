@@ -11,24 +11,28 @@ export default {
       colors: {
         // Industry-standard colors
         primary: {
-          light: '#5865F2', // Discord-style Blurple / Premium Blue
-          dark: '#5865F2',
+          light: '#06b6d4', // Cyan-500
+          dark: '#0891b2', // Cyan-600
+        },
+        secondary: {
+          light: '#3b82f6',
+          dark: '#2563eb',
         },
         success: {
-          light: '#5CC489',
-          dark: '#5CC489',
+          light: '#10b981',
+          dark: '#059669',
         },
         warning: {
-          light: '#FFB85C',
-          dark: '#FFB85C',
+          light: '#f59e0b',
+          dark: '#d97706',
         },
         error: {
-          light: '#FF6A6A',
-          dark: '#FF6A6A',
+          light: '#ef4444',
+          dark: '#dc2626',
         },
         surface: {
-          light: '#FFFFFF',
-          dark: '#181C2A', // Panel Color
+          light: '#ffffff',
+          dark: '#1e293b',
         },
         background: {
           light: '#F8FAFC',
