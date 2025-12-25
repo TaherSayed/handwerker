@@ -29,17 +29,6 @@ export default function VisitWorkflow() {
     const [currentStep, setCurrentStep] = useState<WorkflowStep>('customer');
     const [error, setError] = useState<string | null>(null);
 
-    // Debug: Log when component mounts
-    useEffect(() => {
-        console.log('VisitWorkflow component mounted');
-        console.log('Current URL:', window.location.pathname);
-        console.log('Current step:', currentStep);
-        // Prevent any accidental redirects
-        return () => {
-            console.log('VisitWorkflow component unmounting');
-        };
-    }, [currentStep]);
-
     // Workflow State
     const [customer, setCustomer] = useState<GoogleContact | null>(null);
     const [isManualCustomer, setIsManualCustomer] = useState(false);
@@ -205,9 +194,9 @@ export default function VisitWorkflow() {
         switch (field.type) {
             case 'section':
                 return (
-                    <div className="pt-6 pb-3 border-b border-slate-200 dark:border-dark-stroke mb-4 first:pt-0">
-                        <h3 className="text-lg font-medium text-slate-900 dark:text-dark-text-head tracking-normal">{field.label}</h3>
-                        {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal mt-1.5">{field.help_text}</p>}
+                    <div className="pt-8 pb-2 border-b-2 border-slate-900 mb-4 first:pt-0">
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{field.label}</h3>
+                        {field.help_text && <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">{field.help_text}</p>}
                     </div>
                 );
 
@@ -233,7 +222,7 @@ export default function VisitWorkflow() {
                             onChange={(e) => handleFieldChange(field.id, e.target.checked)}
                             className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="font-medium text-slate-700 dark:text-dark-text-head text-sm">{field.label}</span>
+                        <span className="font-bold text-slate-700 text-sm uppercase tracking-tight">{field.label}</span>
                     </label>
                 );
 
@@ -355,24 +344,24 @@ export default function VisitWorkflow() {
         ];
 
         return (
-            <div className="flex items-center justify-between mb-12 px-2 max-w-sm mx-auto overflow-hidden">
+            <div className="flex items-center justify-between mb-14 px-2 max-w-md mx-auto overflow-hidden">
                 {steps.map((s, idx) => {
                     const Icon = s.icon;
                     const isActive = currentStep === s.key;
                     const isDone = steps.findIndex(st => st.key === currentStep) > idx;
 
                     return (
-                        <div key={s.key} className="flex flex-col items-center gap-2 relative">
+                        <div key={s.key} className="flex flex-col items-center gap-3 relative flex-1">
                             {idx > 0 && (
-                                <div className={`absolute right-[calc(50%+20px)] top-5 w-full h-[2px] -z-10 transition-colors duration-500 ${isDone || isActive ? 'bg-indigo-600' : 'bg-slate-100'
+                                <div className={`absolute right-[calc(50%+24px)] top-6 w-full h-[2px] -z-10 transition-all duration-500 ${isDone || isActive ? 'bg-indigo-500 dark:bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'
                                     }`} />
                             )}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 scale-110 z-10' :
-                                isDone ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-300'
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 scale-110 z-10' :
+                                isDone ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
                                 }`}>
-                                {isDone ? <CheckCircle2 className="w-5 h-5 animate-in zoom-in" /> : <Icon className="w-5 h-5" />}
+                                {isDone ? <CheckCircle2 className="w-6 h-6" strokeWidth={2.5} /> : <Icon className="w-6 h-6" strokeWidth={2} />}
                             </div>
-                            <span className={`text-xs font-medium transition-colors duration-500 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-dark-text-muted'
+                            <span className={`text-[10px] md:text-xs font-medium transition-colors duration-300 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
                                 }`}>
                                 {s.label}
                             </span>
@@ -383,20 +372,10 @@ export default function VisitWorkflow() {
         );
     };
 
-    // Early return if component hasn't initialized
-    if (!templates && isLoadingTemplates) {
-        console.log('VisitWorkflow: Still loading templates, showing loading state');
-    }
-
-    console.log('VisitWorkflow: Rendering with step:', currentStep);
-    console.log('VisitWorkflow: templates:', templates?.length, 'isLoading:', isLoadingTemplates);
-
-    // Wrap in try-catch to prevent render errors from crashing
-    try {
-        return (
-            <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
-            {/* Navigation Header */}
-            <div className="flex items-center gap-4 mb-8">
+    return (
+        <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
+            {/* Navigation Header - Modern Typography */}
+            <div className="flex items-center gap-4 mb-10">
                 <button
                     onClick={() => {
                         if (currentStep === 'customer') navigate('/dashboard');
@@ -404,13 +383,15 @@ export default function VisitWorkflow() {
                         else if (currentStep === 'form') setCurrentStep('template');
                         else if (currentStep === 'finish') navigate('/dashboard');
                     }}
-                    className="w-10 h-10 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-xl flex items-center justify-center text-slate-600 dark:text-dark-text-muted hover:bg-slate-50 dark:hover:bg-dark-highlight hover:border-slate-300 dark:hover:border-dark-stroke transition-all shadow-sm group"
+                    className="w-11 h-11 bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow-md group"
                 >
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform duration-300" strokeWidth={2.5} />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Neuer Einsatz</h1>
-                    <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal mt-1.5">
+                    <h1 className="text-2xl md:text-3xl font-medium text-slate-900 dark:text-white tracking-[-0.02em] leading-tight">
+                        Neuer Einsatz
+                    </h1>
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-normal mt-1.5">
                         {currentStep === 'customer' ? 'Kunde' :
                             currentStep === 'template' ? 'Vorlage' :
                                 currentStep === 'form' ? 'Dateneingabe' : 'Abschluss'}
@@ -423,23 +404,27 @@ export default function VisitWorkflow() {
             {/* Step Content */}
             <div className="space-y-8">
                 {currentStep === 'customer' && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="space-y-2 mb-4">
-                            <h2 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Wer ist der Kunde?</h2>
-                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed">Erfassen Sie die Kundendaten für den Bericht.</p>
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="space-y-2.5">
+                            <h2 className="text-3xl md:text-4xl font-medium text-slate-900 dark:text-white tracking-[-0.02em] leading-tight">
+                                Wer ist der Kunde?
+                            </h2>
+                            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
+                                Erfassen Sie die Kundendaten für den Bericht.
+                            </p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
-                            <ContactSelector onSelect={handleContactSelect} onClose={() => navigate('/dashboard')} initialContact={null} />
+                            <ContactSelector onSelect={handleContactSelect} onClose={() => { }} initialContact={null} />
 
                             <div className="relative py-4">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-dark-stroke" /></div>
-                                <div className="relative flex justify-center text-xs font-medium text-slate-400 dark:text-dark-text-muted"><span className="bg-white dark:bg-dark-card px-4">oder manuell</span></div>
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">ODER MANUELL</span></div>
                             </div>
 
-                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-6 space-y-5 border-slate-200 dark:border-dark-stroke shadow-lg">
+                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-8 space-y-6 border-slate-100 dark:border-dark-stroke shadow-2xl shadow-indigo-500/5">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1">Kunde / Projektname</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kunde / Projektname</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -449,7 +434,7 @@ export default function VisitWorkflow() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1">Standort / Adresse</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Standort / Adresse</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -458,8 +443,8 @@ export default function VisitWorkflow() {
                                         onChange={e => setManualCustomer({ ...manualCustomer, address: e.target.value })}
                                     />
                                 </div>
-                                <button type="submit" className="group flex items-center justify-center gap-3 bg-indigo-600 dark:bg-indigo-600 text-white w-full py-4 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md active:scale-[0.98]">
-                                    Manuell fortfahren <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                <button type="submit" className="group flex items-center justify-center gap-3 bg-indigo-900 text-white w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100">
+                                    Manuell fortfahren <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </form>
                         </div>
@@ -467,16 +452,22 @@ export default function VisitWorkflow() {
                 )}
 
                 {currentStep === 'template' && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Vorlage wählen</h2>
-                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed">Welches Formular soll verwendet werden?</p>
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Header Section - Modern Typography */}
+                        <div className="space-y-2.5">
+                            <h2 className="text-3xl md:text-4xl font-medium text-slate-900 dark:text-white tracking-[-0.02em] leading-tight">
+                                Vorlage wählen
+                            </h2>
+                            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
+                                Welches Formular soll verwendet werden?
+                            </p>
                         </div>
 
+                        {/* Template Cards - Professional Design */}
                         {isLoadingTemplates ? (
                             <div className="grid grid-cols-1 gap-3">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-28 bg-slate-50 dark:bg-dark-card rounded-2xl animate-pulse border border-slate-100 dark:border-dark-stroke" />
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} className="h-28 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl animate-pulse border border-slate-200/50 dark:border-slate-700/50" />
                                 ))}
                             </div>
                         ) : (
@@ -485,24 +476,36 @@ export default function VisitWorkflow() {
                                     <button
                                         key={t.id}
                                         onClick={() => handleTemplateSelect(t)}
-                                        className="group flex items-center gap-4 p-5 bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 transition-all duration-200 text-left active:scale-[0.99]"
+                                        className="group relative flex items-center gap-4 p-5 md:p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 hover:border-indigo-500/60 dark:hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 transition-all duration-300 text-left overflow-hidden"
                                     >
-                                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white dark:group-hover:from-indigo-500 dark:group-hover:to-indigo-600 transition-all duration-200">
-                                            <FileText className="w-6 h-6" />
+                                        {/* Subtle gradient overlay on hover */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/0 via-indigo-50/0 to-indigo-50/0 group-hover:from-indigo-50/30 group-hover:via-indigo-50/20 group-hover:to-transparent dark:group-hover:from-indigo-950/20 dark:group-hover:via-indigo-950/10 dark:group-hover:to-transparent transition-all duration-300 pointer-events-none" />
+                                        
+                                        {/* Icon Container */}
+                                        <div className="relative w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-700/50 dark:to-slate-800/50 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center shrink-0 group-hover:from-indigo-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:scale-105">
+                                            <FileText className="w-7 h-7 md:w-8 md:h-8" strokeWidth={2} />
                                         </div>
-                                        <div className="flex-1 min-w-0 space-y-1">
-                                            <h4 className="font-medium text-slate-900 dark:text-dark-text-head text-base tracking-normal leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{t.name}</h4>
-                                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed line-clamp-2">{t.description || 'Service record template'}</p>
+                                        
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0 relative z-10">
+                                            <h4 className="text-base md:text-lg font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 leading-snug mb-1.5 line-clamp-1">
+                                                {t.name}
+                                            </h4>
+                                            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-normal leading-relaxed line-clamp-2">
+                                                {t.description || 'Service record template'}
+                                            </p>
                                         </div>
-                                        <div className="w-9 h-9 rounded-lg bg-slate-50 dark:bg-dark-input flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all duration-200 shrink-0">
-                                            <ArrowRight className="w-4 h-4" />
+                                        
+                                        {/* Arrow Indicator */}
+                                        <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-lg bg-slate-100/80 dark:bg-slate-700/50 flex items-center justify-center group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all duration-300 shrink-0 group-hover:translate-x-1">
+                                            <ArrowRight className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
                                         </div>
                                     </button>
                                 ))}
                                 {templates.length === 0 && (
-                                    <div className="text-center py-16 bg-slate-50 dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke">
-                                        <FileText className="w-12 h-12 text-slate-300 dark:text-dark-text-muted mx-auto mb-3" />
-                                        <p className="text-slate-500 dark:text-dark-text-muted font-medium text-sm">Keine Vorlagen gefunden.</p>
+                                    <div className="text-center py-16 bg-gradient-to-br from-slate-50 to-slate-100/30 dark:from-slate-800/30 dark:to-slate-900/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                                        <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Keine Vorlagen gefunden.</p>
                                     </div>
                                 )}
                             </div>
@@ -512,20 +515,20 @@ export default function VisitWorkflow() {
 
                 {currentStep === 'form' && selectedTemplate && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-white dark:bg-dark-card rounded-2xl p-6 md:p-8 space-y-6 border border-slate-200 dark:border-dark-stroke shadow-lg">
-                            <div className="pb-5 border-b border-slate-200 dark:border-dark-stroke flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-xs">
-                                    <User className="w-4 h-4" />
+                        <div className="bg-white dark:bg-dark-card rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 dark:border-dark-stroke shadow-xl shadow-indigo-500/5">
+                            <div className="pb-6 border-b border-slate-100 dark:border-dark-stroke flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.2em]">
+                                    <User className="w-3.5 h-3.5" />
                                     <span className="truncate">{isManualCustomer ? manualCustomer.name : customer?.name}</span>
                                 </div>
-                                <h2 className="text-xl md:text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">{selectedTemplate.name}</h2>
+                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedTemplate.name}</h2>
                             </div>
 
                             <div className="space-y-6">
                                 {selectedTemplate.fields?.map((field: any) => (
                                     <div key={field.id} className="space-y-1.5">
                                         {field.type !== 'section' && (
-                                            <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1 block">
+                                            <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.1em] ml-1 block">
                                                 {field.label}
                                                 {field.required && <span className="text-red-500 ml-1">*</span>}
                                             </label>
@@ -540,14 +543,14 @@ export default function VisitWorkflow() {
                         <div className="sticky-action-bar grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleSave('draft')}
-                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
+                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Save className="w-4 h-4" /> Entwurf
                             </button>
                             <button
                                 onClick={() => handleSave('submitted')}
                                 disabled={isSubmitting}
-                                className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-600 text-white py-3.5 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                                className="flex items-center justify-center gap-2 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
                             >
                                 {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
                                 Abschließen
@@ -578,22 +581,7 @@ export default function VisitWorkflow() {
                 </div>
             )}
         </div>
-        );
-    } catch (renderError: any) {
-        console.error('VisitWorkflow render error:', renderError);
-        return (
-            <div className="p-8 text-center">
-                <h2 className="text-xl font-bold text-red-600 mb-4">Error loading page</h2>
-                <p className="text-slate-600 mb-4">{renderError.message || 'An error occurred'}</p>
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-                >
-                    Back to Dashboard
-                </button>
-            </div>
-        );
-    }
+    );
 }
 
 // Finish Step Component with PDF handling
@@ -799,11 +787,11 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 </div>
             </div>
 
-            <div className="space-y-3">
-                <h2 className="text-3xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Auftrag erledigt!</h2>
-                <p className="text-base text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed max-w-sm mx-auto">
+            <div className="space-y-4">
+                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
+                <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">
                     Besuchsdokumentation erfolgreich erstellt und gespeichert.
-                    {localPdfUrl && <span className="block mt-2 text-sm text-green-600 dark:text-green-400 font-medium">✓ Lokal gespeichert</span>}
+                    {localPdfUrl && <span className="block mt-2 text-xs text-green-600">✓ Lokal gespeichert</span>}
                 </p>
             </div>
 
@@ -826,7 +814,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                     <button
                         onClick={handleViewPDF}
                         disabled={loadingPdf}
-                        className="group flex items-center justify-center gap-3 bg-indigo-600 dark:bg-indigo-600 text-white w-full py-4 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md disabled:opacity-70 active:scale-[0.98]"
+                        className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-70"
                     >
                         {loadingPdf ? (
                             <Loader className="w-5 h-5 animate-spin" />
@@ -840,7 +828,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 )}
                 <button
                     onClick={onBack}
-                    className="w-full py-3 text-slate-500 dark:text-dark-text-muted font-medium text-sm hover:text-slate-900 dark:hover:text-dark-text-head transition-colors"
+                    className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
                 >
                     Zurück zur Übersicht
                 </button>

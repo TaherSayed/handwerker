@@ -153,12 +153,11 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           }
           
           // Return minimal data with requested values
-          const minimalTyped = minimalData as any;
           return res.json({
             ...minimalData,
-            company_name: company_name !== undefined ? company_name : minimalTyped?.company_name,
-            company_logo_url: company_logo_url !== undefined ? company_logo_url : minimalTyped?.company_logo_url,
-            company_address: company_address !== undefined ? company_address : minimalTyped?.company_address,
+            company_name: company_name !== undefined ? company_name : minimalData?.company_name,
+            company_logo_url: company_logo_url !== undefined ? company_logo_url : minimalData?.company_logo_url,
+            company_address: company_address !== undefined ? company_address : minimalData?.company_address,
             company_phone: company_phone !== undefined ? company_phone : undefined,
             company_website: company_website !== undefined ? company_website : undefined,
             primary_color: primary_color !== undefined ? primary_color : '#2563eb',
@@ -167,13 +166,12 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
         }
         
         // Return data with requested values (even if some weren't saved due to schema issues)
-        const safeTyped = safeData as any;
         return res.json({
           ...safeData,
-          company_phone: company_phone !== undefined ? company_phone : safeTyped?.company_phone,
-          company_website: company_website !== undefined ? company_website : safeTyped?.company_website,
-          primary_color: primary_color !== undefined ? primary_color : (safeTyped?.primary_color || '#2563eb'),
-          accent_color: accent_color !== undefined ? accent_color : (safeTyped?.accent_color || '#1e40af'),
+          company_phone: company_phone !== undefined ? company_phone : safeData?.company_phone,
+          company_website: company_website !== undefined ? company_website : safeData?.company_website,
+          primary_color: primary_color !== undefined ? primary_color : (safeData?.primary_color || '#2563eb'),
+          accent_color: accent_color !== undefined ? accent_color : (safeData?.accent_color || '#1e40af'),
         });
       }
       

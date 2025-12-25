@@ -28,19 +28,7 @@ const FormFilling = lazy(() => import('./pages/FormFilling'));
 const Submissions = lazy(() => import('./pages/Submissions'));
 const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
-const VisitWorkflow = lazy(() => {
-  console.log('Lazy loading VisitWorkflow...');
-  return import('./pages/VisitWorkflow').catch((error) => {
-    console.error('Failed to load VisitWorkflow:', error);
-    // Return a fallback component
-    return {
-      default: () => {
-        console.error('VisitWorkflow failed to load, showing error');
-        return <div>Error loading page. Please refresh.</div>;
-      }
-    };
-  });
-});
+const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
 
 // OAuth callback handler
 function AuthCallback() {
@@ -64,7 +52,7 @@ function AuthCallback() {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const { data, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError) {
           console.error('Auth callback error:', sessionError);
           setError(`Sitzungsfehler: ${sessionError.message}`);
@@ -114,7 +102,7 @@ function App() {
   useEffect(() => {
     // Initialize auth immediately (only once)
     if (!initialized) {
-    initialize();
+      initialize();
     }
 
     // Load sync service after a short delay to not block initial render
@@ -169,10 +157,10 @@ function App() {
     return (
       <BrowserRouter>
         <Suspense fallback={<LoadingScreen />}>
-        <Routes>
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="*" element={<GoogleSignInScreen />} />
-        </Routes>
+          <Routes>
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="*" element={<GoogleSignInScreen />} />
+          </Routes>
         </Suspense>
       </BrowserRouter>
     );
@@ -189,21 +177,21 @@ function App() {
       )}
 
       <Suspense fallback={<SplashScreen />}>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="visits/new" element={<VisitWorkflow />} />
-          <Route path="templates" element={<FormTemplates />} />
-          <Route path="templates/new" element={<FormBuilder />} />
-          <Route path="templates/:id/edit" element={<FormBuilder />} />
-          <Route path="templates/:templateId/fill" element={<FormFilling />} />
-          <Route path="submissions" element={<Submissions />} />
-          <Route path="submissions/:id" element={<SubmissionDetail />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-        <Route path="/auth/callback" element={<AuthCallback />} />
-      </Routes>
+            <Route path="templates" element={<FormTemplates />} />
+            <Route path="templates/new" element={<FormBuilder />} />
+            <Route path="templates/:id/edit" element={<FormBuilder />} />
+            <Route path="templates/:templateId/fill" element={<FormFilling />} />
+            <Route path="submissions" element={<Submissions />} />
+            <Route path="submissions/:id" element={<SubmissionDetail />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          <Route path="/auth/callback" element={<AuthCallback />} />
+        </Routes>
       </Suspense>
       <Toaster />
     </BrowserRouter>
