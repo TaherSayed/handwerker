@@ -27,7 +27,7 @@ export class UserService {
                     full_name: email.split('@')[0] || 'User',
                 }, { onConflict: 'id', ignoreDuplicates: true })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (createProfileError) {
                 throw new Error(`Failed to create user profile: ${createProfileError.message}`);
