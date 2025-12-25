@@ -1,6 +1,26 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from './supabase.service.js';
 
+// Type for user profile with all optional fields
+type UserProfile = {
+    id: string;
+    email: string;
+    full_name: string;
+    created_at?: string;
+    updated_at?: string;
+    company_name?: string;
+    company_logo_url?: string;
+    company_address?: string;
+    company_city?: string;
+    company_zip?: string;
+    company_country?: string;
+    company_phone?: string;
+    company_website?: string;
+    primary_color?: string;
+    accent_color?: string;
+    [key: string]: any; // Allow additional properties
+};
+
 export class UserService {
     /**
      * Ensures a user profile exists and returns the user's default workspace.
@@ -16,10 +36,13 @@ export class UserService {
             .select('id, email, full_name, created_at, updated_at')
             .eq('id', userId)
             .single();
+        
+        // Type assertion to allow adding optional fields
+        let typedProfile: UserProfile | null = profile as UserProfile | null;
 
         // If profile exists, try to get extended fields (may not exist yet)
         // Fetch them in smaller groups to avoid schema cache issues
-        if (profile && !profileError) {
+        if (typedProfile && !profileError) {
             try {
                 // Try to get company fields first
                 const { data: companyFields } = await adminClient
@@ -29,7 +52,7 @@ export class UserService {
                     .single();
                 
                 if (companyFields) {
-                    profile = { ...profile, ...companyFields };
+                    typedProfile = { ...typedProfile, ...(companyFields as any) };
                 }
             } catch (companyError: any) {
                 // Company fields might not exist - that's OK
@@ -47,7 +70,7 @@ export class UserService {
                     .single();
                 
                 if (brandingFields) {
-                    profile = { ...profile, ...brandingFields };
+                    typedProfile = { ...typedProfile, ...(brandingFields as any) };
                 }
             } catch (brandingError: any) {
                 // Branding fields might not exist - that's OK, use defaults
@@ -55,15 +78,15 @@ export class UserService {
                     console.warn(`[UserService] Branding fields fetch failed for ${userId}:`, brandingError.message);
                 }
                 // Set defaults if fields don't exist
-                profile = {
-                    ...profile,
-                    primary_color: profile.primary_color || '#2563eb',
-                    accent_color: profile.accent_color || '#1e40af',
+                typedProfile = {
+                    ...typedProfile,
+                    primary_color: typedProfile.primary_color || '#2563eb',
+                    accent_color: typedProfile.accent_color || '#1e40af',
                 };
             }
         }
 
-        if (profileError || !profile) {
+        if (profileError || !typedProfile) {
             console.log(`[UserService] Creating missing profile for ${userId}`);
             // Use upsert with ignoreDuplicates to avoid race conditions (duplicate key errors)
             // Only set fields that definitely exist
@@ -89,9 +112,9 @@ export class UserService {
                 if (basicError || !existingBasic) {
                     throw new Error(`Failed to create user profile: ${createProfileError.message}`);
                 }
-                profile = existingBasic;
+                typedProfile = existingBasic as UserProfile;
             } else if (newProfile) {
-                profile = newProfile;
+                typedProfile = newProfile as UserProfile;
             } else {
                 // If upsert ignored the duplicate, fetch existing one with basic fields first
                 const { data: existingBasic, error: basicError } = await adminClient
@@ -105,7 +128,7 @@ export class UserService {
                 }
                 
                 // Try to get extended fields in smaller groups, but don't fail if they don't exist
-                profile = existingBasic;
+                typedProfile = existingBasic as UserProfile;
                 
                 // Try company fields
                 try {
@@ -116,7 +139,7 @@ export class UserService {
                         .single();
                     
                     if (companyFields) {
-                        profile = { ...profile, ...companyFields };
+                        typedProfile = { ...typedProfile, ...(companyFields as any) };
                     }
                 } catch (companyError: any) {
                     // Company fields might not exist - that's OK
@@ -134,11 +157,11 @@ export class UserService {
                         .single();
                     
                     if (brandingFields) {
-                        profile = { ...profile, ...brandingFields };
+                        typedProfile = { ...typedProfile, ...(brandingFields as any) };
                     } else {
                         // Set defaults if fields don't exist
-                        profile = {
-                            ...profile,
+                        typedProfile = {
+                            ...typedProfile,
                             primary_color: '#2563eb',
                             accent_color: '#1e40af',
                         };
@@ -149,10 +172,10 @@ export class UserService {
                         console.warn(`[UserService] Branding fields not available for ${userId}`);
                     }
                     // Set defaults
-                    profile = {
-                        ...profile,
-                        primary_color: profile.primary_color || '#2563eb',
-                        accent_color: profile.accent_color || '#1e40af',
+                    typedProfile = {
+                        ...typedProfile,
+                        primary_color: typedProfile?.primary_color || '#2563eb',
+                        accent_color: typedProfile?.accent_color || '#1e40af',
                     };
                 }
             }
@@ -168,13 +191,11 @@ export class UserService {
 
         if (workspaceError || !workspace) {
             console.log(`[UserService] Creating missing workspace for ${userId}`);
-            // Type assertion to allow accessing optional fields
-            const profileWithCompany = profile as any;
             const { data: newWorkspace, error: createWorkspaceError } = await userClient
                 .from('workspaces')
                 .insert({
                     owner_id: userId,
-                    name: profileWithCompany?.company_name || profile?.full_name || 'My Workspace',
+                    name: typedProfile?.company_name || typedProfile?.full_name || 'My Workspace',
                 })
                 .select()
                 .single();
@@ -185,7 +206,7 @@ export class UserService {
             workspace = newWorkspace;
         }
 
-        return { profile, workspace };
+        return { profile: typedProfile, workspace };
     }
 }
 
