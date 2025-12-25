@@ -70,7 +70,26 @@ export default function SubmissionDetail() {
   };
 
   const handleDownloadPDF = async () => {
-    if (!submission) return;
+    if (!submission) {
+      notifyError('Fehler', 'Einsatzbericht konnte nicht geladen werden');
+      return;
+    }
+
+    // Validate required submission properties
+    if (!submission.id) {
+      notifyError('Fehler', 'Einsatzbericht-ID fehlt');
+      return;
+    }
+
+    if (!submission.form_templates || !submission.form_templates.name || !submission.form_templates.fields) {
+      notifyError('Fehler', 'Formularvorlage-Daten fehlen');
+      return;
+    }
+
+    if (!submission.customer_name) {
+      notifyError('Fehler', 'Kundenname fehlt');
+      return;
+    }
 
     try {
       setGenerating(true);
@@ -79,12 +98,29 @@ export default function SubmissionDetail() {
       // Ensure we have at least partial company settings if offline
       const settingsToUse = companySettings || { name: 'Offline User' };
 
-      await generatePDF(submission, settingsToUse);
+      // Prepare submission data with safe defaults
+      const submissionData = {
+        id: submission.id,
+        created_at: submission.created_at || new Date().toISOString(),
+        customer_name: submission.customer_name,
+        customer_address: submission.customer_address || '',
+        customer_email: submission.customer_email || '',
+        customer_phone: submission.customer_phone || '',
+        form_templates: {
+          name: submission.form_templates.name,
+          fields: Array.isArray(submission.form_templates.fields) ? submission.form_templates.fields : [],
+        },
+        field_values: submission.field_values || {},
+        signature_url: submission.signature_url || '',
+      };
+
+      await generatePDF(submissionData, settingsToUse);
 
       success('Erfolgreich', 'PDF wurde heruntergeladen');
     } catch (error: any) {
       console.error('Generate PDF error:', error);
-      notifyError('Fehler', error.message || 'PDF konnte nicht erstellt werden');
+      const errorMessage = error?.message || 'PDF konnte nicht erstellt werden';
+      notifyError('Fehler', errorMessage);
     } finally {
       setGenerating(false);
     }

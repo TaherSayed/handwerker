@@ -93,7 +93,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.setFontSize(12);
     doc.setTextColor(secondaryColor);
     doc.setFont('helvetica', 'normal');
-    doc.text(submission.form_templates.name, margin, currentY + 7);
+    doc.text(submission.form_templates?.name || 'Einsatzbericht', margin, currentY + 7);
 
     // Meta Data Ticket Badge
     doc.setFillColor(lightGrey);
@@ -105,7 +105,8 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.setFontSize(11);
     doc.setTextColor('#0f172a'); // Slate 900
     doc.setFont('helvetica', 'bold');
-    doc.text(`#${submission.id.slice(0, 8).toUpperCase()}`, pageWidth - margin - 55, currentY + 8);
+    const reportId = submission.id ? submission.id.slice(0, 8).toUpperCase() : 'UNKNOWN';
+    doc.text(`#${reportId}`, pageWidth - margin - 55, currentY + 8);
 
     currentY += 25;
 
@@ -139,8 +140,9 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     currentY += 45;
 
     // --- Content Table ---
-    const tableBody = submission.form_templates.fields.map(field => {
-        const value = submission.field_values[field.id];
+    const fields = submission.form_templates?.fields || [];
+    const tableBody = fields.map(field => {
+        const value = submission.field_values?.[field.id];
 
         // Skip sections in table body effectively, or render them as headers
         if (field.type === 'section') {
@@ -173,7 +175,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     currentY = (doc as any).lastAutoTable.finalY + 20;
 
     // --- Photos Section ---
-    const photoFields = submission.form_templates.fields.filter(f => f.type === 'photo' && submission.field_values[f.id]);
+    const photoFields = fields.filter(f => f.type === 'photo' && submission.field_values?.[f.id]);
 
     if (photoFields.length > 0) {
         if (currentY + 60 > pageHeight) { doc.addPage(); currentY = 20; }
@@ -222,8 +224,9 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     // For now just a line
 
     // Customer Signature
-    const customerSigUrl = submission.signature_url || submission.field_values['signature_customer'] ||
-        submission.form_templates.fields.find(f => f.type === 'signature' && submission.field_values[f.id]) ? submission.field_values[submission.form_templates.fields.find(f => f.type === 'signature' && submission.field_values[f.id])!.id] : null;
+    const signatureField = fields.find(f => f.type === 'signature' && submission.field_values?.[f.id]);
+    const customerSigUrl = submission.signature_url || submission.field_values?.['signature_customer'] ||
+        (signatureField ? submission.field_values?.[signatureField.id] : null);
 
     const sigBoxY = currentY;
 
