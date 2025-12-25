@@ -71,127 +71,133 @@ export default function Submissions() {
   };
 
   return (
-    <div className="animate-slide-up space-y-12 pb-32 lg:pb-8">
+    <div className="animate-slide-up pb-32 lg:pb-8">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3 uppercase tracking-tighter leading-none">
+      <div className="mb-8">
+        <div className="mb-1">
+          <h1 className="text-3xl md:text-4xl font-medium text-slate-900 dark:text-white tracking-normal leading-tight">
             Verlauf
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
+        </div>
+        <div className="mb-8 mt-2">
+          <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal">
             Einsatzberichte & Kundendokumentationen
           </p>
         </div>
-      </div>
 
-      {/* Filter Tabs */}
-      <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit">
-        {[
-          { id: 'all', label: 'Alle' },
-          { id: 'draft', label: 'Entwürfe' },
-          { id: 'submitted', label: 'Eingereicht' }
-        ].map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id as any)}
-            className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === f.id
-              ? 'bg-white text-indigo-600 shadow-xl shadow-slate-200'
-              : 'text-slate-400 hover:text-slate-600'
+        {/* Filter Tabs - Connected to content */}
+        <div className="flex p-1 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-xl shadow-sm">
+          {[
+            { id: 'all', label: 'Alle' },
+            { id: 'draft', label: 'Entwürfe' },
+            { id: 'submitted', label: 'Eingereicht' }
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id as any)}
+              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                filter === f.id
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-dark-text-muted hover:text-slate-900 dark:hover:text-white'
               }`}
-          >
-            {f.label}
-          </button>
-        ))}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 rounded-[2rem] p-6 shadow-xl shadow-red-500/5 flex items-center justify-between animate-in slide-in-from-top-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
-            <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
-          </div>
-          <button onClick={loadSubmissions} className="text-red-600 font-black text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-red-100 rounded-xl transition-colors">Wiederholen</button>
-        </div>
-      )}
+      <div className="space-y-8">
 
-      {/* Submissions Display */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="card h-64 bg-slate-50 border-none animate-pulse" />
-          ))}
-        </div>
-      ) : submissions.length === 0 ? (
-        <div className="p-16 md:p-32 bg-white rounded-[3rem] border border-slate-100 flex flex-col items-center text-center shadow-2xl shadow-slate-200/50">
-          <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200 mb-10 transform rotate-3">
-            <ClipboardList className="w-14 h-14" />
-          </div>
-          <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight uppercase">Keine Ergebnisse</h3>
-          <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8 text-lg">
-            Passen Sie Ihre Filter an oder schließen Sie einen Einsatz ab, um ihn hier zu sehen.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {submissions.map((sub) => (
-            <div
-              key={sub.id}
-              onClick={() => navigate(`/submissions/${sub.id}`)}
-              className="group relative bg-white rounded-[2rem] p-5 shadow-sm border border-slate-100/50 hover:shadow-xl hover:shadow-indigo-100/40 transition-all duration-300 active:scale-[0.98] cursor-pointer"
-            >
-              {/* Top Section: Icon, Info, Bookmark */}
-              <div className="flex items-start gap-4 mb-4">
-                {/* Icon Box */}
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${getStatusDisplay(sub).iconBg}`}>
-                  {React.createElement(getStatusDisplay(sub).icon, { className: 'w-6 h-6' })}
-                </div>
-
-                {/* Title & Subtitle */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                    {sub.customer_name || 'Anonymer Einsatz'}
-                  </h3>
-                  <p className="text-xs font-medium text-slate-400 truncate mt-0.5">
-                    {sub.customer_email || 'Keine E-Mail angegeben'}
-                  </p>
-                </div>
-
-                {/* Action / Bookmark */}
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                  {sub.pdf_url ? <Download className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                </div>
-              </div>
-
-              {/* Tags Row */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider ${getStatusDisplay(sub).color}`}>
-                  {getStatusDisplay(sub).label}
-                </span>
-                <span className="px-3 py-1.5 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-wider">
-                  {sub.form_templates?.name || 'Formular'}
-                </span>
-                {sub.is_offline && (
-                  <span className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-bold uppercase tracking-wider">
-                    Offline
-                  </span>
-                )}
-              </div>
-
-              {/* Bottom Info: Date & Price/Status placeholder */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{format(new Date(sub.created_at), 'd. MMM yyyy', { locale: de })}</span>
-                </div>
-                <div className="text-sm font-black text-slate-900">
-                  {format(new Date(sub.created_at), 'HH:mm')} Uhr
-                </div>
-              </div>
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 dark:bg-error-dark/10 border-l-4 border-red-500 rounded-xl p-4 shadow-sm flex items-center justify-between animate-in slide-in-from-top-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 dark:bg-error-dark/20 text-red-600 dark:text-error-light rounded-full flex items-center justify-center font-medium">!</div>
+              <p className="text-red-800 dark:text-error-light font-medium text-sm">{error}</p>
             </div>
-          ))}
-        </div>
-      )}
+            <button onClick={loadSubmissions} className="text-red-600 dark:text-error-light font-medium text-xs px-3 py-1.5 hover:bg-red-100 dark:hover:bg-error-dark/20 rounded-lg transition-colors">Wiederholen</button>
+          </div>
+        )}
+
+        {/* Submissions Display */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-64 bg-slate-50 dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke animate-pulse" />
+            ))}
+          </div>
+        ) : submissions.length === 0 ? (
+          <div className="p-12 md:p-20 bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke flex flex-col items-center text-center shadow-sm">
+            <div className="w-20 h-20 bg-slate-50 dark:bg-dark-highlight rounded-2xl flex items-center justify-center text-slate-300 dark:text-dark-text-muted mb-6">
+              <ClipboardList className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-2">Keine Ergebnisse</h3>
+            <p className="text-slate-500 dark:text-dark-text-muted font-normal max-w-sm mx-auto text-sm">
+              Passen Sie Ihre Filter an oder schließen Sie einen Einsatz ab, um ihn hier zu sehen.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {submissions.map((sub) => (
+              <div
+                key={sub.id}
+                onClick={() => navigate(`/submissions/${sub.id}`)}
+                className="group relative bg-white dark:bg-dark-card rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-dark-stroke hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+              >
+                {/* Top Section: Icon, Info, Bookmark */}
+                <div className="flex items-start gap-4 mb-4">
+                  {/* Icon Box */}
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getStatusDisplay(sub).iconBg}`}>
+                    {React.createElement(getStatusDisplay(sub).icon, { className: 'w-6 h-6' })}
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <h3 className="text-base font-medium text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                      {sub.customer_name || 'Anonymer Einsatz'}
+                    </h3>
+                    <p className="text-xs font-normal text-slate-500 dark:text-dark-text-muted truncate mt-1">
+                      {sub.customer_email || 'Keine E-Mail angegeben'}
+                    </p>
+                  </div>
+
+                  {/* Action / Bookmark */}
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 dark:bg-dark-highlight text-slate-400 dark:text-dark-text-muted flex items-center justify-center shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {sub.pdf_url ? <Download className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                  </div>
+                </div>
+
+                {/* Tags Row */}
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-medium uppercase tracking-wide ${getStatusDisplay(sub).color}`}>
+                    {getStatusDisplay(sub).label}
+                  </span>
+                  <span className="px-2.5 py-1 bg-slate-50 dark:bg-dark-highlight text-slate-600 dark:text-dark-text-muted rounded-lg text-[10px] font-medium uppercase tracking-wide">
+                    {sub.form_templates?.name || 'Formular'}
+                  </span>
+                  {sub.is_offline && (
+                    <span className="px-2.5 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg text-[10px] font-medium uppercase tracking-wide">
+                      Offline
+                    </span>
+                  )}
+                </div>
+
+                {/* Bottom Info: Date & Time */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-dark-stroke">
+                  <div className="flex items-center gap-2 text-xs font-normal text-slate-500 dark:text-dark-text-muted">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{format(new Date(sub.created_at), 'd. MMM yyyy', { locale: de })}</span>
+                  </div>
+                  <div className="text-xs font-medium text-slate-700 dark:text-dark-text-body">
+                    {format(new Date(sub.created_at), 'HH:mm')} Uhr
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

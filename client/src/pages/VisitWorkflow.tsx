@@ -585,44 +585,64 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
     }, [submissionResult]);
 
     const handleViewPDF = async () => {
-        if (localPdfUrl) {
-            // Open local PDF
-            window.open(localPdfUrl, '_blank');
-            return;
-        }
-
-        // Check if we have a remote PDF URL
-        const remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
-        
-        if (remoteUrl && !remoteUrl.startsWith('pdf_')) {
-            // Open remote PDF
-            window.open(remoteUrl, '_blank');
-            
-            // Try to download and store it locally in background
-            if (submissionResult.id) {
-                setLoadingPdf(true);
-                try {
-                    const fileId = await apiService.downloadAndStorePDF(submissionResult.id, remoteUrl);
-                    // Reload local PDF URL
-                    const url = await secureStorage.getFileUrl(fileId);
-                    if (url) setLocalPdfUrl(url);
-                } catch (error) {
-                    console.warn('Failed to store PDF locally:', error);
-                } finally {
-                    setLoadingPdf(false);
-                }
+        try {
+            // First, try local PDF if available
+            if (localPdfUrl) {
+                window.open(localPdfUrl, '_blank', 'noopener,noreferrer');
+                return;
             }
-        } else if (submissionResult.pdf_url && submissionResult.pdf_url.startsWith('pdf_')) {
-            // It's a local file ID, try to get the URL
-            try {
+
+            // Check if it's a local file ID
+            if (submissionResult.pdf_url && submissionResult.pdf_url.startsWith('pdf_')) {
                 const url = await secureStorage.getFileUrl(submissionResult.pdf_url);
                 if (url) {
                     setLocalPdfUrl(url);
-                    window.open(url, '_blank');
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                    return;
                 }
-            } catch (error) {
-                console.error('Failed to load local PDF:', error);
             }
+
+            // Get remote URL (either from remote_pdf_url or pdf_url)
+            const remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
+            
+            if (remoteUrl && typeof remoteUrl === 'string' && remoteUrl.startsWith('http')) {
+                // Open remote PDF immediately
+                const newWindow = window.open(remoteUrl, '_blank', 'noopener,noreferrer');
+                
+                // If popup was blocked, try direct navigation
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    // Fallback: create a temporary link and click it
+                    const link = document.createElement('a');
+                    link.href = remoteUrl;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+                
+                // Try to download and store it locally in background
+                if (submissionResult.id) {
+                    setLoadingPdf(true);
+                    apiService.downloadAndStorePDF(submissionResult.id, remoteUrl)
+                        .then(async (fileId) => {
+                            const url = await secureStorage.getFileUrl(fileId);
+                            if (url) setLocalPdfUrl(url);
+                        })
+                        .catch((error) => {
+                            console.warn('Failed to store PDF locally:', error);
+                        })
+                        .finally(() => {
+                            setLoadingPdf(false);
+                        });
+                }
+            } else {
+                console.error('No valid PDF URL found:', submissionResult);
+                alert('PDF konnte nicht geöffnet werden. Bitte versuchen Sie es später erneut.');
+            }
+        } catch (error) {
+            console.error('Error opening PDF:', error);
+            alert('Fehler beim Öffnen des PDFs. Bitte versuchen Sie es erneut.');
         }
     };
 
