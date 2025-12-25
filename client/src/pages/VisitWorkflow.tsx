@@ -325,10 +325,10 @@ export default function VisitWorkflow() {
 
     const renderStepIndicator = () => {
         const steps: { key: WorkflowStep; label: string; icon: any }[] = [
-            { key: 'customer', label: 'Customer', icon: User },
-            { key: 'template', label: 'Template', icon: FileText },
+            { key: 'customer', label: 'Kunde', icon: User },
+            { key: 'template', label: 'Vorlage', icon: FileText },
             { key: 'form', label: 'Details', icon: ClipboardList },
-            { key: 'finish', label: 'Finish', icon: CheckCircle2 },
+            { key: 'finish', label: 'Fertig', icon: CheckCircle2 },
         ];
 
         return (
@@ -376,8 +376,12 @@ export default function VisitWorkflow() {
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">New Visit</h1>
-                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">{currentStep}</p>
+                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Neuer Einsatz</h1>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+                        {currentStep === 'customer' ? 'Kunde' :
+                            currentStep === 'template' ? 'Vorlage' :
+                                currentStep === 'form' ? 'Dateneingabe' : 'Abschluss'}
+                    </p>
                 </div>
             </div>
 
@@ -388,8 +392,8 @@ export default function VisitWorkflow() {
                 {currentStep === 'customer' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="text-center space-y-3 mb-4">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Who's the customer?</h2>
-                            <p className="text-slate-500 font-medium">Capture their details for the record.</p>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Wer ist der Kunde?</h2>
+                            <p className="text-slate-500 font-medium">Erfassen Sie die Kundendaten für den Bericht.</p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
@@ -397,32 +401,32 @@ export default function VisitWorkflow() {
 
                             <div className="relative py-4">
                                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">OR MANUAL FALLBACK</span></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">ODER MANUELL</span></div>
                             </div>
 
                             <form onSubmit={handleManualCustomerSubmit} className="card bg-white p-8 space-y-6 border-slate-100 shadow-2xl shadow-indigo-500/5">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Customer / Project Name</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kunde / Projektname</label>
                                     <input
                                         type="text"
                                         className="input"
-                                        placeholder="e.g. Acme Corp Facility 4"
+                                        placeholder="z.B. Mustermann GmbH Anlage 4"
                                         value={manualCustomer.name}
                                         onChange={e => setManualCustomer({ ...manualCustomer, name: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Site Address</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Standort / Adresse</label>
                                     <input
                                         type="text"
                                         className="input"
-                                        placeholder="Physical location"
+                                        placeholder="Musterstraße 123, Berlin"
                                         value={manualCustomer.address}
                                         onChange={e => setManualCustomer({ ...manualCustomer, address: e.target.value })}
                                     />
                                 </div>
                                 <button type="submit" className="group flex items-center justify-center gap-3 bg-indigo-900 text-white w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100">
-                                    Continue Manually <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    Manuell fortfahren <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </form>
                         </div>
@@ -432,8 +436,8 @@ export default function VisitWorkflow() {
                 {currentStep === 'template' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="text-center space-y-3">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Select Template</h2>
-                            <p className="text-slate-500 font-medium">Which form protocol matches this visit?</p>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Vorlage wählen</h2>
+                            <p className="text-slate-500 font-medium">Welches Formular soll verwendet werden?</p>
                         </div>
 
                         {isLoadingTemplates ? (
@@ -464,7 +468,7 @@ export default function VisitWorkflow() {
                                 ))}
                                 {templates.length === 0 && (
                                     <div className="text-center py-12 bg-slate-50 rounded-[2.5rem]">
-                                        <p className="text-slate-400 font-bold">No templates found.</p>
+                                        <p className="text-slate-400 font-bold">Keine Vorlagen gefunden.</p>
                                     </div>
                                 )}
                             </div>
@@ -528,8 +532,8 @@ export default function VisitWorkflow() {
                         </div>
 
                         <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Mission Accomplished!</h2>
-                            <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">Visit documentation generated and saved successfully.</p>
+                            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
+                            <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">Besuchsdokumentation erfolgreich erstellt und gespeichert.</p>
                         </div>
 
                         <div className="max-w-xs mx-auto space-y-4 pt-6">
@@ -539,14 +543,14 @@ export default function VisitWorkflow() {
                                     className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl"
                                 >
                                     <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                    View PDF Report
+                                    PDF-Bericht ansehen
                                 </button>
                             )}
                             <button
                                 onClick={() => navigate('/dashboard')}
                                 className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
                             >
-                                Return to Dashboard
+                                Zurück zur Übersicht
                             </button>
                         </div>
                     </div>
@@ -654,7 +658,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
                 onTouchEnd={stopDrawing}
             />
             <div className="absolute bottom-4 left-0 right-0 pointer-events-none flex justify-center">
-                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Authorized Signature</span>
+                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Unterschrift</span>
             </div>
         </div>
     );

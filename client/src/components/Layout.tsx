@@ -53,9 +53,7 @@ export default function Layout() {
               {profile?.company_logo_url ? (
                 <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
               ) : (
-                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white">
-                  <FileText className="w-5 h-5" />
-                </div>
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
               )}
             </div>
             {sidebarOpen && (

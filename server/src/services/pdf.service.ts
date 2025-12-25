@@ -1,6 +1,8 @@
 import PDFDocument from 'pdfkit';
 import { supabase } from './supabase.service.js';
 import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
 
 interface SubmissionData {
   id: string;
@@ -102,6 +104,24 @@ export class PDFService {
       if (logoBuffer) {
         // Logo on the left
         doc.image(logoBuffer, margin, y, { height: 60 });
+      }
+    } else {
+      try {
+        // Attempt to load default logo from server assets
+        // Try multiple paths to be robust (dev vs prod)
+        let logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.jpg');
+
+        try {
+          await fs.access(logoPath);
+        } catch {
+          // Fallback for production/dist structure if needed
+          logoPath = path.join(process.cwd(), 'assets', 'logo.jpg');
+        }
+
+        const logoBuffer = await fs.readFile(logoPath);
+        doc.image(logoBuffer, margin, y, { height: 60 });
+      } catch (error) {
+        console.warn('Could not load default logo:', error);
       }
     }
 
