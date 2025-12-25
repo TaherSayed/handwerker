@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Plus, GripVertical, Trash2, Save, X, Edit } from 'lucide-react';
+import { Plus, GripVertical, Trash2, Save, X, Edit, Grid3x3, FileText, Sparkles } from 'lucide-react';
 
 const FIELD_TYPES = [
-  { value: 'section', label: 'Abschnittsüberschrift' },
-  { value: 'text', label: 'Text' },
-  { value: 'number', label: 'Zahl' },
-  { value: 'checkbox', label: 'Checkbox' },
-  { value: 'toggle', label: 'Ja/Nein Schalter' },
-  { value: 'dropdown', label: 'Auswahlliste' },
-  { value: 'date', label: 'Datum' },
-  { value: 'datetime', label: 'Datum & Zeit' },
-  { value: 'notes', label: 'Notizen' },
-  { value: 'signature', label: 'Unterschrift' },
-  { value: 'photo', label: 'Foto' },
+  { value: 'section', label: 'Abschnittsüberschrift', icon: FileText, color: 'from-indigo-500 to-purple-600' },
+  { value: 'text', label: 'Text', icon: FileText, color: 'from-blue-500 to-cyan-500' },
+  { value: 'number', label: 'Zahl', icon: FileText, color: 'from-green-500 to-emerald-500' },
+  { value: 'checkbox', label: 'Checkbox', icon: FileText, color: 'from-amber-500 to-orange-500' },
+  { value: 'toggle', label: 'Ja/Nein Schalter', icon: FileText, color: 'from-pink-500 to-rose-500' },
+  { value: 'dropdown', label: 'Auswahlliste', icon: FileText, color: 'from-violet-500 to-purple-500' },
+  { value: 'date', label: 'Datum', icon: FileText, color: 'from-teal-500 to-cyan-500' },
+  { value: 'datetime', label: 'Datum & Zeit', icon: FileText, color: 'from-sky-500 to-blue-500' },
+  { value: 'notes', label: 'Notizen', icon: FileText, color: 'from-slate-500 to-gray-500' },
+  { value: 'signature', label: 'Unterschrift', icon: FileText, color: 'from-red-500 to-pink-500' },
+  { value: 'photo', icon: FileText, label: 'Foto', color: 'from-indigo-500 to-blue-500' },
 ];
 
 export default function FormBuilder() {
@@ -57,7 +57,6 @@ export default function FormBuilder() {
     } finally {
       setLoading(false);
     }
-
   };
 
   const handleSave = async () => {
@@ -80,7 +79,6 @@ export default function FormBuilder() {
     } catch (error: any) {
       console.error('Save template error:', error);
       setError(error?.message || 'Fehler beim Speichern der Vorlage');
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
@@ -121,258 +119,304 @@ export default function FormBuilder() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-slate-500 font-medium">Lade Vorlage...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-slide-up p-3 md:p-8 max-w-7xl mx-auto pb-32 has-sticky-bar">
-      {/* Messages */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      {/* Top Header Bar */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/templates')}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+                title="Zurück"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">
+                  {id ? 'Bearbeiten' : 'Erstellen'}
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">Vorlage {id ? 'bearbeiten' : 'erstellen'}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="hidden md:flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95 disabled:opacity-70"
+            >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Speichert...' : 'Speichern'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-3xl p-5 shadow-xl shadow-red-500/5 animate-in slide-in-from-top-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black text-sm">!</div>
-            <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-6">
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-sm">
+            <p className="text-red-800 font-medium text-sm">{error}</p>
           </div>
         </div>
       )}
 
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-        <div>
-          <button
-            onClick={() => navigate('/templates')}
-            className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-3 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Änderungen verwerfen
-          </button>
-          <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-1 uppercase tracking-tighter leading-none">
-            {id ? 'Bearbeiten' : 'Erstellen'}
-          </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
-            Standardisieren Sie Ihre Arbeitsabläufe
-          </p>
-        </div>
-
-        {/* Helper for desktop, but main action is now sticky for mobile */}
-        <div className="hidden lg:block">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="group flex items-center justify-center gap-4 bg-indigo-900 text-white px-12 py-4 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 active:scale-95"
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            )}
-            {saving ? 'Speichert...' : 'Speichern'}
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
-        <div className="lg:col-span-4 space-y-6">
-          {/* Template Info Card */}
-          <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                <Edit className="w-4 h-4" />
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Template Info Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Edit className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Basisdaten</h2>
               </div>
-              <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">Basisdaten</h2>
-            </div>
 
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vorlagen Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input px-4 py-3 text-base font-bold placeholder:text-slate-200"
-                  placeholder="z.B. Installations Protokoll"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategorie / Gruppe</label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="input px-4 py-3 font-bold placeholder:text-slate-200"
-                  placeholder="z.B. Sicherheit & Wartung"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Beschreibung</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="input px-4 py-3 font-bold placeholder:text-slate-200 min-h-[80px]"
-                  placeholder="Wofür wird dieses Formular verwendet?"
-                />
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Vorlagen Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                    placeholder="z.B. Installations Protokoll"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Kategorie / Gruppe
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                    placeholder="z.B. Sicherheit & Wartung"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Beschreibung
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400 resize-none min-h-[100px]"
+                    placeholder="Wofür wird dieses Formular verwendet?"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Add Fields Palette */}
-          <div className="bg-slate-900 rounded-[2rem] p-6 shadow-2xl shadow-slate-900/10 lg:sticky lg:top-8 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[4rem]" />
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-              <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
-                <Plus className="w-4 h-4" />
+            {/* Add Fields Palette */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-2xl lg:sticky lg:top-24 border border-slate-700/50">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-lg font-black text-white uppercase tracking-tight">Elemente</h2>
               </div>
-              <h2 className="text-base font-black text-white uppercase tracking-tight leading-none">Elemente</h2>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 relative z-10">
-              {FIELD_TYPES.map((type) => (
+              <div className="space-y-3">
+                {/* Section Header - Special Styling */}
                 <button
-                  key={type.value}
-                  onClick={() => addField(type.value)}
-                  className={`group flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 active:scale-95
-                    ${type.value === 'section'
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500 col-span-2 py-4 border-b-4 border-indigo-800'
-                      : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20'}`}
+                  onClick={() => addField('section')}
+                  className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl transition-all active:scale-[0.98] border-2 border-indigo-500/50"
                 >
-                  <Plus className={`w-3.5 h-3.5 mb-1.5 transition-transform duration-300 group-hover:rotate-90 ${type.value === 'section' ? 'w-4 h-4' : ''}`} />
-                  <span className={`font-black text-[9px] uppercase tracking-widest ${type.value === 'section' ? 'text-[10px]' : ''}`}>
-                    {type.label}
-                  </span>
+                  <div className="flex items-center justify-center gap-2">
+                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                    <span>Abschnittsüberschrift</span>
+                  </div>
                 </button>
-              ))}
+
+                {/* Other Field Types */}
+                <div className="grid grid-cols-2 gap-2">
+                  {FIELD_TYPES.filter(t => t.value !== 'section').map((type) => {
+                    const Icon = type.icon;
+                    return (
+                      <button
+                        key={type.value}
+                        onClick={() => addField(type.value)}
+                        className="group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white p-3 rounded-xl transition-all active:scale-95 backdrop-blur-sm"
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="font-bold text-[10px] uppercase tracking-wide text-center leading-tight">
+                            {type.label}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center gap-3 px-2 mb-2">
-            <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-              <GripVertical className="w-4 h-4" />
-            </div>
-            <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">Struktur</h2>
-          </div>
+          {/* Main Content Area */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-slate-100 min-h-[600px]">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Grid3x3 className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Struktur</h2>
+              </div>
 
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="fields">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                  {formData.fields.length === 0 ? (
-                    <div className="bg-white rounded-[2.5rem] border-4 border-dashed border-slate-100 py-24 text-center text-slate-300 shadow-inner">
-                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Plus className="w-8 h-8 opacity-20" />
-                      </div>
-                      <p className="font-black uppercase tracking-[0.2em] text-xs">Fügen Sie Ihr erstes Element hinzu</p>
-                    </div>
-                  ) : (
-                    formData.fields.map((field, index) => (
-                      <Draggable key={field.id} draggableId={field.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={`group bg-white rounded-[1.5rem] border border-slate-100 transition-all duration-300 shadow-xl shadow-slate-200/20 ${snapshot.isDragging ? 'rotate-1 scale-[1.02] shadow-2xl ring-4 ring-indigo-500/20 z-50' : ''
-                              } ${field.type === 'section' ? 'border-l-8 border-l-slate-900 bg-slate-50/50' : 'hover:border-indigo-100 hover:shadow-indigo-500/5'}`}
-                          >
-                            <div className="flex p-4 md:p-6 gap-3">
-                              <div {...provided.dragHandleProps} className="flex items-center text-slate-200 cursor-grab active:cursor-grabbing hover:text-slate-400 transition-colors pt-1">
-                                <GripVertical className="w-5 h-5" />
-                              </div>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="fields">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                      {formData.fields.length === 0 ? (
+                        <div className="border-3 border-dashed border-slate-200 rounded-2xl p-16 text-center bg-gradient-to-br from-slate-50 to-white">
+                          <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                            <Plus className="w-10 h-10 text-indigo-600" />
+                          </div>
+                          <p className="text-slate-400 font-bold text-sm uppercase tracking-wide mb-2">
+                            Noch keine Elemente
+                          </p>
+                          <p className="text-slate-300 text-xs">
+                            Fügen Sie Ihr erstes Element hinzu
+                          </p>
+                        </div>
+                      ) : (
+                        formData.fields.map((field, index) => {
+                          const fieldType = FIELD_TYPES.find(t => t.value === field.type);
+                          return (
+                            <Draggable key={field.id} draggableId={field.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`group bg-white rounded-xl border-2 transition-all duration-200 ${
+                                    snapshot.isDragging
+                                      ? 'border-indigo-500 shadow-2xl scale-[1.02] rotate-1 z-50'
+                                      : field.type === 'section'
+                                      ? 'border-slate-900 bg-gradient-to-r from-slate-50 to-slate-100'
+                                      : 'border-slate-200 hover:border-indigo-300 hover:shadow-lg'
+                                  }`}
+                                >
+                                  <div className="p-5">
+                                    <div className="flex items-start gap-4">
+                                      <div
+                                        {...provided.dragHandleProps}
+                                        className="flex items-center text-slate-300 cursor-grab active:cursor-grabbing hover:text-indigo-500 transition-colors pt-1"
+                                      >
+                                        <GripVertical className="w-5 h-5" />
+                                      </div>
 
-                              <div className="flex-1 space-y-4">
-                                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                  <input
-                                    type="text"
-                                    value={field.label}
-                                    onChange={(e) => updateField(index, { label: e.target.value })}
-                                    className={`flex-1 bg-transparent border-none focus:ring-0 p-0 transition-colors
-                                      ${field.type === 'section'
-                                        ? 'text-lg font-bold text-slate-900 uppercase tracking-tight'
-                                        : 'text-base font-semibold text-slate-800 placeholder:font-normal'}`}
-                                    placeholder={field.type === 'section' ? 'Neuer Abschnitt' : 'Feld Bezeichnung'}
-                                  />
-
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.1em] shadow-sm
-                                      ${field.type === 'section' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                                      {field.type}
-                                    </span>
-                                    {field.type !== 'section' && (
-                                      <label className="flex items-center gap-2 cursor-pointer select-none group/req">
-                                        <div className="relative flex items-center">
+                                      <div className="flex-1 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                           <input
-                                            type="checkbox"
-                                            checked={field.required}
-                                            onChange={(e) => updateField(index, { required: e.target.checked })}
-                                            className="sr-only"
+                                            type="text"
+                                            value={field.label}
+                                            onChange={(e) => updateField(index, { label: e.target.value })}
+                                            className={`flex-1 bg-transparent border-none focus:ring-0 p-0 font-bold transition-colors outline-none ${
+                                              field.type === 'section'
+                                                ? 'text-xl text-slate-900 uppercase tracking-tight'
+                                                : 'text-base text-slate-800'
+                                            }`}
+                                            placeholder={field.type === 'section' ? 'Neuer Abschnitt' : 'Feld Bezeichnung'}
                                           />
-                                          <div className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider transition-colors
-                                            ${field.required
-                                              ? 'bg-red-50 text-red-600 border border-red-100'
-                                              : 'bg-transparent text-slate-300 border border-transparent hover:bg-slate-50'}`}>
-                                            {field.required ? 'Pflicht' : 'Optional'}
+
+                                          <div className="flex items-center gap-2">
+                                            {fieldType && (
+                                              <div className={`px-3 py-1.5 rounded-lg bg-gradient-to-r ${fieldType.color} text-white text-xs font-bold uppercase tracking-wide shadow-md`}>
+                                                {field.type}
+                                              </div>
+                                            )}
+                                            {field.type !== 'section' && (
+                                              <button
+                                                onClick={() => updateField(index, { required: !field.required })}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                                                  field.required
+                                                    ? 'bg-red-50 text-red-600 border-2 border-red-200'
+                                                    : 'bg-slate-100 text-slate-500 border-2 border-transparent hover:bg-slate-200'
+                                                }`}
+                                              >
+                                                {field.required ? 'Pflicht' : 'Optional'}
+                                              </button>
+                                            )}
+                                            <button
+                                              onClick={() => removeField(index)}
+                                              className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                              title="Löschen"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </button>
                                           </div>
                                         </div>
-                                      </label>
-                                    )}
-                                    <button
-                                      onClick={() => removeField(index)}
-                                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                      title="Löschen"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
+
+                                        {field.type === 'dropdown' && (
+                                          <div className="pl-4 border-l-3 border-indigo-200 bg-indigo-50/50 rounded-lg p-3">
+                                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                                              Optionen
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={field.options?.join(', ') || ''}
+                                              onChange={(e) => updateField(index, {
+                                                options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
+                                              })}
+                                              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                                              placeholder="Kommagetrennt: Option A, Option B..."
+                                            />
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-
-                                {field.type === 'dropdown' && (
-                                  <div className="pl-4 border-l-2 border-indigo-100 py-1 animate-in slide-in-from-left-4">
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-2">Optionen</label>
-                                    <input
-                                      type="text"
-                                      value={field.options?.join(', ') || ''}
-                                      onChange={(e) => updateField(index, {
-                                        options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
-                                      })}
-                                      className="input px-4 py-3 font-normal text-sm bg-slate-50 border-none placeholder:text-slate-300 placeholder:font-light"
-                                      placeholder="Kommagetrennt: Option A, Option B..."
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))
+                              )}
+                            </Draggable>
+                          );
+                        })
+                      )}
+                      {provided.placeholder}
+                    </div>
                   )}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+                </Droppable>
+              </DragDropContext>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Sticky Action Bar */}
-      <div className="sticky-action-bar flex justify-center pb-safe">
+      {/* Mobile Sticky Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-slate-200 p-4 shadow-2xl">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="template-save-btn w-full max-w-[420px] mx-auto flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+          className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg shadow-indigo-500/30 active:scale-[0.98] disabled:opacity-70"
         >
           {saving ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
-            <Save className="w-4 h-4" />
+            <Save className="w-5 h-5" />
           )}
           {saving ? 'Speichert...' : 'Vorlage speichern'}
         </button>
       </div>
-
     </div>
   );
 }
