@@ -120,7 +120,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
     res.status(201).json(data);
   } catch (error) {
     console.error('Create submission error:', error);
-    res.status(500).json({ error: 'Failed to create submission' });
+    res.status(500).json({ error: `Failed to create submission: ${error instanceof Error ? error.message : 'Unknown error'}` });
   }
 });
 
