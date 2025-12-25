@@ -83,29 +83,13 @@ export default function GoogleSignInScreen() {
         <div className="flex flex-col items-center text-center space-y-8">
 
           {/* Logo Container */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-cyan-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full" />
+          <div className="relative group p-4 bg-white rounded-3xl shadow-lg ring-4 ring-white/10">
+            <div className="absolute inset-0 bg-cyan-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-3xl" />
             <img
-              src="/logo-new.png"
-              alt="Logo"
-              className="relative w-32 h-32 object-contain drop-shadow-xl transform transition-transform duration-500 group-hover:scale-110"
-              onError={(e) => {
-                // Fallback if png fails, try jpg or placeholder
-                const target = e.target as HTMLImageElement;
-                if (target.src.includes('png')) {
-                  target.src = '/logo-new.jpg';
-                }
-              }}
+              src="/logo-onsite.jpg"
+              alt="OnSite Handwerker App"
+              className="relative w-48 h-auto object-contain transform transition-transform duration-500 group-hover:scale-105"
             />
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black text-white tracking-wide">
-              OnSite Forms
-            </h1>
-            <p className="text-cyan-200 font-bold text-xs uppercase tracking-[0.3em]">
-              Professional Handwerker App
-            </p>
           </div>
 
           {/* Login Button */}
