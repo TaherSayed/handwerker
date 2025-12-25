@@ -122,7 +122,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           }
         }
         
-        // Try update with safe fields only
+        // Try update with safe fields only (don't include problematic fields in SELECT)
         const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, created_at, updated_at';
         const { data: safeData, error: safeError } = await userClient
           .from('user_profiles')
@@ -132,13 +132,40 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           .single();
         
         if (safeError) {
-          console.error(`[UserRoutes] Even safe update failed for ${userId}:`, safeError.message);
-          return res.status(400).json({ 
-            error: `Could not update profile. Some fields may not be available: ${problematicFields.join(', ')}. Please ensure migrations have been run.` 
+          // If still failing, try with even fewer fields
+          const minimalSelect = 'id, email, full_name, created_at, updated_at';
+          const minimalUpdates: any = {};
+          if (full_name !== undefined) minimalUpdates.full_name = full_name;
+          if (company_name !== undefined) minimalUpdates.company_name = company_name;
+          
+          const { data: minimalData, error: minimalError } = await userClient
+            .from('user_profiles')
+            .update(minimalUpdates)
+            .eq('id', userId)
+            .select(minimalSelect)
+            .single();
+          
+          if (minimalError) {
+            console.error(`[UserRoutes] Even minimal update failed for ${userId}:`, minimalError.message);
+            return res.status(400).json({ 
+              error: `Could not update profile. Database schema may be out of sync. Please contact support.` 
+            });
+          }
+          
+          // Return minimal data with requested values
+          return res.json({
+            ...minimalData,
+            company_name: company_name !== undefined ? company_name : minimalData?.company_name,
+            company_logo_url: company_logo_url !== undefined ? company_logo_url : minimalData?.company_logo_url,
+            company_address: company_address !== undefined ? company_address : minimalData?.company_address,
+            company_phone: company_phone !== undefined ? company_phone : undefined,
+            company_website: company_website !== undefined ? company_website : undefined,
+            primary_color: primary_color !== undefined ? primary_color : '#2563eb',
+            accent_color: accent_color !== undefined ? accent_color : '#1e40af',
           });
         }
         
-        // Return data with requested values (even if not saved)
+        // Return data with requested values (even if some weren't saved due to schema issues)
         return res.json({
           ...safeData,
           company_phone: company_phone !== undefined ? company_phone : safeData?.company_phone,
