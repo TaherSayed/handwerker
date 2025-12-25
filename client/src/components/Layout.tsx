@@ -49,13 +49,23 @@ export default function Layout() {
         {/* Sidebar Logo */}
         <div className="h-16 flex items-center px-5 mb-2 border-b border-slate-50">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 bg-blue-600 rounded flex items-center justify-center shrink-0 shadow-sm border border-blue-700/50">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden bg-white">
+              {profile?.company_logo_url ? (
+                <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white">
+                  <FileText className="w-5 h-5" />
+                </div>
+              )}
             </div>
             {sidebarOpen && (
-              <div className="flex flex-col leading-none">
-                <span className="font-bold text-slate-900 tracking-tight text-base">OnSite</span>
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Professional</span>
+              <div className="flex flex-col leading-none min-w-0">
+                <span className="font-bold text-slate-900 tracking-tight text-base truncate">
+                  {profile?.company_name || 'OnSite'}
+                </span>
+                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider truncate">
+                  {profile?.company_name ? 'Business' : 'Professional'}
+                </span>
               </div>
             )}
           </div>

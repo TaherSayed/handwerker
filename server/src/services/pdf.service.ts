@@ -24,6 +24,11 @@ interface SubmissionData {
   user: {
     company_name?: string;
     company_logo_url?: string;
+    company_address?: string;
+    company_phone?: string;
+    company_website?: string;
+    primary_color?: string;
+    accent_color?: string;
   };
 }
 
@@ -86,43 +91,73 @@ export class PDFService {
   private async buildPDFContent(doc: any, data: SubmissionData) {
     const pageWidth = doc.page.width;
     const margin = 50;
+    const primaryColor = data.user.primary_color || '#111827'; // Default slate-900
+    const accentColor = data.user.accent_color || '#3b82f6';  // Default blue-500
+
     let y = 50;
 
-    // Header
+    // --- Header Section ---
     if (data.user.company_logo_url) {
       const logoBuffer = await this.fetchImageBuffer(data.user.company_logo_url);
       if (logoBuffer) {
-        doc.image(logoBuffer, margin, y, { height: 50 });
-        y += 60;
+        // Logo on the left
+        doc.image(logoBuffer, margin, y, { height: 60 });
       }
     }
 
-    doc.fontSize(20).font('Helvetica-Bold').text(data.user.company_name || 'OnSite Forms', margin, y);
-    y += 25;
-    doc.fontSize(12).font('Helvetica').text(data.template.name, margin, y);
-    y += 40;
+    // Company Info (Right Aligned)
+    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor).text(data.user.company_name || 'OnSite Forms', margin, y, { align: 'right' });
+    y += 15;
 
-    // Customer Info
-    doc.fontSize(14).font('Helvetica-Bold').text('Customer Details', margin, y);
+    doc.fontSize(8).font('Helvetica').fillColor('#6b7280'); // Slate-500
+
+    if (data.user.company_address) {
+      doc.text(data.user.company_address, margin, y, { align: 'right' });
+      y += 12;
+    }
+    if (data.user.company_phone) {
+      doc.text(data.user.company_phone, margin, y, { align: 'right' });
+      y += 12;
+    }
+    if (data.user.company_website) {
+      doc.text(data.user.company_website, margin, y, { align: 'right' });
+      y += 12;
+    }
+
+    // Reset Y to below logo for main content (max of logo height or text height)
+    y = Math.max(y, 130);
+
+    // Document Title
+    doc.moveTo(margin, y).lineTo(pageWidth - margin, y).strokeColor(accentColor).lineWidth(2).stroke();
     y += 20;
-    doc.fontSize(10).font('Helvetica');
-    const custInfo = [
-      data.customer_name && `Name: ${data.customer_name}`,
-      data.customer_email && `Email: ${data.customer_email}`,
-      data.customer_phone && `Phone: ${data.customer_phone}`,
-      data.customer_address && `Address: ${data.customer_address}`
-    ].filter(Boolean);
 
-    custInfo.forEach(info => {
-      doc.text(info, margin + 10, y);
-      y += 15;
-    });
-
-    y += 20;
-    doc.moveTo(margin, y).lineTo(pageWidth - margin, y).stroke('#e5e7eb');
+    doc.fontSize(24).font('Helvetica-Bold').fillColor(primaryColor).text(data.template.name, margin, y);
     y += 30;
 
-    // Responses
+    // --- Customer Info ---
+    doc.rect(margin, y, pageWidth - (margin * 2), 80).fillColor('#f9fafb').fill(); // Slate-50 background
+
+    let infoY = y + 15;
+    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor).text('KUNDENDATEN', margin + 15, infoY);
+
+    infoY += 20;
+    doc.fontSize(10).font('Helvetica').fillColor('#374151'); // Slate-700
+
+    const leftColX = margin + 15;
+    const rightColX = pageWidth / 2 + 10;
+
+    if (data.customer_name) doc.text(data.customer_name, leftColX, infoY);
+    if (data.customer_email) doc.text(data.customer_email, rightColX, infoY);
+
+    infoY += 15;
+    if (data.customer_address) doc.text(data.customer_address, leftColX, infoY);
+    if (data.customer_phone) doc.text(data.customer_phone, rightColX, infoY);
+
+    y += 90; // Move past the box
+
+    // --- Responses ---
+    doc.fontSize(10);
+
     for (const field of data.template.fields) {
       if (y > doc.page.height - 100) {
         doc.addPage();
@@ -132,65 +167,79 @@ export class PDFService {
       const value = data.field_values[field.id];
 
       if (field.type === 'section') {
-        y += 10;
-        doc.fontSize(12).font('Helvetica-Bold').fillColor('#111827').text(field.label.toUpperCase(), margin, y);
-        y += 20;
-        doc.moveTo(margin, y).lineTo(pageWidth - margin, y).lineWidth(0.5).stroke('#111827');
+        y += 15;
+        doc.fontSize(12).font('Helvetica-Bold').fillColor(primaryColor).text(field.label.toUpperCase(), margin, y);
+        y += 18;
+        doc.moveTo(margin, y).lineTo(pageWidth - margin, y).lineWidth(0.5).strokeColor(primaryColor).stroke();
         y += 15;
         continue;
       }
 
+      // Render Field Label
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#6b7280').text(field.label, margin, y); // Slate-500
+      y += 12;
+
+      // Render Field Value
       if (field.type === 'photo' && value) {
-        doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151').text(field.label, margin, y);
-        y += 15;
         const photoBuffer = await this.fetchImageBuffer(value);
         if (photoBuffer) {
-          // Check if photo fits on page
+          // Check page break
           if (y > doc.page.height - 220) {
             doc.addPage();
             y = 50;
           }
-          doc.image(photoBuffer, margin + 10, y, { fit: [200, 200] });
-          y += 215;
+          doc.image(photoBuffer, margin, y, { fit: [200, 200], align: 'center' }); // Center usage via x,y logic? fit implies box
+          // actually just place it
+          y += 210;
         } else {
-          doc.fontSize(10).font('Helvetica').fillColor('#000000').text('Image not available', margin + 10, y);
-          y += 25;
+          doc.fontSize(10).font('Helvetica').fillColor('#ef4444').text('[Bild konnte nicht geladen werden]', margin, y);
+          y += 20;
         }
-        continue;
+      } else {
+        const formatted = this.formatValue(field.type, value);
+        doc.fontSize(11).font('Helvetica').fillColor('#111827').text(formatted, margin, y, {
+          width: pageWidth - (margin * 2)
+        });
+        y += doc.heightOfString(formatted, { width: pageWidth - (margin * 2) }) + 15;
       }
-
-      const formatted = this.formatValue(field.type, value);
-
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151').text(field.label, margin, y);
-      y += 15;
-      doc.fontSize(10).font('Helvetica').fillColor('#000000').text(formatted, margin + 10, y, {
-        width: pageWidth - (margin * 2) - 10
-      });
-      y += doc.heightOfString(formatted, { width: pageWidth - (margin * 2) - 10 }) + 15;
     }
 
-    // Signature
+    // --- Footer / Signature ---
+    if (y > doc.page.height - 120) {
+      doc.addPage();
+      y = 50;
+    }
+
+    y += 30;
+    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor).text('Unterschrift', margin, y);
+    y += 10;
+
     if (data.signature_url) {
-      if (y > doc.page.height - 150) {
-        doc.addPage();
-        y = 50;
-      }
-      y += 20;
-      doc.fontSize(12).font('Helvetica-Bold').text('Signature', margin, y);
-      y += 10;
       const sigBuffer = await this.fetchImageBuffer(data.signature_url);
       if (sigBuffer) {
-        doc.image(sigBuffer, margin, y, { height: 60 });
-      } else {
-        doc.fontSize(10).font('Helvetica-Oblique').text('Captured electronically', margin, y + 10);
+        doc.image(sigBuffer, margin, y, { height: 50 });
       }
+    } else {
+      doc.fontSize(10).font('Helvetica-Oblique').fillColor('#9ca3af').text('Elektronisch erfasst', margin, y + 10);
+    }
+
+    // Page Numbers & Footer
+    const range = doc.bufferedPageRange();
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).fillColor('#9ca3af').text(
+        `Generiert durch OnSite Forms - ${new Date(data.created_at).toLocaleDateString()}`,
+        margin,
+        doc.page.height - 30,
+        { align: 'center' }
+      );
     }
   }
 
   private formatValue(type: string, value: any): string {
-    if (!value && value !== 0 && value !== false) return 'Not provided';
-    if (type === 'checkbox' || type === 'toggle') return value ? 'Yes' : 'No';
-    if (type === 'date' || type === 'datetime') return new Date(value).toLocaleString();
+    if (value === undefined || value === null || value === '') return '-';
+    if (type === 'checkbox' || type === 'toggle') return value ? 'Ja' : 'Nein';
+    if (type === 'date' || type === 'datetime') return new Date(value).toLocaleString('de-DE');
     return String(value);
   }
 }

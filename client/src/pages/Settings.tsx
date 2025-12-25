@@ -23,6 +23,11 @@ export default function Settings() {
     full_name: '',
     company_name: '',
     company_logo_url: '',
+    company_address: '',
+    company_phone: '',
+    company_website: '',
+    primary_color: '#2563eb',
+    accent_color: '#1e40af',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -37,6 +42,11 @@ export default function Settings() {
         full_name: profile.full_name || '',
         company_name: profile.company_name || '',
         company_logo_url: profile.company_logo_url || '',
+        company_address: profile.company_address || '',
+        company_phone: profile.company_phone || '',
+        company_website: profile.company_website || '',
+        primary_color: profile.primary_color || '#2563eb',
+        accent_color: profile.accent_color || '#1e40af',
       });
       mountRef.current = true;
     }
@@ -50,7 +60,12 @@ export default function Settings() {
       if (
         formData.full_name === (profile.full_name || '') &&
         formData.company_name === (profile.company_name || '') &&
-        formData.company_logo_url === (profile.company_logo_url || '')
+        formData.company_logo_url === (profile.company_logo_url || '') &&
+        formData.company_address === (profile.company_address || '') &&
+        formData.company_phone === (profile.company_phone || '') &&
+        formData.company_website === (profile.company_website || '') &&
+        formData.primary_color === (profile.primary_color || '#2563eb') &&
+        formData.accent_color === (profile.accent_color || '#1e40af')
       ) return;
 
       setIsSaving(true);
@@ -418,6 +433,86 @@ export default function Settings() {
                       onChange={handleLogoUpload}
                       disabled={logoLoading}
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white">Kontaktinformationen</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Adresse</label>
+                  <input
+                    type="text"
+                    value={formData.company_address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
+                    placeholder="Musterstraße 1, 12345 Musterstadt"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Telefon</label>
+                  <input
+                    type="text"
+                    value={formData.company_phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
+                    placeholder="+49 123 456789"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Webseite</label>
+                  <input
+                    type="url"
+                    value={formData.company_website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
+                    placeholder="https://www.ihre-firma.de"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white">Farbschema (Branding)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Hauptfarbe (Primary)</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={formData.primary_color}
+                      onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
+                      className="w-12 h-12 rounded-xl cursor-pointer border-0 p-1 bg-slate-100 dark:bg-slate-700"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={formData.primary_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-sm uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Akzentfarbe</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={formData.accent_color}
+                      onChange={(e) => setFormData(prev => ({ ...prev, accent_color: e.target.value }))}
+                      className="w-12 h-12 rounded-xl cursor-pointer border-0 p-1 bg-slate-100 dark:bg-slate-700"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={formData.accent_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, accent_color: e.target.value }))}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-sm uppercase"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

@@ -35,7 +35,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const accessToken = req.accessToken!;
-    const { full_name, company_name, company_logo_url } = req.body;
+    const { full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color } = req.body;
 
     const userClient = supabase.getClientForUser(accessToken);
 
@@ -43,6 +43,11 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     if (full_name !== undefined) updates.full_name = full_name;
     if (company_name !== undefined) updates.company_name = company_name;
     if (company_logo_url !== undefined) updates.company_logo_url = company_logo_url;
+    if (company_address !== undefined) updates.company_address = company_address;
+    if (company_phone !== undefined) updates.company_phone = company_phone;
+    if (company_website !== undefined) updates.company_website = company_website;
+    if (primary_color !== undefined) updates.primary_color = primary_color;
+    if (accent_color !== undefined) updates.accent_color = accent_color;
 
     const { data, error } = await userClient
       .from('user_profiles')
