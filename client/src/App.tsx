@@ -28,7 +28,19 @@ const FormFilling = lazy(() => import('./pages/FormFilling'));
 const Submissions = lazy(() => import('./pages/Submissions'));
 const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
-const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
+const VisitWorkflow = lazy(() => {
+  console.log('Lazy loading VisitWorkflow...');
+  return import('./pages/VisitWorkflow').catch((error) => {
+    console.error('Failed to load VisitWorkflow:', error);
+    // Return a fallback component
+    return {
+      default: () => {
+        console.error('VisitWorkflow failed to load, showing error');
+        return <div>Error loading page. Please refresh.</div>;
+      }
+    };
+  });
+});
 
 // OAuth callback handler
 function AuthCallback() {

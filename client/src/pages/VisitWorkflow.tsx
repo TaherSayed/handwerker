@@ -389,9 +389,12 @@ export default function VisitWorkflow() {
     }
 
     console.log('VisitWorkflow: Rendering with step:', currentStep);
+    console.log('VisitWorkflow: templates:', templates?.length, 'isLoading:', isLoadingTemplates);
 
-    return (
-        <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
+    // Wrap in try-catch to prevent render errors from crashing
+    try {
+        return (
+            <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
             {/* Navigation Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button
@@ -575,7 +578,22 @@ export default function VisitWorkflow() {
                 </div>
             )}
         </div>
-    );
+        );
+    } catch (renderError: any) {
+        console.error('VisitWorkflow render error:', renderError);
+        return (
+            <div className="p-8 text-center">
+                <h2 className="text-xl font-bold text-red-600 mb-4">Error loading page</h2>
+                <p className="text-slate-600 mb-4">{renderError.message || 'An error occurred'}</p>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                >
+                    Back to Dashboard
+                </button>
+            </div>
+        );
+    }
 }
 
 // Finish Step Component with PDF handling
