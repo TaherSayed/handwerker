@@ -51,8 +51,8 @@ export class UserService {
                     .eq('id', userId)
                     .single();
                 
-                if (companyFields) {
-                    typedProfile = { ...typedProfile, ...(companyFields as any) };
+                if (companyFields && typedProfile) {
+                    typedProfile = { ...typedProfile, ...(companyFields as any) } as UserProfile;
                 }
             } catch (companyError: any) {
                 // Company fields might not exist - that's OK
@@ -69,8 +69,8 @@ export class UserService {
                     .eq('id', userId)
                     .single();
                 
-                if (brandingFields) {
-                    typedProfile = { ...typedProfile, ...(brandingFields as any) };
+                if (brandingFields && typedProfile) {
+                    typedProfile = { ...typedProfile, ...(brandingFields as any) } as UserProfile;
                 }
             } catch (brandingError: any) {
                 // Branding fields might not exist - that's OK, use defaults
@@ -78,11 +78,13 @@ export class UserService {
                     console.warn(`[UserService] Branding fields fetch failed for ${userId}:`, brandingError.message);
                 }
                 // Set defaults if fields don't exist
-                typedProfile = {
-                    ...typedProfile,
-                    primary_color: typedProfile.primary_color || '#2563eb',
-                    accent_color: typedProfile.accent_color || '#1e40af',
-                };
+                if (typedProfile) {
+                    typedProfile = {
+                        ...typedProfile,
+                        primary_color: typedProfile.primary_color || '#2563eb',
+                        accent_color: typedProfile.accent_color || '#1e40af',
+                    } as UserProfile;
+                }
             }
         }
 
@@ -138,8 +140,8 @@ export class UserService {
                         .eq('id', userId)
                         .single();
                     
-                    if (companyFields) {
-                        typedProfile = { ...typedProfile, ...(companyFields as any) };
+                    if (companyFields && typedProfile) {
+                        typedProfile = { ...typedProfile, ...(companyFields as any) } as UserProfile;
                     }
                 } catch (companyError: any) {
                     // Company fields might not exist - that's OK
@@ -156,15 +158,15 @@ export class UserService {
                         .eq('id', userId)
                         .single();
                     
-                    if (brandingFields) {
-                        typedProfile = { ...typedProfile, ...(brandingFields as any) };
-                    } else {
+                    if (brandingFields && typedProfile) {
+                        typedProfile = { ...typedProfile, ...(brandingFields as any) } as UserProfile;
+                    } else if (typedProfile) {
                         // Set defaults if fields don't exist
                         typedProfile = {
                             ...typedProfile,
                             primary_color: '#2563eb',
                             accent_color: '#1e40af',
-                        };
+                        } as UserProfile;
                     }
                 } catch (brandingError: any) {
                     // Branding fields might not exist - that's OK, use defaults
@@ -172,11 +174,13 @@ export class UserService {
                         console.warn(`[UserService] Branding fields not available for ${userId}`);
                     }
                     // Set defaults
-                    typedProfile = {
-                        ...typedProfile,
-                        primary_color: typedProfile?.primary_color || '#2563eb',
-                        accent_color: typedProfile?.accent_color || '#1e40af',
-                    };
+                    if (typedProfile) {
+                        typedProfile = {
+                            ...typedProfile,
+                            primary_color: typedProfile.primary_color || '#2563eb',
+                            accent_color: typedProfile.accent_color || '#1e40af',
+                        } as UserProfile;
+                    }
                 }
             }
         }
