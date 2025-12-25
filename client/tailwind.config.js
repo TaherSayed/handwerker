@@ -40,14 +40,14 @@ export default {
         },
         // Premium Dark Mode Palette
         dark: {
-          base: '#0F1220',
-          card: '#181C2A',
-          input: '#1F2437',
-          stroke: 'rgba(255,255,255,0.06)',
-          highlight: 'rgba(255,255,255,0.04)',
+          base: '#0B0D15', // Deeper background
+          card: '#1E2330', // Lighter, more distinct card
+          input: '#232838', // Slightly lighter input
+          stroke: 'rgba(255,255,255,0.08)', // Increased contrast
+          highlight: 'rgba(255,255,255,0.05)',
           'text-head': '#FFFFFF',
-          'text-body': 'rgba(255,255,255,0.86)',
-          'text-muted': 'rgba(255,255,255,0.65)',
+          'text-body': '#CBD5E1', // More readable body
+          'text-muted': '#94A3B8', // Lighter muted
           'accent-sec': '#5865F2',
         },
         text: {

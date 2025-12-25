@@ -13,15 +13,15 @@
 
   /* Global Mobile Typography Scale */
   h1 {
-    @apply text-[22px] leading-tight font-bold lg:text-4xl text-slate-900 dark:text-dark-text-head;
+    @apply text-[22px] leading-tight font-semibold lg:text-4xl text-slate-900 dark:text-dark-text-head;
   }
 
   h2 {
-    @apply text-lg leading-snug font-bold lg:text-2xl text-slate-900 dark:text-dark-text-head;
+    @apply text-lg leading-snug font-semibold lg:text-2xl text-slate-900 dark:text-dark-text-head;
   }
 
   h3 {
-    @apply text-base leading-snug font-bold lg:text-xl text-slate-900 dark:text-dark-text-head;
+    @apply text-base leading-snug font-semibold lg:text-xl text-slate-900 dark:text-dark-text-head;
   }
 
   /* Inputs minimum 16px to prevent iOS zoom */
@@ -38,11 +38,11 @@
   }
 
   .btn-primary {
-    @apply bg-primary-light dark:bg-primary-dark text-white font-semibold text-base py-3 px-6 rounded-xl shadow-lg shadow-primary-light/20 active:scale-[0.98] transition-all min-h-[44px] flex items-center justify-center;
+    @apply bg-primary-light dark:bg-primary-dark text-white font-medium text-base py-3 px-6 rounded-xl shadow-lg shadow-primary-light/20 active:scale-[0.98] transition-all min-h-[44px] flex items-center justify-center;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body font-semibold text-base py-3 px-6 rounded-xl border border-border-light dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight active:scale-[0.98] transition-all shadow-sm min-h-[44px] flex items-center justify-center;
+    @apply bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body font-medium text-base py-3 px-6 rounded-xl border border-border-light dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight active:scale-[0.98] transition-all shadow-sm min-h-[44px] flex items-center justify-center;
   }
 
   .btn-ghost {
@@ -59,7 +59,7 @@
   }
 
   .heading-lg {
-    @apply text-[22px] lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-dark-text-head;
+    @apply text-[22px] lg:text-2xl font-semibold tracking-tight text-slate-900 dark:text-dark-text-head;
   }
 
   .input {

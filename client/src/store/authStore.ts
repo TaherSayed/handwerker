@@ -24,27 +24,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
-      // 1. Immediate Hydration from Cache (Performance & Multi-platform persistence)
+      // 1. Immediate Hydration from Cache (Super Fast)
       const cachedProfile = localStorage.getItem(CACHE_KEY);
       if (cachedProfile) {
         try {
-          set({ profile: JSON.parse(cachedProfile) });
+          const profile = JSON.parse(cachedProfile);
+          set({ profile, loading: false, initialized: true }); // Unlock UI immediately
         } catch (e) {
           console.error('Failed to parse cached profile');
+          localStorage.removeItem(CACHE_KEY);
         }
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      // 2. Race Session Check (Don't block indefinitely)
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 2000));
 
-      if (session?.user) {
-        set({ user: session.user });
-        // Background refresh to ensure fresh data
-        get().refreshProfile();
+      try {
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+        if (session?.user) {
+          set({ user: session.user });
+          // Background refresh ensures data consistency without blocking
+          get().refreshProfile();
+        } else if (!cachedProfile) {
+          // Only stop loading if we didn't use cache fallback
+          set({ loading: false, initialized: true });
+        }
+      } catch (error) {
+        console.warn('Auth check slow/failed, proceeding with cache if available:', error);
+        // If we have no cache and auth failed/timed out, we still need to unblock
+        if (!get().initialized) {
+          set({ loading: false, initialized: true });
+        }
       }
 
-      set({ loading: false, initialized: true });
-
-      // Listen for auth changes
+      // 3. Setup Listeners (always late)
       supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           set({ user: session.user });
@@ -55,7 +70,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       });
     } catch (error) {
-      console.error('Initialize error:', error);
+      console.error('Initialize critical failure:', error);
       set({ loading: false, initialized: true });
     }
   },

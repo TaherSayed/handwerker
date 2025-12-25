@@ -246,7 +246,7 @@ export default function SubmissionDetail() {
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Protokoll-Details</h1>
+        <h1 className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">Protokoll-Details</h1>
 
         {/* Secondary Actions (Top Right) */}
         <div className="flex gap-2">
@@ -276,19 +276,19 @@ export default function SubmissionDetail() {
             <status.icon className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">Status</p>
-            <p className="text-base font-black text-slate-900 dark:text-white tracking-tight">{status.label}</p>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">Status</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{status.label}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">ID</p>
-          <p className="text-base font-mono text-slate-600 dark:text-slate-300 font-bold tracking-tight">#{submission.id.slice(0, 6)}</p>
+          <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">ID</p>
+          <p className="text-base font-mono text-slate-600 dark:text-slate-300 font-semibold tracking-tight">#{submission.id.slice(0, 6)}</p>
         </div>
       </div>
 
       {/* Customer Information */}
       <div className="card p-8 space-y-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[40px] shadow-sm">
-        <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-3 pb-4 
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-3 pb-4 
         border-b border-border-light dark:border-dark-stroke/50">
           <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
             <User className="w-4 h-4" />
@@ -298,24 +298,24 @@ export default function SubmissionDetail() {
 
         <div className="space-y-6">
           <div className="group">
-            <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Name</label>
-            <p className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary-light transition-colors">{submission.customer_name || '— Nicht verfügbar —'}</p>
+            <label className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Name</label>
+            <p className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-primary-light transition-colors">{submission.customer_name || '— Nicht verfügbar —'}</p>
           </div>
 
           {(submission.customer_email || submission.customer_phone) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {submission.customer_email && (
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Email</label>
-                  <a href={`mailto:${submission.customer_email}`} className="text-base font-bold text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors truncate block">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Email</label>
+                  <a href={`mailto:${submission.customer_email}`} className="text-base font-medium text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors truncate block">
                     {submission.customer_email}
                   </a>
                 </div>
               )}
               {submission.customer_phone && (
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Telefon</label>
-                  <a href={`tel:${submission.customer_phone}`} className="text-base font-bold text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors block">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Telefon</label>
+                  <a href={`tel:${submission.customer_phone}`} className="text-base font-medium text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors block">
                     {submission.customer_phone}
                   </a>
                 </div>
@@ -325,10 +325,10 @@ export default function SubmissionDetail() {
 
           {submission.customer_address && (
             <div>
-              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-2">Adresse</label>
+              <label className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-2">Adresse</label>
               <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-dark-highlight rounded-2xl">
                 <MapPin className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-snug">{submission.customer_address}</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">{submission.customer_address}</p>
               </div>
             </div>
           )}
@@ -342,9 +342,9 @@ export default function SubmissionDetail() {
             <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Protokoll</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Protokoll</h2>
           </div>
-          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-highlight px-3 py-1.5 rounded-full uppercase tracking-wide">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-highlight px-3 py-1.5 rounded-full uppercase tracking-wide">
             {submission.form_templates?.name || 'Formular'}
           </span>
         </div>
@@ -353,7 +353,7 @@ export default function SubmissionDetail() {
           {submission.form_templates?.fields ? (
             submission.form_templates.fields.map((field: any) => (
               <div key={field.id} className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block">
                   {field.label}
                 </label>
                 <div className="text-base font-medium text-slate-900 dark:text-white pl-1">
@@ -367,7 +367,7 @@ export default function SubmissionDetail() {
               {/* Fallback to raw values dump if template is missing but values exist */}
               {Object.keys(submission.field_values || {}).length > 0 && (
                 <div className="mt-6 text-left px-6">
-                  <p className="text-[10px] font-black mb-2 uppercase text-slate-400 tracking-widest">Rohdaten:</p>
+                  <p className="text-[10px] font-bold mb-2 uppercase text-slate-400 tracking-widest">Rohdaten:</p>
                   <pre className="text-xs bg-white dark:bg-dark-card p-4 rounded-xl border border-slate-100 dark:border-dark-stroke overflow-auto font-mono text-slate-600 dark:text-slate-400">
                     {JSON.stringify(submission.field_values, null, 2)}
                   </pre>
@@ -380,7 +380,7 @@ export default function SubmissionDetail() {
 
       {/* Timestamp Footer */}
       <div className="px-4 py-4 text-center">
-        <p className="text-[10px] font-black text-slate-300 dark:text-dark-text-muted uppercase tracking-[0.2em]">
+        <p className="text-[10px] font-bold text-slate-300 dark:text-dark-text-muted uppercase tracking-[0.2em]">
           Erstellt: {submission.created_at ? format(new Date(submission.created_at), 'dd.MM.yyyy HH:mm') : '-'}
         </p>
       </div>
@@ -400,7 +400,7 @@ export default function SubmissionDetail() {
               onClick={handleDownloadPDF}
               loading={generating}
               variant="primary"
-              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-black uppercase tracking-widest h-14 rounded-2xl"
+              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-semibold uppercase tracking-widest h-14 rounded-2xl"
               size="lg"
               icon={<Zap className="w-5 h-5" />}
             >
@@ -419,7 +419,7 @@ export default function SubmissionDetail() {
               onClick={handleDownloadPDF}
               loading={generating}
               variant="primary"
-              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-black uppercase tracking-widest h-14 rounded-2xl"
+              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-semibold uppercase tracking-widest h-14 rounded-2xl"
               size="lg"
               icon={<Download className="w-5 h-5" />}
             >

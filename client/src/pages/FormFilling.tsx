@@ -377,8 +377,8 @@ export default function FormFilling() {
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-dark-text-muted" />
         </button>
         <div className="min-w-0">
-          <h1 className="font-black text-slate-900 dark:text-white truncate uppercase text-sm tracking-tight leading-none">{template.name}</h1>
-          <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-black uppercase tracking-[0.15em] leading-none mt-1.5">Protokoll erstellen</p>
+          <h1 className="font-bold text-slate-900 dark:text-white truncate uppercase text-sm tracking-tight leading-none">{template.name}</h1>
+          <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-[0.15em] leading-none mt-1.5">Protokoll erstellen</p>
         </div>
       </div>
 
@@ -392,8 +392,8 @@ export default function FormFilling() {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{template.name}</h1>
-            <p className="text-slate-500 dark:text-dark-text-muted font-bold text-lg">{template.description || 'Bitte füllen Sie die Details gewissenhaft aus.'}</p>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">{template.name}</h1>
+            <p className="text-slate-500 dark:text-dark-text-muted font-medium text-lg">{template.description || 'Bitte füllen Sie die Details gewissenhaft aus.'}</p>
           </div>
         </div>
 
@@ -413,8 +413,8 @@ export default function FormFilling() {
                   <User className="w-7 h-7" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">Kundendaten</h2>
-                  <p className="text-[11px] text-slate-400 dark:text-dark-text-muted font-black uppercase tracking-widest mt-2">{customerInfo.contact_id ? '✓ Verknüpft mit Google Contacts' : 'Kontaktinformationen'}</p>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-none">Kundendaten</h2>
+                  <p className="text-[11px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-widest mt-2">{customerInfo.contact_id ? '✓ Verknüpft mit Google Contacts' : 'Kontaktinformationen'}</p>
                 </div>
               </div>
               <Button
@@ -431,30 +431,30 @@ export default function FormFilling() {
 
             <div className="card p-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[32px] shadow-sm">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Vollständiger Name *</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Vollständiger Name *</label>
                 <input
                   type="text"
                   value={customerInfo.name}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                  className="input h-14 font-bold"
+                  className="input h-14 font-medium"
                   placeholder="Max Mustermann"
                   required
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">E-Mail Adresse</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">E-Mail Adresse</label>
                 <input
                   type="email"
                   value={customerInfo.email}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                  className="input h-14 font-bold"
+                  className="input h-14 font-medium"
                   placeholder="max@beispiel.de"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Telefonnummer</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Telefonnummer</label>
                 <input
                   type="tel"
                   value={customerInfo.phone}
@@ -465,7 +465,7 @@ export default function FormFilling() {
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Einsatzort / Adresse</label>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Einsatzort / Adresse</label>
                 <input
                   type="text"
                   value={customerInfo.address}
@@ -483,16 +483,16 @@ export default function FormFilling() {
               <div className="w-14 h-14 bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark rounded-[22px] flex items-center justify-center border border-primary-light/10">
                 <ClipboardList className="w-7 h-7" />
               </div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Berichts-Details</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">Berichts-Details</h2>
             </div>
 
             <div className="card p-8 space-y-10 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[40px] shadow-sm">
               {template.fields?.map((field: any) => (
                 <div key={field.id} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                   {field.type !== 'section' && (
-                    <label className="text-[10px] font-black text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.25em] px-1 block mb-2">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.25em] px-1 block mb-2">
                       {field.label}
-                      {field.required && <span className="text-error-light ml-2 font-black">*</span>}
+                      {field.required && <span className="text-error-light ml-2 font-bold">*</span>}
                     </label>
                   )}
                   {renderField(field)}
@@ -510,7 +510,7 @@ export default function FormFilling() {
                 loading={saving}
                 disabled={submitting}
                 variant="secondary"
-                className="flex-1 lg:flex-none h-14 px-8 rounded-2xl bg-slate-100 dark:bg-dark-highlight hover:bg-slate-200 border-none font-bold uppercase tracking-widest text-xs"
+                className="flex-1 lg:flex-none h-14 px-8 rounded-2xl bg-slate-100 dark:bg-dark-highlight hover:bg-slate-200 border-none font-semibold uppercase tracking-widest text-xs"
                 icon={<Save className="w-5 h-5" />}
               >
                 Als Entwurf
@@ -520,7 +520,7 @@ export default function FormFilling() {
                 loading={submitting}
                 disabled={saving}
                 variant="primary"
-                className="flex-[2] lg:flex-none h-14 px-10 rounded-2xl shadow-xl shadow-primary-light/20 font-bold uppercase tracking-widest text-xs"
+                className="flex-[2] lg:flex-none h-14 px-10 rounded-2xl shadow-xl shadow-primary-light/20 font-semibold uppercase tracking-widest text-xs"
                 icon={<Send className="w-5 h-5 fill-current" />}
               >
                 Abschließen
@@ -647,7 +647,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
       </div>
 
       <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
-        <p className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${isEmpty ? 'text-slate-400 opacity-60' : 'text-indigo-500 opacity-0 translate-y-2'
+        <p className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500 ${isEmpty ? 'text-slate-400 opacity-60' : 'text-indigo-500 opacity-0 translate-y-2'
           }`}>
           Hier unterschreiben
         </p>

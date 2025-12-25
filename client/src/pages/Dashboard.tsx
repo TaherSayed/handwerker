@@ -110,8 +110,8 @@ export default function Dashboard() {
       <div className="card p-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl shadow-sm">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Hallo, {displayName}</h1>
-            <p className="text-slate-500 dark:text-dark-text-muted font-semibold text-sm">Bereit für Ihren nächsten Einsatz?</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Hallo, {displayName}</h1>
+            <p className="text-slate-500 dark:text-dark-text-muted font-medium text-sm">Bereit für Ihren nächsten Einsatz?</p>
           </div>
           {profile?.company_logo_url && (
             <img
@@ -126,7 +126,7 @@ export default function Dashboard() {
           <Button
             onClick={() => navigate('/visits/new')}
             variant="primary"
-            className="w-full h-14 text-base font-bold shadow-xl shadow-primary-light/20 rounded-2xl"
+            className="w-full h-14 text-base font-semibold shadow-xl shadow-primary-light/20 rounded-2xl"
             icon={<Plus className="w-6 h-6 mr-1" />}
           >
             Neuer Einsatzbericht
@@ -137,33 +137,33 @@ export default function Dashboard() {
       {/* 2. Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div onClick={() => navigate('/submissions')} className="card p-5 hover:border-primary-light dark:hover:border-primary-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
-          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Heute</p>
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-semibold uppercase tracking-widest mb-4">Heute</p>
           <div className="flex items-end justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.todayVisits}</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats.todayVisits}</span>
             <FileText className="w-6 h-6 text-primary-light dark:text-primary-dark opacity-40 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
         <div onClick={() => navigate('/submissions')} className="card p-5 hover:border-warning-light dark:hover:border-warning-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
-          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Entwürfe</p>
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-semibold uppercase tracking-widest mb-4">Entwürfe</p>
           <div className="flex items-end justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.openTasks}</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats.openTasks}</span>
             <Clock className="w-6 h-6 text-warning-light dark:text-warning-dark opacity-40 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
         <div onClick={() => navigate('/templates')} className="card p-5 hover:border-primary-light dark:hover:border-primary-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
-          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Vorlagen</p>
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-semibold uppercase tracking-widest mb-4">Vorlagen</p>
           <div className="flex items-end justify-between">
-            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.templates}</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats.templates}</span>
             <Zap className="w-6 h-6 text-primary-light dark:text-primary-dark opacity-40 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
         <div onClick={() => navigate('/settings')} className="card p-5 hover:border-slate-400 cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
-          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Profil</p>
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-semibold uppercase tracking-widest mb-4">Profil</p>
           <div className="flex items-end justify-between">
-            <span className="text-lg font-black text-slate-900 dark:text-white mb-1">Optionen</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white mb-1">Optionen</span>
             <Settings className="w-6 h-6 text-slate-300 dark:text-slate-600 opacity-60 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
         {/* 3. Recent Activity */}
         <section className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Letzte Einsätze</h2>
+            <h2 className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Letzte Einsätze</h2>
             <Button onClick={() => navigate('/submissions')} variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Alle Berichte</Button>
           </div>
 
@@ -198,12 +198,12 @@ export default function Dashboard() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900 dark:text-white truncate text-base leading-tight mb-1">{sub.customer_name || 'Unbekannt'}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white truncate text-base leading-tight mb-1">{sub.customer_name || 'Unbekannt'}</h3>
                     <div className="flex items-center gap-2">
                       <span className="badge badge-success !bg-slate-100 dark:!bg-dark-input !text-[9px] !text-slate-500 dark:!text-dark-text-muted truncate max-w-[140px]">
                         {sub.form_templates?.name || 'Protokoll'}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
                         {new Date(sub.created_at).toLocaleDateString('de-DE')}
                       </span>
                     </div>
@@ -218,7 +218,7 @@ export default function Dashboard() {
         {/* 4. Quick Start Templates */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Schnellstart</h2>
+            <h2 className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Schnellstart</h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
             {templates.slice(0, 4).map(t => (
@@ -233,8 +233,8 @@ export default function Dashboard() {
                   </div>
                   <ArrowRight className="w-5 h-5 text-slate-200 dark:text-slate-800 group-hover:text-primary-light transition-all -mr-1" />
                 </div>
-                <p className="font-bold text-sm text-slate-900 dark:text-dark-text-body truncate select-none mb-1">{t.name}</p>
-                <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-semibold uppercase tracking-wider select-none truncate">
+                <p className="font-medium text-sm text-slate-900 dark:text-dark-text-body truncate select-none mb-1">{t.name}</p>
+                <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-medium uppercase tracking-wider select-none truncate">
                   {t.fields?.length || 0} Felder
                 </p>
               </button>

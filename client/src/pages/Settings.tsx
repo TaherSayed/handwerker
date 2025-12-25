@@ -206,25 +206,25 @@ export default function Settings() {
       {/* Header with Save Status */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Einstellungen</h1>
-          <p className="text-slate-500 dark:text-dark-text-muted font-bold text-[10px] uppercase tracking-widest mt-1">Verwalten Sie Ihre Präferenzen</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">Einstellungen</h1>
+          <p className="text-slate-500 dark:text-dark-text-muted font-medium text-[10px] uppercase tracking-widest mt-1">Verwalten Sie Ihre Präferenzen</p>
         </div>
 
         <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-dark-card rounded-2xl border border-border-light dark:border-dark-stroke shadow-sm self-start md:self-auto transition-all">
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin text-primary-light" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Wird gespeichert...</span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Wird gespeichert...</span>
             </>
           ) : lastSaved ? (
             <>
               <CheckCircle2 className="w-4 h-4 text-success-light" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                 Zuletzt gesichert um {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </>
           ) : (
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest px-2">Synchronisiert</span>
+            <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest px-2">Synchronisiert</span>
           )}
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function Settings() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all duration-300 border uppercase tracking-widest ${isActive
+              className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl font-semibold text-sm whitespace-nowrap transition-all duration-300 border uppercase tracking-widest ${isActive
                 ? 'bg-primary-light text-white border-primary-light shadow-xl shadow-primary-light/30'
                 : 'bg-white dark:bg-dark-card text-slate-600 dark:text-dark-text-muted border-border-light dark:border-dark-stroke hover:border-primary-light'
                 }`}
@@ -275,7 +275,7 @@ export default function Settings() {
                     <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-amber-500">
                       <Sun className="w-5 h-5" />
                     </div>
-                    <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Helles Design</span>
+                    <span className="font-medium text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Helles Design</span>
                   </div>
                   {theme === 'light' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
                 </button>
@@ -288,7 +288,7 @@ export default function Settings() {
                     <div className="w-10 h-10 rounded-full bg-slate-800 shadow-sm flex items-center justify-center text-blue-400">
                       <Moon className="w-5 h-5" />
                     </div>
-                    <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Dunkles Design</span>
+                    <span className="font-medium text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Dunkles Design</span>
                   </div>
                   {theme === 'dark' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
                 </button>
@@ -309,11 +309,11 @@ export default function Settings() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
-                  <span className="font-bold text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Impressum</span>
+                  <span className="font-medium text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Impressum</span>
                   <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
                 </a>
                 <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
-                  <span className="font-bold text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Datenschutz</span>
+                  <span className="font-medium text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Datenschutz</span>
                   <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
                 </a>
               </div>
@@ -346,8 +346,8 @@ export default function Settings() {
                 )}
               </div>
               <div className="space-y-1">
-                <h3 className="font-black text-xl text-slate-900 dark:text-white uppercase tracking-tight">{displayName}</h3>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white uppercase tracking-tight">{displayName}</h3>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-success-light" />
                   Privat-Konto (Google)
                 </p>
@@ -356,17 +356,17 @@ export default function Settings() {
 
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Anzeigename</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Anzeigename</label>
                 <input
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                  className="input h-14 font-bold"
+                  className="input h-14 font-medium"
                   placeholder="Ihr Name"
                 />
               </div>
               <div className="space-y-3 opacity-80">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
                   <span>E-Mail Adresse</span>
                   <span className="text-[9px] bg-slate-100 dark:bg-dark-card px-2 py-0.5 rounded-full border dark:border-dark-stroke">Nur Lesezugriff</span>
                 </label>
@@ -374,7 +374,7 @@ export default function Settings() {
                   type="text"
                   readOnly
                   value={profile?.email || ''}
-                  className="input h-14 bg-slate-50 dark:bg-dark-card border-dashed border-2 text-slate-400 font-bold cursor-not-allowed"
+                  className="input h-14 bg-slate-50 dark:bg-dark-card border-dashed border-2 text-slate-400 font-medium cursor-not-allowed"
                 />
               </div>
             </div>
@@ -387,7 +387,7 @@ export default function Settings() {
             <div className="bg-primary-light/5 p-6 rounded-[28px] flex gap-5 items-start border border-primary-light/10">
               <Info className="w-6 h-6 text-primary-light shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-bold text-primary-light text-sm uppercase tracking-wider mb-1">Berichts-Branding</h4>
+                <h4 className="font-semibold text-primary-light text-sm uppercase tracking-wider mb-1">Berichts-Branding</h4>
                 <p className="text-xs text-slate-600 dark:text-dark-text-muted leading-relaxed">
                   Ihr Logo und Ihre Firmendaten werden automatisch in alle generierten PDF-Berichte eingebettet.
                 </p>
@@ -396,7 +396,7 @@ export default function Settings() {
 
             <div className="space-y-8">
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Firmenlogo</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenlogo</label>
                 <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
                   <div className="w-40 h-40 bg-white dark:bg-dark-input rounded-[32px] border-2 border-dashed border-border-light dark:border-dark-stroke flex items-center justify-center p-6 shadow-inner relative group overflow-hidden">
                     {formData.company_logo_url ? (
@@ -404,7 +404,7 @@ export default function Settings() {
                     ) : (
                       <div className="flex flex-col items-center gap-3 text-slate-300">
                         <Building className="w-10 h-10" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.15em]">Kein Logo</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.15em]">Kein Logo</span>
                       </div>
                     )}
                     {logoLoading && (
@@ -440,7 +440,7 @@ export default function Settings() {
                     </div>
 
                     <div className="space-y-1 px-1">
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
                         JPG, PNG oder SVG (Max. 5MB)
                       </p>
                       <p className="text-[10px] text-slate-300 dark:text-dark-text-muted">
@@ -462,43 +462,43 @@ export default function Settings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Firmenname</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenname</label>
                   <input
                     type="text"
                     value={formData.company_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
                     placeholder="Eigener Betrieb GmbH"
-                    className="input h-14 font-bold"
+                    className="input h-14 font-medium"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Telefonnummer</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Telefonnummer</label>
                   <input
                     type="text"
                     value={formData.company_phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
                     placeholder="+49 (0) 123 45678"
-                    className="input h-14 font-bold"
+                    className="input h-14 font-medium"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
                   <input
                     type="text"
                     value={formData.company_address}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
                     placeholder="Musterweg 12, 12345 Stadt"
-                    className="input h-14 font-bold"
+                    className="input h-14 font-medium"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>
                   <input
                     type="url"
                     value={formData.company_website}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
                     placeholder="https://www.firma.de"
-                    className="input h-14 font-bold"
+                    className="input h-14 font-medium"
                   />
                 </div>
               </div>
