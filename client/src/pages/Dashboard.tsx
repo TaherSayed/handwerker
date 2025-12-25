@@ -149,7 +149,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-start">
                   <h4 className="font-bold text-slate-900 truncate pr-2">{sub.customer_name || 'Kunde'}</h4>
                   <span className="text-primary-light">
-                    <code className="text-[10px]">></code>
+                    <code className="text-[10px]">&gt;</code>
                   </span>
                 </div>
 
