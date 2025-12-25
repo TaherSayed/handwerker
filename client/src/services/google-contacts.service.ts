@@ -50,7 +50,7 @@ class GoogleContactsService {
 
     // Search in local DB first for instant results
     const localMatches = await db.contacts
-      .filter(c =>
+      .filter((c: any) =>
         c.name.toLowerCase().includes(lowerQuery) ||
         (c.email?.toLowerCase().includes(lowerQuery) || false) ||
         (c.phone?.includes(query) || false)

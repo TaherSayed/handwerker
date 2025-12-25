@@ -81,9 +81,9 @@ export class OnSiteDB extends Dexie {
             submissions: '++id, uuid, template_id, status, is_synced, pdf_url',
             files: 'id, submissionId, type, created_at',
             storage: 'id, type, created_at',
-        }).upgrade(tx => {
+        }).upgrade((tx: any) => {
             // Migration: Add pdf_url to existing submissions
-            return tx.table('submissions').toCollection().modify(submission => {
+            return tx.table('submissions').toCollection().modify((submission: any) => {
                 if (!submission.pdf_url) {
                     submission.pdf_url = undefined;
                 }
@@ -99,7 +99,7 @@ export const getDB = (): OnSiteDB => {
   if (!dbInstance) {
     dbInstance = new OnSiteDB();
     // Open DB in background, don't wait for it
-    dbInstance.open().catch(err => {
+    (dbInstance as any).open().catch((err: any) => {
       console.error('Failed to open IndexedDB:', err);
     });
   }
@@ -108,7 +108,7 @@ export const getDB = (): OnSiteDB => {
 
 // Export db for backward compatibility, but use lazy initialization
 export const db = new Proxy({} as OnSiteDB, {
-  get(target, prop) {
+  get(_target, prop) {
     const instance = getDB();
     const value = (instance as any)[prop];
     if (typeof value === 'function') {

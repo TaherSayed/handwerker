@@ -9,8 +9,8 @@ import { getDB, SecureStorageItem } from './db.service';
 class SecureStorage {
   private async getEncryptionKey(): Promise<CryptoKey> {
     // Get or create encryption key from IndexedDB
-    const db = getDB();
-    const keyData = await db.storage.get('encryption_key');
+    const dbInstance = getDB();
+    const keyData = await dbInstance.storage.get('encryption_key');
     
     if (keyData?.data) {
       try {
@@ -39,8 +39,7 @@ class SecureStorage {
     const exported = await crypto.subtle.exportKey('raw', key);
     const keyArray = Array.from(new Uint8Array(exported));
     
-    const db = getDB();
-    await db.storage.put({
+    await dbInstance.storage.put({
       id: 'encryption_key',
       data: JSON.stringify(keyArray),
       type: 'key',
@@ -179,7 +178,7 @@ class SecureStorage {
       .below(cutoffDate.toISOString())
       .toArray();
     
-    const ids = oldFiles.map(f => f.id);
+    const ids = oldFiles.map((f: any) => f.id);
     await db.files.bulkDelete(ids);
     
     return ids.length;
@@ -200,7 +199,7 @@ class SecureStorage {
 
     return {
       filesCount: files.length,
-      filesSize: files.reduce((sum, f) => sum + (f.size || 0), 0),
+      filesSize: files.reduce((sum: number, f: any) => sum + (f.size || 0), 0),
       submissionsCount: submissions.length
     };
   }
