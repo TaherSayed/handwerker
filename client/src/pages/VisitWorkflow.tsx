@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
+import { secureStorage } from '../services/secure-storage.service';
 import {
     ArrowLeft,
     ArrowRight,
@@ -157,7 +158,18 @@ export default function VisitWorkflow() {
                 // Trigger PDF generation in background or wait
                 try {
                     const pdfResult = await apiService.generatePDF(result.id) as any;
-                    setSubmissionResult({ ...result, pdf_url: pdfResult.pdf_url });
+                    const pdfUrl = pdfResult.pdf_url;
+                    
+                    // Download and store PDF locally
+                    let localPdfId = pdfUrl;
+                    try {
+                        localPdfId = await apiService.downloadAndStorePDF(result.id, pdfUrl);
+                    } catch (storeErr) {
+                        console.warn('Failed to store PDF locally:', storeErr);
+                        // Continue with remote URL if local storage fails
+                    }
+                    
+                    setSubmissionResult({ ...result, pdf_url: localPdfId, remote_pdf_url: pdfUrl });
                 } catch (err) {
                     console.warn('PDF generation failed, but submission succeeded:', err);
                     setSubmissionResult(result);
@@ -523,39 +535,10 @@ export default function VisitWorkflow() {
                 )}
 
                 {currentStep === 'finish' && submissionResult && (
-                    <div className="text-center space-y-10 py-16 animate-in zoom-in fade-in duration-700">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-green-200 blur-3xl rounded-full opacity-30 animate-pulse" />
-                            <div className="relative w-32 h-32 bg-green-500 text-white rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl shadow-green-100">
-                                <CheckCircle2 className="w-16 h-16" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
-                            <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">Besuchsdokumentation erfolgreich erstellt und gespeichert.</p>
-                        </div>
-
-                        <div className="max-w-xs mx-auto space-y-4 pt-6">
-                            {submissionResult.pdf_url && (
-                                <a
-                                    href={submissionResult.pdf_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl"
-                                >
-                                    <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                    PDF-Bericht ansehen
-                                </a>
-                            )}
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
-                            >
-                                Zurück zur Übersicht
-                            </button>
-                        </div>
-                    </div>
+                    <FinishStep 
+                        submissionResult={submissionResult}
+                        onBack={() => navigate('/dashboard')}
+                    />
                 )}
             </div>
 
@@ -572,6 +555,118 @@ export default function VisitWorkflow() {
                     </button>
                 </div>
             )}
+        </div>
+    );
+}
+
+// Finish Step Component with PDF handling
+function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBack: () => void }) {
+    const [localPdfUrl, setLocalPdfUrl] = useState<string | null>(null);
+    const [loadingPdf, setLoadingPdf] = useState(false);
+
+    useEffect(() => {
+        // Check if PDF is stored locally
+        const checkLocalPDF = async () => {
+            if (submissionResult.id && submissionResult.pdf_url) {
+                try {
+                    // Check if it's a local file ID (starts with pdf_)
+                    if (submissionResult.pdf_url.startsWith('pdf_')) {
+                        const url = await secureStorage.getFileUrl(submissionResult.pdf_url);
+                        if (url) {
+                            setLocalPdfUrl(url);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to load local PDF:', error);
+                }
+            }
+        };
+        checkLocalPDF();
+    }, [submissionResult]);
+
+    const handleViewPDF = async () => {
+        if (localPdfUrl) {
+            // Open local PDF
+            window.open(localPdfUrl, '_blank');
+            return;
+        }
+
+        // Check if we have a remote PDF URL
+        const remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
+        
+        if (remoteUrl && !remoteUrl.startsWith('pdf_')) {
+            // Open remote PDF
+            window.open(remoteUrl, '_blank');
+            
+            // Try to download and store it locally in background
+            if (submissionResult.id) {
+                setLoadingPdf(true);
+                try {
+                    const fileId = await apiService.downloadAndStorePDF(submissionResult.id, remoteUrl);
+                    // Reload local PDF URL
+                    const url = await secureStorage.getFileUrl(fileId);
+                    if (url) setLocalPdfUrl(url);
+                } catch (error) {
+                    console.warn('Failed to store PDF locally:', error);
+                } finally {
+                    setLoadingPdf(false);
+                }
+            }
+        } else if (submissionResult.pdf_url && submissionResult.pdf_url.startsWith('pdf_')) {
+            // It's a local file ID, try to get the URL
+            try {
+                const url = await secureStorage.getFileUrl(submissionResult.pdf_url);
+                if (url) {
+                    setLocalPdfUrl(url);
+                    window.open(url, '_blank');
+                }
+            } catch (error) {
+                console.error('Failed to load local PDF:', error);
+            }
+        }
+    };
+
+    return (
+        <div className="text-center space-y-10 py-16 animate-in zoom-in fade-in duration-700">
+            <div className="relative">
+                <div className="absolute inset-0 bg-green-200 blur-3xl rounded-full opacity-30 animate-pulse" />
+                <div className="relative w-32 h-32 bg-green-500 text-white rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl shadow-green-100">
+                    <CheckCircle2 className="w-16 h-16" />
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
+                <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">
+                    Besuchsdokumentation erfolgreich erstellt und gespeichert.
+                    {localPdfUrl && <span className="block mt-2 text-xs text-green-600">✓ Lokal gespeichert</span>}
+                </p>
+            </div>
+
+            <div className="max-w-xs mx-auto space-y-4 pt-6">
+                {(submissionResult.pdf_url || localPdfUrl) && (
+                    <button
+                        onClick={handleViewPDF}
+                        disabled={loadingPdf}
+                        className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-70"
+                    >
+                        {loadingPdf ? (
+                            <Loader className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <>
+                                <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                PDF-Bericht ansehen
+                            </>
+                        )}
+                    </button>
+                )}
+                <button
+                    onClick={onBack}
+                    className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
+                >
+                    Zurück zur Übersicht
+                </button>
+            </div>
         </div>
     );
 }

@@ -386,6 +386,44 @@ class ApiService {
     return this.request(`/submissions/${id}/download-pdf`);
   }
 
+  async downloadAndStorePDF(submissionId: string, pdfUrl: string): Promise<string> {
+    try {
+      // Download PDF
+      const response = await fetch(pdfUrl);
+      if (!response.ok) throw new Error('Failed to download PDF');
+      
+      const blob = await response.blob();
+      
+      // Store locally using secure storage
+      const { secureStorage } = await import('./secure-storage.service');
+      const fileId = `pdf_${submissionId}_${Date.now()}`;
+      
+      await secureStorage.saveFile(fileId, blob, {
+        submissionId,
+        type: 'pdf',
+        fileName: `submission_${submissionId}.pdf`
+      });
+
+      // Update submission record with local PDF reference if it exists in local DB
+      try {
+        const { db } = await import('./db.service');
+        const submission = await db.submissions.where('uuid').equals(submissionId).first();
+        if (submission && submission.id) {
+          await db.submissions.update(submission.id, { pdf_url: fileId });
+        }
+      } catch (dbError) {
+        // Ignore DB errors - submission might not be in local DB yet
+        console.warn('[API] Could not update local submission record:', dbError);
+      }
+
+      console.log('[API] PDF stored locally:', fileId);
+      return fileId;
+    } catch (error) {
+      console.error('[API] Failed to download and store PDF:', error);
+      throw error;
+    }
+  }
+
   // Uploads
   async getSignedUploadUrl(bucket: string, fileName: string, contentType?: string) {
     return this.request('/uploads/signed-url', {
