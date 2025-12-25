@@ -139,8 +139,23 @@ export default function Settings() {
       // Update local state immediately for preview
       setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
 
-      // Persist to backend immediately
-      await apiService.updateProfile({ ...formData, company_logo_url: newLogoUrl });
+      // Persist to backend immediately - explicitly saving ONLY the logo url first to ensure it sticks
+      // We essentially force a profile update here.
+      console.log('Saving new logo URL:', newLogoUrl);
+
+      const updatePayload = {
+        ...formData,
+        company_logo_url: newLogoUrl
+      };
+
+      await apiService.updateProfile(updatePayload);
+
+      // Verify persistence by refreshing
+      const freshProfile = await apiService.getMe() as any;
+      if (freshProfile?.company_logo_url !== newLogoUrl) {
+        console.warn('Logo persistence check failed - retrying update');
+        await apiService.updateProfile(updatePayload);
+      }
 
       // Refresh global profile to sync across app
       await refreshProfile();

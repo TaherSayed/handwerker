@@ -41,7 +41,16 @@ export default function Submissions() {
   };
 
   const getStatusDisplay = (sub: any) => {
-    const isSynced = !sub.id.toString().startsWith('draft_') && !sub.is_offline;
+    // const isSynced = !sub.id.toString().startsWith('draft_') && !sub.is_offline;
+
+    if (sub.is_offline || sub._is_cached) {
+      return {
+        label: 'Offline gespeichert',
+        color: 'bg-slate-100 text-slate-500 border border-slate-200',
+        icon: Zap, // Or WifiOff
+        iconBg: 'bg-slate-50 text-slate-400'
+      };
+    }
 
     if (sub.status === 'draft') {
       return {
@@ -52,20 +61,12 @@ export default function Submissions() {
       };
     }
 
-    if (isSynced) {
-      return {
-        label: 'Synchronisiert',
-        color: 'bg-indigo-100 text-indigo-700',
-        icon: CheckCircle2,
-        iconBg: 'bg-indigo-50 text-indigo-600'
-      };
-    }
-
+    // Default to Synced/Submitted
     return {
-      label: 'Eingereicht',
-      color: 'bg-green-100 text-green-700',
-      icon: Zap,
-      iconBg: 'bg-green-50 text-green-600'
+      label: 'Synchronisiert',
+      color: 'bg-emerald-100 text-emerald-700',
+      icon: CheckCircle2,
+      iconBg: 'bg-emerald-50 text-emerald-600'
     };
   };
 

@@ -42,17 +42,17 @@ export default {
           light: '#E2E8F0', // Light gray
           dark: '#334155', // Dark border
         },
-        // Premium Dark Mode Palette
+        // Premium Dark Mode Palette (Softer / Blaulastig)
         dark: {
-          base: '#0F1115',      // Layer 1 - Background
-          card: '#141820',      // Layer 2 - Cards/Sections
-          input: '#1B1F28',     // Layer 3 - Inputs/Surfaces
-          stroke: 'rgba(255,255,255,0.07)', // Soft Dividers
-          highlight: 'rgba(255,255,255,0.04)', // Hover State
-          'text-head': '#FFFFFF',
-          'text-body': '#D6DAE2',
-          'text-muted': '#A0A6B4',
-          'accent-sec': '#9DB4FF', // Secondary Accent
+          base: '#0f172a',      // Slate 900 - Soft Dark Blue Background
+          card: '#1e293b',      // Slate 800 - Lighter Card
+          input: '#334155',     // Slate 700 - Inputs
+          stroke: 'rgba(255,255,255,0.1)', // Slightly more visible dividers
+          highlight: 'rgba(255,255,255,0.05)', // Hover State
+          'text-head': '#F8FAFC', // Slate 50
+          'text-body': '#94A3B8', // Slate 400
+          'text-muted': '#64748B', // Slate 500
+          'accent-sec': '#60A5FA', // Blue 400
         },
         text: {
           primary: {
@@ -85,7 +85,7 @@ export default {
       boxShadow: {
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
         'elevated': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'dark-card-shadow': '0px 8px 24px rgba(0,0,0,0.45)',
+        'dark-card-shadow': '0px 8px 24px rgba(0,0,0,0.25)',
         'sticky-nav': '0 -4px 6px -1px rgba(0, 0, 0, 0.1)',
       },
       letterSpacing: {

@@ -176,8 +176,12 @@ class ApiService {
   // }
 
   async updateProfile(data: any) {
-    return this.request('/user/me', {
-      method: 'PATCH',
+    if (import.meta.env.DEV) {
+      console.log('[API] Update Profile Data:', data);
+    }
+    // Standardize on /auth/me for profile updates to ensure consistency
+    return this.request('/auth/me', {
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   }

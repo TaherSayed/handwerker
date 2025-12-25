@@ -43,19 +43,31 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     // --- Header Section ---
 
     // Company Logo (Left)
+    // Company Logo (Left)
     if (companySettings?.logo_url) {
         try {
-            // Fetch image to get base64 or blob if needed, but jspdf headers can handle urls often if CORS allows. 
-            // Safest is to add image if we have base64. 
-            // For now, assuming URL might be accessible or base64. 
-            // If it fails, we catch it.
-            // doc.addImage(companySettings.logo_url, 'PNG', margin, currentY, 30, 30);
+            let imgData = companySettings.logo_url;
 
-            // Since we can't easily fetch and convert here without async overhead/CORS issues in a pure util often,
-            // we'll try to add it if it's a data URL. If it's http, it might fail in browser without proxy.
-            // We will skip logo if it's not a data string for this MVP or use a placeholder.
-            if (companySettings.logo_url.startsWith('data:')) {
-                doc.addImage(companySettings.logo_url, 'JPEG', margin, currentY, 25, 25);
+            // If it's a remote URL, fetch it and convert to DataURI
+            if (imgData.startsWith('http')) {
+                try {
+                    const response = await fetch(imgData);
+                    const blob = await response.blob();
+                    imgData = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (fetchErr) {
+                    console.warn('Failed to fetch remote logo for PDF', fetchErr);
+                    // Fallback: don't loop or retry, just proceed with original if possible or skip
+                }
+            }
+
+            if (imgData && imgData.startsWith('data:')) {
+                // Determine format
+                const format = imgData.includes('image/png') ? 'PNG' : 'JPEG';
+                doc.addImage(imgData, format, margin, currentY, 25, 25);
             }
         } catch (e) {
             console.warn('Could not add logo to PDF', e);

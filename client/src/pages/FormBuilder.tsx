@@ -288,35 +288,40 @@ export default function FormBuilder() {
                                     type="text"
                                     value={field.label}
                                     onChange={(e) => updateField(index, { label: e.target.value })}
-                                    className={`flex-1 bg-transparent border-none focus:ring-0 font-black p-0 placeholder:text-slate-200 transition-colors
-                                      ${field.type === 'section' ? 'text-lg text-slate-900 uppercase' : 'text-base text-slate-800'}`}
+                                    className={`flex-1 bg-transparent border-none focus:ring-0 p-0 transition-colors
+                                      ${field.type === 'section'
+                                        ? 'text-lg font-bold text-slate-900 uppercase tracking-tight'
+                                        : 'text-base font-semibold text-slate-800 placeholder:font-normal'}`}
                                     placeholder={field.type === 'section' ? 'Neuer Abschnitt' : 'Feld Bezeichnung'}
                                   />
 
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-[0.2em] shadow-sm
-                                      ${field.type === 'section' ? 'bg-slate-900 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
+                                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.1em] shadow-sm
+                                      ${field.type === 'section' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'}`}>
                                       {field.type}
                                     </span>
                                     {field.type !== 'section' && (
-                                      <label className="flex items-center gap-2 cursor-pointer select-none group/req bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                                      <label className="flex items-center gap-2 cursor-pointer select-none group/req">
                                         <div className="relative flex items-center">
                                           <input
                                             type="checkbox"
                                             checked={field.required}
                                             onChange={(e) => updateField(index, { required: e.target.checked })}
-                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-0 opacity-0 absolute cursor-pointer inset-0 z-10"
+                                            className="sr-only"
                                           />
-                                          <div className={`w-4 h-4 border-2 rounded transition-all mr-2 ${field.required ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-300'}`}>
-                                            {field.required && <div className="w-1.5 h-1.5 bg-white rounded-full m-auto mt-0.5" />}
+                                          <div className={`px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider transition-colors
+                                            ${field.required
+                                              ? 'bg-red-50 text-red-600 border border-red-100'
+                                              : 'bg-transparent text-slate-300 border border-transparent hover:bg-slate-50'}`}>
+                                            {field.required ? 'Pflicht' : 'Optional'}
                                           </div>
-                                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest group-hover/req:text-slate-600 transition-colors">Pflicht</span>
                                         </div>
                                       </label>
                                     )}
                                     <button
                                       onClick={() => removeField(index)}
-                                      className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                      title="Löschen"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </button>
@@ -325,14 +330,14 @@ export default function FormBuilder() {
 
                                 {field.type === 'dropdown' && (
                                   <div className="pl-4 border-l-2 border-indigo-100 py-1 animate-in slide-in-from-left-4">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Auswahlmöglichkeiten</label>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-2">Optionen</label>
                                     <input
                                       type="text"
                                       value={field.options?.join(', ') || ''}
                                       onChange={(e) => updateField(index, {
                                         options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
                                       })}
-                                      className="input px-4 py-3 font-bold text-sm bg-slate-50 border-none placeholder:text-slate-300"
+                                      className="input px-4 py-3 font-normal text-sm bg-slate-50 border-none placeholder:text-slate-300 placeholder:font-light"
                                       placeholder="Kommagetrennt: Option A, Option B..."
                                     />
                                   </div>
@@ -353,11 +358,11 @@ export default function FormBuilder() {
       </div>
 
       {/* Sticky Action Bar */}
-      <div className="sticky-action-bar flex items-center gap-3">
+      <div className="sticky-action-bar flex justify-center pb-safe">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 flex items-center justify-center gap-3 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+          className="template-save-btn w-full max-w-[420px] mx-auto flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
         >
           {saving ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { Plus, FileText, Copy, Trash2, Archive, Edit } from 'lucide-react';
+import { Plus, FileText, Copy, Trash2, Archive, Edit, MoreVertical } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -12,6 +12,7 @@ export default function FormTemplates() {
   const [error, setError] = useState<string | null>(null);
   const { success, error: notifyError } = useNotificationStore();
   const [filter, setFilter] = useState<'active' | 'archived'>('active');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -182,39 +183,76 @@ export default function FormTemplates() {
                   {template.fields?.length || 0} Felder
                 </div>
 
-                <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                {/* Context Menu */}
+                <div className="relative">
                   <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                    title="Bearbeiten"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === template.id ? null : template.id);
+                    }}
+                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <Edit className="w-4 h-4" />
+                    <MoreVertical className="w-5 h-5" />
                   </button>
-                  <button
-                    onClick={(e) => handleDuplicate(template.id, e)}
-                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                    title="Kopieren"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  {filter === 'active' ? (
-                    <button
-                      onClick={(e) => handleArchive(template.id, true, e)}
-                      className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
-                      title="Archivieren"
-                    >
-                      <Archive className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => handleDelete(template.id, e)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                      title="Löschen"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                  {openMenuId === template.id && (
+                    <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-right">
+                      <div className="p-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
+                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2"
+                        >
+                          <Edit className="w-4 h-4 text-slate-400" />
+                          Bearbeiten
+                        </button>
+
+                        <button
+                          onClick={(e) => { handleDuplicate(template.id, e); setOpenMenuId(null); }}
+                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2"
+                        >
+                          <Copy className="w-4 h-4 text-slate-400" />
+                          Duplizieren
+                        </button>
+
+                        {filter === 'active' ? (
+                          <button
+                            onClick={(e) => { handleArchive(template.id, true, e); setOpenMenuId(null); }}
+                            className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg flex items-center gap-2"
+                          >
+                            <Archive className="w-4 h-4" />
+                            Archivieren
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => { handleArchive(template.id, false, e); setOpenMenuId(null); }}
+                            className="w-full text-left px-3 py-2.5 text-sm font-medium text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg flex items-center gap-2"
+                          >
+                            <Archive className="w-4 h-4" />
+                            Wiederherstellen
+                          </button>
+                        )}
+
+                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
+
+                        <button
+                          onClick={(e) => { handleDelete(template.id, e); setOpenMenuId(null); }}
+                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Löschen
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
+
+                {/* Overlay to close menu when clicking outside */}
+                {openMenuId === template.id && (
+                  <div
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}
+                  />
+                )}
               </div>
             </div>
           ))}
