@@ -91,7 +91,7 @@ export default function FormBuilder() {
     const newField = {
       id: `field_${Date.now()}`,
       type,
-      label: type === 'section' ? 'Neuer Abschnitt' : `${type.charAt(0).toUpperCase() + type.slice(1)} Feld`,
+      label: FIELD_TYPES.find(t => t.value === type)?.label || 'Neues Feld',
       required: false,
       options: type === 'dropdown' ? ['Option 1', 'Option 2'] : undefined,
       placeholder: '',
