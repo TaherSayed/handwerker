@@ -23,6 +23,21 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      
+      // Show UI immediately with cached data if available
+      const { offlineService } = await import('../services/offline.service');
+      const cached = offlineService.getCachedSubmissions();
+      if (cached.length > 0) {
+        setStats({
+          total: cached.length,
+          sync: cached.filter((s: any) => s.status === 'submitted').length,
+          drafts: cached.filter((s: any) => s.status === 'draft').length
+        });
+        setSubmissions(cached);
+        setLoading(false); // Show cached data immediately
+      }
+
+      // Then fetch fresh data in background
       const subs = await apiService.getSubmissions();
 
       setStats({
@@ -34,6 +49,7 @@ export default function Dashboard() {
       setSubmissions(subs);
     } catch (error) {
       console.error('Error loading dashboard:', error);
+      // Keep cached data if fetch fails
     } finally {
       setLoading(false);
     }

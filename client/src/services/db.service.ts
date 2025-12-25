@@ -92,4 +92,28 @@ export class OnSiteDB extends Dexie {
     }
 }
 
-export const db = new OnSiteDB();
+// Lazy initialize DB to avoid blocking app startup
+let dbInstance: OnSiteDB | null = null;
+
+export const getDB = (): OnSiteDB => {
+  if (!dbInstance) {
+    dbInstance = new OnSiteDB();
+    // Open DB in background, don't wait for it
+    dbInstance.open().catch(err => {
+      console.error('Failed to open IndexedDB:', err);
+    });
+  }
+  return dbInstance;
+};
+
+// Export db for backward compatibility, but use lazy initialization
+export const db = new Proxy({} as OnSiteDB, {
+  get(target, prop) {
+    const instance = getDB();
+    const value = (instance as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(instance);
+    }
+    return value;
+  }
+});

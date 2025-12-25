@@ -3,12 +3,13 @@
  * Provides encrypted storage for sensitive data and file management
  */
 
-import { db, SecureStorageItem } from './db.service';
+import { getDB, SecureStorageItem } from './db.service';
 
 // Simple encryption using Web Crypto API (AES-GCM)
 class SecureStorage {
   private async getEncryptionKey(): Promise<CryptoKey> {
     // Get or create encryption key from IndexedDB
+    const db = getDB();
     const keyData = await db.storage.get('encryption_key');
     
     if (keyData?.data) {
@@ -38,6 +39,7 @@ class SecureStorage {
     const exported = await crypto.subtle.exportKey('raw', key);
     const keyArray = Array.from(new Uint8Array(exported));
     
+    const db = getDB();
     await db.storage.put({
       id: 'encryption_key',
       data: JSON.stringify(keyArray),
@@ -103,6 +105,7 @@ class SecureStorage {
   // Store sensitive submission data encrypted
   async saveSecureSubmission(submissionId: string, data: any): Promise<void> {
     const encrypted = await this.encrypt(JSON.stringify(data));
+    const db = getDB();
     await db.storage.put({
       id: `secure_submission_${submissionId}`,
       data: encrypted,
@@ -112,6 +115,7 @@ class SecureStorage {
   }
 
   async getSecureSubmission(submissionId: string): Promise<any | null> {
+    const db = getDB();
     const stored = await db.storage.get(`secure_submission_${submissionId}`);
     if (!stored) return null;
     
@@ -125,6 +129,7 @@ class SecureStorage {
     type: 'pdf' | 'image' | 'signature';
     fileName?: string;
   }): Promise<void> {
+    const db = getDB();
     await db.files.put({
       id: fileId,
       blob: file,
@@ -138,11 +143,13 @@ class SecureStorage {
   }
 
   async getFile(fileId: string): Promise<Blob | null> {
+    const db = getDB();
     const file = await db.files.get(fileId);
     return file?.blob || null;
   }
 
   async getFileUrl(fileId: string): Promise<string | null> {
+    const db = getDB();
     const file = await db.files.get(fileId);
     if (!file) return null;
     
@@ -151,16 +158,19 @@ class SecureStorage {
 
   // Get all files for a submission
   async getSubmissionFiles(submissionId: string): Promise<any[]> {
+    const db = getDB();
     return db.files.where('submissionId').equals(submissionId).toArray();
   }
 
   // Delete file
   async deleteFile(fileId: string): Promise<void> {
+    const db = getDB();
     await db.files.delete(fileId);
   }
 
   // Clean up old files (older than 90 days)
   async cleanupOldFiles(): Promise<number> {
+    const db = getDB();
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 90);
     
@@ -181,6 +191,7 @@ class SecureStorage {
     filesSize: number;
     submissionsCount: number;
   }> {
+    const db = getDB();
     const files = await db.files.toArray();
     const submissions = await db.storage
       .where('type')

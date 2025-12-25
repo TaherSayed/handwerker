@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
-      // 1. Immediate Hydration from Cache (Super Fast)
+      // 1. Immediate Hydration from Cache (Super Fast - Unlock UI immediately)
       const cachedProfile = localStorage.getItem(CACHE_KEY);
       if (cachedProfile) {
         try {
@@ -34,36 +34,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           console.error('Failed to parse cached profile');
           localStorage.removeItem(CACHE_KEY);
         }
+      } else {
+        // If no cache, unblock UI immediately (user can sign in)
+        set({ loading: false, initialized: true });
       }
 
-      // 2. Race Session Check (Don't block indefinitely)
+      // 2. Race Session Check (Don't block - run in background)
       const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 2000));
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 1500));
 
-      try {
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+      Promise.race([sessionPromise, timeoutPromise])
+        .then((result: any) => {
+          const { data: { session } } = result || { data: { session: null } };
+          if (session?.user) {
+            set({ user: session.user });
+            // Background refresh ensures data consistency without blocking
+            get().refreshProfile().catch(() => {});
+          }
+        })
+        .catch((error) => {
+          console.warn('Auth check slow/failed, using cache if available:', error);
+        });
 
-        if (session?.user) {
-          set({ user: session.user, loading: false, initialized: true });
-          // Background refresh ensures data consistency without blocking
-          get().refreshProfile();
-        } else if (!cachedProfile) {
-          // Only stop loading if we didn't use cache fallback
-          set({ loading: false, initialized: true });
-        }
-      } catch (error) {
-        console.warn('Auth check slow/failed, proceeding with cache if available:', error);
-        // If we have no cache and auth failed/timed out, we still need to unblock
-        if (!get().initialized) {
-          set({ loading: false, initialized: true });
-        }
-      }
-
-      // 3. Setup Listeners (always late)
+      // 3. Setup Listeners (non-blocking)
       supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           set({ user: session.user });
-          await get().refreshProfile();
+          get().refreshProfile().catch(() => {});
         } else if (event === 'SIGNED_OUT') {
           set({ user: null, profile: null });
           localStorage.removeItem(CACHE_KEY);

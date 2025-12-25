@@ -8,7 +8,14 @@ import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
-import './services/sync.service'; // Start Sync Service
+// Lazy load sync service to avoid blocking initial load
+let syncServiceLoaded = false;
+const loadSyncService = () => {
+  if (!syncServiceLoaded) {
+    import('./services/sync.service');
+    syncServiceLoaded = true;
+  }
+};
 
 import LoadingScreen from './components/common/LoadingScreen';
 
@@ -93,11 +100,19 @@ function App() {
   const { warn, success: notifySuccess } = useNotificationStore();
 
   useEffect(() => {
+    // Initialize auth immediately
     initialize();
+
+    // Load sync service after a short delay to not block initial render
+    const syncTimeout = setTimeout(() => {
+      loadSyncService();
+    }, 1000);
 
     const handleOnline = () => {
       setIsOnline(true);
       notifySuccess('Wieder online', 'Ihre Verbindung wurde wiederhergestellt.');
+      // Load sync service when coming online
+      loadSyncService();
     };
     const handleOffline = () => {
       setIsOnline(false);
@@ -108,6 +123,7 @@ function App() {
     window.addEventListener('offline', handleOffline);
 
     return () => {
+      clearTimeout(syncTimeout);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
