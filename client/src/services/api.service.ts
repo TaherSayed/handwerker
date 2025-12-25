@@ -160,7 +160,7 @@ class ApiService {
   }
 
   async getMe() {
-    return this.request('/auth/me');
+    return this.request('/user/me');
   }
 
   async updateCompanyInfo(data: any) {
@@ -179,9 +179,9 @@ class ApiService {
     if (import.meta.env.DEV) {
       console.log('[API] Update Profile Data:', data);
     }
-    // Standardize on /auth/me for profile updates to ensure consistency
-    return this.request('/auth/me', {
-      method: 'PUT',
+    // Standardize on /user/me for profile updates
+    return this.request('/user/me', {
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   }

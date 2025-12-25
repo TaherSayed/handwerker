@@ -21,8 +21,18 @@ router.post('/signed-url', authMiddleware, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Invalid bucket' });
     }
 
+    // Validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (content_type && !allowedMimeTypes.includes(content_type)) {
+      return res.status(400).json({ error: 'Invalid file type. Only JPG, PNG, WEBP and PDF are allowed.' });
+    }
+
     // Generate unique file path
-    const fileExt = file_name.split('.').pop();
+    const fileExt = file_name.split('.').pop()?.toLowerCase();
+    if (!fileExt || !['jpg', 'jpeg', 'png', 'webp', 'pdf'].includes(fileExt)) {
+      return res.status(400).json({ error: 'Invalid file extension' });
+    }
+
     const uniqueFileName = `${userId}/${uuidv4()}.${fileExt}`;
 
     // Create signed URL (use adminClient if available, otherwise use authenticated user client)
