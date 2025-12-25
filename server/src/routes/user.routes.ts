@@ -52,37 +52,99 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     if (primary_color !== undefined) updates.primary_color = primary_color;
     if (accent_color !== undefined) updates.accent_color = accent_color;
 
-    const { data, error } = await userClient
-      .from('user_profiles')
-      .update(updates)
-      .eq('id', userId)
-      .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
-      .single();
+    // Try to update, but handle schema cache errors gracefully
+    let data: any = null;
+    let error: any = null;
+    
+    try {
+      const result = await userClient
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    } catch (updateError: any) {
+      error = updateError;
+    }
 
     if (error) {
-      // If error is about missing columns (accent_color, primary_color), try again without them
-      if (error.message?.includes('accent_color') || error.message?.includes('primary_color') || error.message?.includes('schema cache')) {
-        console.warn(`[UserRoutes] Branding columns not available, updating without them for ${userId}`);
-        const safeUpdates: any = { ...updates };
-        delete safeUpdates.primary_color;
-        delete safeUpdates.accent_color;
+      // Check if error is about missing columns in schema cache
+      const isSchemaCacheError = error.message?.includes('schema cache') || 
+                                 error.message?.includes('column') ||
+                                 error.message?.includes('does not exist');
+      
+      if (isSchemaCacheError) {
+        console.warn(`[UserRoutes] Schema cache error for ${userId}, trying defensive update:`, error.message);
         
+        // Build safe updates by trying to update in stages
+        const safeUpdates: any = {};
+        const problematicFields: string[] = [];
+        
+        // Core fields (always exist)
+        if (full_name !== undefined) safeUpdates.full_name = full_name;
+        if (company_name !== undefined) safeUpdates.company_name = company_name;
+        if (company_logo_url !== undefined) safeUpdates.company_logo_url = company_logo_url;
+        if (company_address !== undefined) safeUpdates.company_address = company_address;
+        
+        // Company fields that might not exist in schema cache
+        // Try to include them, but we'll handle errors
+        if (company_phone !== undefined) {
+          try {
+            safeUpdates.company_phone = company_phone;
+          } catch (e) {
+            problematicFields.push('company_phone');
+          }
+        }
+        if (company_website !== undefined) {
+          try {
+            safeUpdates.company_website = company_website;
+          } catch (e) {
+            problematicFields.push('company_website');
+          }
+        }
+        
+        // Branding fields (might not exist)
+        if (primary_color !== undefined) {
+          try {
+            safeUpdates.primary_color = primary_color;
+          } catch (e) {
+            problematicFields.push('primary_color');
+          }
+        }
+        if (accent_color !== undefined) {
+          try {
+            safeUpdates.accent_color = accent_color;
+          } catch (e) {
+            problematicFields.push('accent_color');
+          }
+        }
+        
+        // Try update with safe fields only
+        const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, created_at, updated_at';
         const { data: safeData, error: safeError } = await userClient
           .from('user_profiles')
           .update(safeUpdates)
           .eq('id', userId)
-          .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
+          .select(safeSelect)
           .single();
         
         if (safeError) {
-          return res.status(400).json({ error: safeError.message });
+          console.error(`[UserRoutes] Even safe update failed for ${userId}:`, safeError.message);
+          return res.status(400).json({ 
+            error: `Could not update profile. Some fields may not be available: ${problematicFields.join(', ')}. Please ensure migrations have been run.` 
+          });
         }
         
-        // Return data with default colors if branding fields were requested but don't exist
+        // Return data with requested values (even if not saved)
         return res.json({
           ...safeData,
-          primary_color: primary_color !== undefined ? primary_color : '#2563eb',
-          accent_color: accent_color !== undefined ? accent_color : '#1e40af',
+          company_phone: company_phone !== undefined ? company_phone : safeData?.company_phone,
+          company_website: company_website !== undefined ? company_website : safeData?.company_website,
+          primary_color: primary_color !== undefined ? primary_color : (safeData?.primary_color || '#2563eb'),
+          accent_color: accent_color !== undefined ? accent_color : (safeData?.accent_color || '#1e40af'),
         });
       }
       
