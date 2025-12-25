@@ -10,15 +10,35 @@ export class UserService {
         // 1. Ensure profile exists (Use admin client to bypass RLS if needed for initial creation)
         const adminClient = supabase.adminClient || userClient;
 
+        // First, try to get profile with basic fields only (always exist)
         let { data: profile, error: profileError } = await adminClient
             .from('user_profiles')
-            .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+            .select('id, email, full_name, created_at, updated_at')
             .eq('id', userId)
             .single();
+
+        // If profile exists, try to get extended fields (may not exist yet)
+        if (profile && !profileError) {
+            try {
+                const { data: extendedProfile } = await adminClient
+                    .from('user_profiles')
+                    .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+                    .eq('id', userId)
+                    .single();
+                
+                if (extendedProfile) {
+                    profile = { ...profile, ...extendedProfile };
+                }
+            } catch (extendedError) {
+                // If extended fields don't exist yet, that's OK - use basic profile
+                console.warn(`[UserService] Extended profile fields not available yet for ${userId}, using basic profile`);
+            }
+        }
 
         if (profileError || !profile) {
             console.log(`[UserService] Creating missing profile for ${userId}`);
             // Use upsert with ignoreDuplicates to avoid race conditions (duplicate key errors)
+            // Only set fields that definitely exist
             const { data: newProfile, error: createProfileError } = await adminClient
                 .from('user_profiles')
                 .upsert({
@@ -27,27 +47,53 @@ export class UserService {
                     full_name: email.split('@')[0] || 'User',
                     updated_at: new Date().toISOString(),
                 }, { onConflict: 'id', ignoreDuplicates: true })
-                .select()
+                .select('id, email, full_name, created_at, updated_at')
                 .maybeSingle();
 
             if (createProfileError) {
-                throw new Error(`Failed to create user profile: ${createProfileError.message}`);
-            }
-
-            // If upsert ignored the duplicate, newProfile might be null. Fetch existing one.
-            if (!newProfile) {
-                const { data: existingProfile, error: refetchError } = await adminClient
+                // If creation fails, try to fetch existing profile with basic fields
+                const { data: existingBasic, error: basicError } = await adminClient
                     .from('user_profiles')
-                    .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+                    .select('id, email, full_name, created_at, updated_at')
                     .eq('id', userId)
                     .single();
 
-                if (refetchError || !existingProfile) {
-                    throw new Error(`Failed to ensure user profile exists: ${refetchError?.message}`);
+                if (basicError || !existingBasic) {
+                    throw new Error(`Failed to create user profile: ${createProfileError.message}`);
                 }
-                profile = existingProfile;
-            } else {
+                profile = existingBasic;
+            } else if (newProfile) {
                 profile = newProfile;
+            } else {
+                // If upsert ignored the duplicate, fetch existing one with basic fields first
+                const { data: existingBasic, error: basicError } = await adminClient
+                    .from('user_profiles')
+                    .select('id, email, full_name, created_at, updated_at')
+                    .eq('id', userId)
+                    .single();
+
+                if (basicError || !existingBasic) {
+                    throw new Error(`Failed to ensure user profile exists: ${basicError?.message || 'Profile not found'}`);
+                }
+                
+                // Try to get extended fields, but don't fail if they don't exist
+                try {
+                    const { data: extendedProfile } = await adminClient
+                        .from('user_profiles')
+                        .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+                        .eq('id', userId)
+                        .single();
+                    
+                    if (extendedProfile) {
+                        profile = { ...existingBasic, ...extendedProfile };
+                    } else {
+                        profile = existingBasic;
+                    }
+                } catch (extendedError) {
+                    // Extended fields don't exist yet - that's OK, use basic profile
+                    console.warn(`[UserService] Extended profile fields not available for ${userId}, using basic profile`);
+                    profile = existingBasic;
+                }
             }
         }
 

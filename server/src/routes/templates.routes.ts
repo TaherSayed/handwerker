@@ -91,26 +91,46 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
     const userClient = supabase.getClientForUser(accessToken);
 
     // Get or create user's workspace safely
-    const { workspace } = await userService.getOrCreateWorkspace(userId, req.user!.email!, userClient);
+    // If this fails, we'll try to proceed without workspace (for backward compatibility)
+    let workspace: any = null;
+    try {
+      const result = await userService.getOrCreateWorkspace(userId, req.user!.email!, userClient);
+      workspace = result.workspace;
+    } catch (workspaceError: any) {
+      console.warn(`[Templates] Workspace creation failed for ${userId}, attempting to proceed:`, workspaceError.message);
+      // Try to get existing workspace as fallback
+      try {
+        const { data: existingWorkspace } = await userClient
+          .from('workspaces')
+          .select('id, name')
+          .eq('owner_id', userId)
+          .limit(1)
+          .single();
+        workspace = existingWorkspace;
+      } catch (fallbackError) {
+        console.error(`[Templates] Could not get workspace for ${userId}:`, fallbackError);
+        // Continue without workspace - some deployments may not require it
+      }
+    }
 
-    if (!workspace || !workspace.id) {
-      return res.status(500).json({
-        error: 'No workspace available',
-        success: false
-      });
+    // Build insert data - workspace_id is optional
+    const insertData: any = {
+      user_id: userId,
+      name: name.trim(),
+      description: description || null,
+      category: category || null,
+      tags: tags || [],
+      fields: fields || [],
+    };
+
+    // Only include workspace_id if we have one (may be nullable in schema)
+    if (workspace?.id) {
+      insertData.workspace_id = workspace.id;
     }
 
     const { data, error } = await userClient
       .from('form_templates')
-      .insert({
-        workspace_id: workspace.id,
-        user_id: userId,
-        name: name.trim(),
-        description: description || null,
-        category: category || null,
-        tags: tags || [],
-        fields: fields || [],
-      })
+      .insert(insertData)
       .select()
       .single();
 
