@@ -409,7 +409,7 @@ export default function VisitWorkflow() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
-                            <ContactSelector onSelect={handleContactSelect} onClose={() => { }} initialContact={null} />
+                            <ContactSelector onSelect={handleContactSelect} onClose={() => navigate('/dashboard')} initialContact={null} />
 
                             <div className="relative py-4">
                                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-dark-stroke" /></div>
