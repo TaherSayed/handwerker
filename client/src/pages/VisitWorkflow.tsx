@@ -624,35 +624,93 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 }
             }
             
-            if (remoteUrl && typeof remoteUrl === 'string' && remoteUrl.startsWith('http')) {
-                // Download PDF as blob to handle 404 errors and CORS
-                try {
-                    const response = await fetch(remoteUrl);
-                    
-                    if (!response.ok) {
-                        // If 404, try to regenerate PDF
-                        if (response.status === 404 && submissionResult.id) {
-                            try {
-                                const pdfResult = await apiService.generatePDF(submissionResult.id) as any;
-                                remoteUrl = pdfResult.pdf_url;
-                                // Retry with new URL
-                                const retryResponse = await fetch(pdfResult.pdf_url);
-                                if (!retryResponse.ok) throw new Error('PDF generation failed');
-                                const blob = await retryResponse.blob();
-                                await handlePDFBlob(blob, submissionResult.id);
-                                return;
-                            } catch (regenerateError) {
-                                throw new Error('PDF konnte nicht generiert werden');
-                            }
+            if (remoteUrl && typeof remoteUrl === 'string') {
+                // Handle base64 data URLs (fallback when storage bucket doesn't exist)
+                if (remoteUrl.startsWith('data:application/pdf;base64,')) {
+                    try {
+                        const base64Data = remoteUrl.split(',')[1];
+                        const binaryString = atob(base64Data);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
                         }
-                        throw new Error(`PDF nicht gefunden (${response.status})`);
+                        const blob = new Blob([bytes], { type: 'application/pdf' });
+                        await handlePDFBlob(blob, submissionResult.id);
+                        return;
+                    } catch (dataError) {
+                        console.error('Failed to process base64 PDF:', dataError);
+                        setPdfError('PDF konnte nicht verarbeitet werden');
+                        setLoadingPdf(false);
+                        return;
                     }
+                }
+                
+                // Handle HTTP URLs
+                if (remoteUrl.startsWith('http')) {
+                    // Download PDF as blob to handle 404 errors and CORS
+                    try {
+                        const response = await fetch(remoteUrl);
+                        
+                        if (!response.ok) {
+                            // If 404, try to regenerate PDF or use direct download endpoint
+                            if (response.status === 404 && submissionResult.id) {
+                                try {
+                                    // Try direct download endpoint as fallback
+                                    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://hw.sata26.cloud/api';
+                                    const { supabase } = await import('../lib/supabase');
+                                    const { data: { session } } = await supabase.auth.getSession();
+                                    const directUrl = `${apiBaseUrl}/submissions/${submissionResult.id}/pdf`;
+                                    const directResponse = await fetch(directUrl, {
+                                        headers: {
+                                            'Authorization': `Bearer ${session?.access_token || ''}`,
+                                        },
+                                    });
+                                    
+                                    if (directResponse.ok) {
+                                        const blob = await directResponse.blob();
+                                        await handlePDFBlob(blob, submissionResult.id);
+                                        return;
+                                    }
+                                    
+                                    // If direct download also fails, try regenerate
+                                    const pdfResult = await apiService.generatePDF(submissionResult.id) as any;
+                                    remoteUrl = pdfResult.pdf_url;
+                                    
+                                    // If new URL is data URL, handle it
+                                    if (pdfResult.pdf_url.startsWith('data:')) {
+                                        const base64Data = pdfResult.pdf_url.split(',')[1];
+                                        const binaryString = atob(base64Data);
+                                        const bytes = new Uint8Array(binaryString.length);
+                                        for (let i = 0; i < binaryString.length; i++) {
+                                            bytes[i] = binaryString.charCodeAt(i);
+                                        }
+                                        const blob = new Blob([bytes], { type: 'application/pdf' });
+                                        await handlePDFBlob(blob, submissionResult.id);
+                                        return;
+                                    }
+                                    
+                                    // Retry with new URL
+                                    const retryResponse = await fetch(pdfResult.pdf_url);
+                                    if (!retryResponse.ok) throw new Error('PDF generation failed');
+                                    const blob = await retryResponse.blob();
+                                    await handlePDFBlob(blob, submissionResult.id);
+                                    return;
+                                } catch (regenerateError) {
+                                    throw new Error('PDF konnte nicht generiert werden');
+                                }
+                            }
+                            throw new Error(`PDF nicht gefunden (${response.status})`);
+                        }
 
-                    const blob = await response.blob();
-                    await handlePDFBlob(blob, submissionResult.id);
-                } catch (fetchError: any) {
-                    console.error('Failed to fetch PDF:', fetchError);
-                    setPdfError(fetchError.message || 'PDF konnte nicht geladen werden');
+                        const blob = await response.blob();
+                        await handlePDFBlob(blob, submissionResult.id);
+                    } catch (fetchError: any) {
+                        console.error('Failed to fetch PDF:', fetchError);
+                        setPdfError(fetchError.message || 'PDF konnte nicht geladen werden');
+                        setLoadingPdf(false);
+                    }
+                } else {
+                    setPdfError('Keine gültige PDF-URL gefunden');
                     setLoadingPdf(false);
                 }
             } else {

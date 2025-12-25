@@ -48,39 +48,21 @@ export class PDFService {
     }
   }
 
-  async generateSubmissionPDF(
-    userId: string,
-    submissionData: SubmissionData,
-    userClient?: any
-  ): Promise<string> {
+  async generateSubmissionPDFBuffer(
+    submissionData: SubmissionData
+  ): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {
       try {
         const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
         const chunks: Buffer[] = [];
 
         doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-        doc.on('end', async () => {
+        doc.on('end', () => {
           try {
             const pdfBuffer = Buffer.concat(chunks);
-            const storageClient = supabase.adminClient || (userClient || supabase.client);
-            const fileName = `${userId}/${submissionData.id}.pdf`;
-
-            const { error } = await storageClient.storage
-              .from('submission-pdfs')
-              .upload(fileName, pdfBuffer, {
-                contentType: 'application/pdf',
-                upsert: true,
-              });
-
-            if (error) reject(new Error(`Failed to upload PDF: ${error.message}`));
-            else {
-              const { data: urlData } = storageClient.storage
-                .from('submission-pdfs')
-                .getPublicUrl(fileName);
-              resolve(urlData.publicUrl);
-            }
+            resolve(pdfBuffer);
           } catch (err: any) {
-            reject(new Error(`Failed to save PDF: ${err.message}`));
+            reject(new Error(`Failed to create PDF buffer: ${err.message}`));
           }
         });
 
@@ -91,6 +73,42 @@ export class PDFService {
         reject(new Error(`PDF generation failed: ${error.message}`));
       }
     });
+  }
+
+  async generateSubmissionPDF(
+    userId: string,
+    submissionData: SubmissionData,
+    userClient?: any
+  ): Promise<string> {
+    try {
+      const pdfBuffer = await this.generateSubmissionPDFBuffer(submissionData);
+      const storageClient = supabase.adminClient || (userClient || supabase.client);
+      const fileName = `${userId}/${submissionData.id}.pdf`;
+
+      // Try to upload to storage
+      const { error } = await storageClient.storage
+        .from('submission-pdfs')
+        .upload(fileName, pdfBuffer, {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+
+      if (error) {
+        // If bucket doesn't exist or upload fails, log warning but don't fail
+        console.warn(`[PDF] Storage upload failed (bucket may not exist): ${error.message}`);
+        // Return a data URL as fallback - client will handle it
+        const base64 = pdfBuffer.toString('base64');
+        return `data:application/pdf;base64,${base64}`;
+      }
+
+      const { data: urlData } = storageClient.storage
+        .from('submission-pdfs')
+        .getPublicUrl(fileName);
+      return urlData.publicUrl;
+    } catch (err: any) {
+      console.error('[PDF] Generation error:', err);
+      throw new Error(`Failed to generate PDF: ${err.message}`);
+    }
   }
 
   private async buildPDFContent(doc: any, data: SubmissionData) {

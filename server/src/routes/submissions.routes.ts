@@ -272,53 +272,128 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       console.warn(`[Submissions] Company fields not available for user ${userId}, using defaults`);
     }
 
+    const submissionData = {
+      id: submission.id,
+      customer_name: submission.customer_name,
+      customer_email: submission.customer_email,
+      customer_phone: submission.customer_phone,
+      customer_address: submission.customer_address,
+      field_values: submission.field_values || {},
+      signature_url: submission.signature_url,
+      created_at: submission.created_at,
+      submitted_at: submission.submitted_at,
+      template: {
+        name: submission.form_templates.name,
+        fields: submission.form_templates.fields,
+      },
+      user: {
+        company_name: companyData.company_name || null,
+        company_logo_url: companyData.company_logo_url || null,
+        company_address: companyData.company_address || null,
+        company_city: companyData.company_city || null,
+        company_zip: companyData.company_zip || null,
+        company_country: companyData.company_country || null,
+      },
+    };
+
     // Generate PDF
     let pdfUrl: string;
     try {
-      pdfUrl = await pdfService.generateSubmissionPDF(
-        userId,
-        {
-          id: submission.id,
-          customer_name: submission.customer_name,
-          customer_email: submission.customer_email,
-          customer_phone: submission.customer_phone,
-          customer_address: submission.customer_address,
-          field_values: submission.field_values || {},
-          signature_url: submission.signature_url,
-          created_at: submission.created_at,
-          submitted_at: submission.submitted_at,
-          template: {
-            name: submission.form_templates.name,
-            fields: submission.form_templates.fields,
-          },
-          user: {
-            company_name: companyData.company_name || null,
-            company_logo_url: companyData.company_logo_url || null,
-            company_address: companyData.company_address || null,
-            company_city: companyData.company_city || null,
-            company_zip: companyData.company_zip || null,
-            company_country: companyData.company_country || null,
-          },
-        },
-        userClient
-      );
+      pdfUrl = await pdfService.generateSubmissionPDF(userId, submissionData, userClient);
     } catch (pdfError: any) {
-      console.error(' PDF generation error:', pdfError);
+      console.error('[Submissions] PDF generation error:', pdfError);
       return res.status(500).json({ error: pdfError.message });
     }
 
-    // Update submission with PDF URL
-    const { data: updated, error: updateError } = await userClient
+    // Update submission with PDF URL (only if it's a storage URL, not data URL)
+    if (pdfUrl && !pdfUrl.startsWith('data:')) {
+      try {
+        await userClient
+          .from('submissions')
+          .update({ pdf_url: pdfUrl })
+          .eq('id', id)
+          .eq('user_id', userId);
+      } catch (updateError) {
+        console.warn('[Submissions] Failed to update PDF URL:', updateError);
+        // Don't fail the request if update fails
+      }
+    }
+
+    res.json({ success: true, pdf_url: pdfUrl, submission: submission });
+  } catch (error: any) {
+    console.error('[Submissions] Generate PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /submissions/:id/pdf - Get PDF directly as download (fallback if storage fails)
+router.get('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+    const accessToken = req.accessToken!;
+
+    const userClient = supabase.getClientForUser(accessToken);
+
+    const { data: submission, error: fetchError } = await userClient
       .from('submissions')
-      .update({ pdf_url: pdfUrl })
+      .select(`
+        *,
+        form_templates:template_id (*),
+        user_profiles:user_id (id, full_name, email)
+      `)
       .eq('id', id)
       .eq('user_id', userId)
-      .select()
       .single();
 
-    res.json({ success: true, pdf_url: pdfUrl, submission: updated || submission });
+    if (fetchError || !submission) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+
+    // Get company data
+    let companyData: any = {};
+    try {
+      const { data: profileData } = await userClient
+        .from('user_profiles')
+        .select('company_name, company_logo_url, company_address, company_city, company_zip, company_country')
+        .eq('id', userId)
+        .single();
+      if (profileData) companyData = profileData;
+    } catch (profileError) {
+      // Ignore
+    }
+
+    // Generate PDF buffer
+    const pdfBuffer = await pdfService.generateSubmissionPDFBuffer({
+      id: submission.id,
+      customer_name: submission.customer_name,
+      customer_email: submission.customer_email,
+      customer_phone: submission.customer_phone,
+      customer_address: submission.customer_address,
+      field_values: submission.field_values || {},
+      signature_url: submission.signature_url,
+      created_at: submission.created_at,
+      submitted_at: submission.submitted_at,
+      template: {
+        name: submission.form_templates.name,
+        fields: submission.form_templates.fields,
+      },
+      user: {
+        company_name: companyData.company_name || null,
+        company_logo_url: companyData.company_logo_url || null,
+        company_address: companyData.company_address || null,
+        company_city: companyData.company_city || null,
+        company_zip: companyData.company_zip || null,
+        company_country: companyData.company_country || null,
+      },
+    });
+
+    // Return PDF directly
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Einsatzbericht_${submission.id}.pdf"`);
+    res.send(pdfBuffer);
   } catch (error: any) {
-    console.error('Generate PDF error:', error);
+    console.error('[Submissions] Direct PDF download error:', error);
     res.status(500).json({ error: error.message });
   }
 });
