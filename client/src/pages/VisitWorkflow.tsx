@@ -194,9 +194,9 @@ export default function VisitWorkflow() {
         switch (field.type) {
             case 'section':
                 return (
-                    <div className="pt-8 pb-2 border-b-2 border-slate-900 mb-4 first:pt-0">
-                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{field.label}</h3>
-                        {field.help_text && <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">{field.help_text}</p>}
+                    <div className="pt-6 pb-3 border-b border-slate-200 dark:border-dark-stroke mb-4 first:pt-0">
+                        <h3 className="text-lg font-medium text-slate-900 dark:text-dark-text-head tracking-normal">{field.label}</h3>
+                        {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal mt-1.5">{field.help_text}</p>}
                     </div>
                 );
 
@@ -222,7 +222,7 @@ export default function VisitWorkflow() {
                             onChange={(e) => handleFieldChange(field.id, e.target.checked)}
                             className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="font-bold text-slate-700 text-sm uppercase tracking-tight">{field.label}</span>
+                        <span className="font-medium text-slate-700 dark:text-dark-text-head text-sm">{field.label}</span>
                     </label>
                 );
 
@@ -361,7 +361,7 @@ export default function VisitWorkflow() {
                                 }`}>
                                 {isDone ? <CheckCircle2 className="w-5 h-5 animate-in zoom-in" /> : <Icon className="w-5 h-5" />}
                             </div>
-                            <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-500 ${isActive ? 'text-indigo-600' : 'text-slate-400'
+                            <span className={`text-xs font-medium transition-colors duration-500 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-dark-text-muted'
                                 }`}>
                                 {s.label}
                             </span>
@@ -383,13 +383,13 @@ export default function VisitWorkflow() {
                         else if (currentStep === 'form') setCurrentStep('template');
                         else if (currentStep === 'finish') navigate('/dashboard');
                     }}
-                    className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm group"
+                    className="w-10 h-10 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-xl flex items-center justify-center text-slate-600 dark:text-dark-text-muted hover:bg-slate-50 dark:hover:bg-dark-highlight hover:border-slate-300 dark:hover:border-dark-stroke transition-all shadow-sm group"
                 >
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Neuer Einsatz</h1>
-                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+                    <h1 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Neuer Einsatz</h1>
+                    <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal mt-1.5">
                         {currentStep === 'customer' ? 'Kunde' :
                             currentStep === 'template' ? 'Vorlage' :
                                 currentStep === 'form' ? 'Dateneingabe' : 'Abschluss'}
@@ -403,22 +403,22 @@ export default function VisitWorkflow() {
             <div className="space-y-8">
                 {currentStep === 'customer' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="text-center space-y-3 mb-4">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Wer ist der Kunde?</h2>
-                            <p className="text-slate-500 font-medium">Erfassen Sie die Kundendaten für den Bericht.</p>
+                        <div className="space-y-2 mb-4">
+                            <h2 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Wer ist der Kunde?</h2>
+                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed">Erfassen Sie die Kundendaten für den Bericht.</p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
                             <ContactSelector onSelect={handleContactSelect} onClose={() => { }} initialContact={null} />
 
                             <div className="relative py-4">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">ODER MANUELL</span></div>
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-dark-stroke" /></div>
+                                <div className="relative flex justify-center text-xs font-medium text-slate-400 dark:text-dark-text-muted"><span className="bg-white dark:bg-dark-card px-4">oder manuell</span></div>
                             </div>
 
-                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-8 space-y-6 border-slate-100 dark:border-dark-stroke shadow-2xl shadow-indigo-500/5">
+                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-6 space-y-5 border-slate-200 dark:border-dark-stroke shadow-lg">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kunde / Projektname</label>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1">Kunde / Projektname</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -428,7 +428,7 @@ export default function VisitWorkflow() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Standort / Adresse</label>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1">Standort / Adresse</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -437,8 +437,8 @@ export default function VisitWorkflow() {
                                         onChange={e => setManualCustomer({ ...manualCustomer, address: e.target.value })}
                                     />
                                 </div>
-                                <button type="submit" className="group flex items-center justify-center gap-3 bg-indigo-900 text-white w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100">
-                                    Manuell fortfahren <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <button type="submit" className="group flex items-center justify-center gap-3 bg-indigo-600 dark:bg-indigo-600 text-white w-full py-4 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md active:scale-[0.98]">
+                                    Manuell fortfahren <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </form>
                         </div>
@@ -447,40 +447,41 @@ export default function VisitWorkflow() {
 
                 {currentStep === 'template' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="text-center space-y-3">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Vorlage wählen</h2>
-                            <p className="text-slate-500 font-medium">Welches Formular soll verwendet werden?</p>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Vorlage wählen</h2>
+                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed">Welches Formular soll verwendet werden?</p>
                         </div>
 
                         {isLoadingTemplates ? (
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-3">
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-24 bg-slate-50 rounded-[2.5rem] animate-pulse border border-slate-100" />
+                                    <div key={i} className="h-28 bg-slate-50 dark:bg-dark-card rounded-2xl animate-pulse border border-slate-100 dark:border-dark-stroke" />
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-3">
                                 {templates.map(t => (
                                     <button
                                         key={t.id}
                                         onClick={() => handleTemplateSelect(t)}
-                                        className="group flex items-center gap-5 p-6 bg-white dark:bg-dark-input rounded-[2.5rem] border border-slate-100 dark:border-dark-stroke hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all text-left"
+                                        className="group flex items-center gap-4 p-5 bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 transition-all duration-200 text-left active:scale-[0.99]"
                                     >
-                                        <div className="w-16 h-16 bg-slate-50 dark:bg-dark-card text-slate-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                            <FileText className="w-8 h-8" />
+                                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white dark:group-hover:from-indigo-500 dark:group-hover:to-indigo-600 transition-all duration-200">
+                                            <FileText className="w-6 h-6" />
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-indigo-600 transition-colors truncate">{t.name}</h4>
-                                            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1 truncate">{t.description || 'Service record template'}</p>
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <h4 className="font-medium text-slate-900 dark:text-dark-text-head text-base tracking-normal leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{t.name}</h4>
+                                            <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed line-clamp-2">{t.description || 'Service record template'}</p>
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-dark-card flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shrink-0">
-                                            <ArrowRight className="w-5 h-5" />
+                                        <div className="w-9 h-9 rounded-lg bg-slate-50 dark:bg-dark-input flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all duration-200 shrink-0">
+                                            <ArrowRight className="w-4 h-4" />
                                         </div>
                                     </button>
                                 ))}
                                 {templates.length === 0 && (
-                                    <div className="text-center py-12 bg-slate-50 rounded-[2.5rem]">
-                                        <p className="text-slate-400 font-bold">Keine Vorlagen gefunden.</p>
+                                    <div className="text-center py-16 bg-slate-50 dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-stroke">
+                                        <FileText className="w-12 h-12 text-slate-300 dark:text-dark-text-muted mx-auto mb-3" />
+                                        <p className="text-slate-500 dark:text-dark-text-muted font-medium text-sm">Keine Vorlagen gefunden.</p>
                                     </div>
                                 )}
                             </div>
@@ -490,20 +491,20 @@ export default function VisitWorkflow() {
 
                 {currentStep === 'form' && selectedTemplate && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-white dark:bg-dark-card rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 dark:border-dark-stroke shadow-xl shadow-indigo-500/5">
-                            <div className="pb-6 border-b border-slate-100 dark:border-dark-stroke flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.2em]">
-                                    <User className="w-3.5 h-3.5" />
+                        <div className="bg-white dark:bg-dark-card rounded-2xl p-6 md:p-8 space-y-6 border border-slate-200 dark:border-dark-stroke shadow-lg">
+                            <div className="pb-5 border-b border-slate-200 dark:border-dark-stroke flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-xs">
+                                    <User className="w-4 h-4" />
                                     <span className="truncate">{isManualCustomer ? manualCustomer.name : customer?.name}</span>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedTemplate.name}</h2>
+                                <h2 className="text-xl md:text-2xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">{selectedTemplate.name}</h2>
                             </div>
 
                             <div className="space-y-6">
                                 {selectedTemplate.fields?.map((field: any) => (
                                     <div key={field.id} className="space-y-1.5">
                                         {field.type !== 'section' && (
-                                            <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.1em] ml-1 block">
+                                            <label className="text-sm font-medium text-slate-700 dark:text-dark-text-head ml-1 block">
                                                 {field.label}
                                                 {field.required && <span className="text-red-500 ml-1">*</span>}
                                             </label>
@@ -518,14 +519,14 @@ export default function VisitWorkflow() {
                         <div className="sticky-action-bar grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleSave('draft')}
-                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
+                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Save className="w-4 h-4" /> Entwurf
                             </button>
                             <button
                                 onClick={() => handleSave('submitted')}
                                 disabled={isSubmitting}
-                                className="flex items-center justify-center gap-2 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                                className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-600 text-white py-3.5 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
                             >
                                 {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
                                 Abschließen
@@ -762,11 +763,11 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
-                <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">
+            <div className="space-y-3">
+                <h2 className="text-3xl font-medium text-slate-900 dark:text-dark-text-head tracking-normal leading-tight">Auftrag erledigt!</h2>
+                <p className="text-base text-slate-500 dark:text-dark-text-muted font-normal leading-relaxed max-w-sm mx-auto">
                     Besuchsdokumentation erfolgreich erstellt und gespeichert.
-                    {localPdfUrl && <span className="block mt-2 text-xs text-green-600">✓ Lokal gespeichert</span>}
+                    {localPdfUrl && <span className="block mt-2 text-sm text-green-600 dark:text-green-400 font-medium">✓ Lokal gespeichert</span>}
                 </p>
             </div>
 
@@ -789,7 +790,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                     <button
                         onClick={handleViewPDF}
                         disabled={loadingPdf}
-                        className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-70"
+                        className="group flex items-center justify-center gap-3 bg-indigo-600 dark:bg-indigo-600 text-white w-full py-4 rounded-xl font-medium text-sm hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all shadow-md disabled:opacity-70 active:scale-[0.98]"
                     >
                         {loadingPdf ? (
                             <Loader className="w-5 h-5 animate-spin" />
@@ -803,7 +804,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 )}
                 <button
                     onClick={onBack}
-                    className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
+                    className="w-full py-3 text-slate-500 dark:text-dark-text-muted font-medium text-sm hover:text-slate-900 dark:hover:text-dark-text-head transition-colors"
                 >
                     Zurück zur Übersicht
                 </button>
