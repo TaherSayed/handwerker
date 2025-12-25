@@ -12,7 +12,7 @@ export class UserService {
 
         let { data: profile, error: profileError } = await adminClient
             .from('user_profiles')
-            .select('id, full_name, company_name')
+            .select('id, full_name, company_name, company_logo_url')
             .eq('id', userId)
             .single();
 

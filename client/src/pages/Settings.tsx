@@ -80,18 +80,30 @@ export default function Settings() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // 1. Validate File Type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      notifyError('Ungültiges Dateiformat', 'Erlaubt sind PNG, JPG oder SVG.');
+      return;
+    }
+
+    // 2. Validate File Size (Max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      notifyError('Datei zu groß', 'Die maximale Dateigröße beträgt 5 MB.');
+      return;
+    }
+
     try {
       setLogoLoading(true);
 
       const fileExt = file.name.split('.').pop();
-      // Simple path structure: userId/timestamp.ext
-      // We can use the current user's ID from auth state if available, or just a random ID if not critical for path
-      // But typically we want user ID. Let's assume user is logged in.
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id || 'unknown';
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      // Use consistent filename to prevent clutter, or timestamp for uniqueness?
+      // Timestamp ensures browser cache busting.
+      const fileName = `${userId}/company-logo-${Date.now()}.${fileExt}`;
 
-      // DIRECT UPLOAD: Bypasses backend signed-url generation issues
+      // DIRECT UPLOAD
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
         .upload(fileName, file, {
@@ -100,7 +112,6 @@ export default function Settings() {
         });
 
       if (uploadError) {
-        console.error('Supabase direct upload failed:', uploadError);
         throw uploadError;
       }
 
@@ -110,17 +121,42 @@ export default function Settings() {
 
       const newLogoUrl = publicUrlData.publicUrl;
 
-      // Update local state immediately
+      // Update local state immediately for preview
       setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
 
       // Persist to backend immediately
       await apiService.updateProfile({ ...formData, company_logo_url: newLogoUrl });
+
+      // Refresh global profile to sync across app
       await refreshProfile();
 
-      success('Logo aktualisiert', 'Ihr neues Firmenlogo wurde gespeichert.');
+      success('Logo gespeichert', 'Ihr Firmenlogo wurde erfolgreich aktualisiert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
-      notifyError('Upload fehlgeschlagen', error.message || 'Bitte versuchen Sie es später erneut.');
+      notifyError('Upload fehlgeschlagen', 'Bitte versuchen Sie es erneut.');
+    } finally {
+      setLogoLoading(false);
+      // Reset input
+      event.target.value = '';
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!confirm('Möchten Sie das Firmenlogo wirklich entfernen?')) return;
+
+    try {
+      setLogoLoading(true);
+
+      // Update local state
+      setFormData(prev => ({ ...prev, company_logo_url: '' }));
+
+      // Persist to backend
+      await apiService.updateProfile({ ...formData, company_logo_url: null }); // Send null or empty string depending on backend
+
+      await refreshProfile();
+      success('Logo entfernt', 'Das Firmenlogo wurde gelöscht.');
+    } catch (error: any) {
+      notifyError('Fehler', 'Das Logo konnte nicht entfernt werden.');
     } finally {
       setLogoLoading(false);
     }
@@ -323,43 +359,64 @@ export default function Settings() {
 
               <div className="space-y-2 pt-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Firmenlogo</label>
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                  <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center p-2 shadow-sm relative group overflow-hidden">
+                <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                  <div className="w-32 h-32 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center p-4 shadow-sm relative group overflow-hidden">
                     {formData.company_logo_url ? (
-                      <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
+                      <img src={formData.company_logo_url} alt="Firmenlogo" className="w-full h-full object-contain" />
                     ) : (
-                      <Building className="w-8 h-8 text-slate-300" />
+                      <div className="flex flex-col items-center gap-2 text-slate-300">
+                        <Building className="w-8 h-8" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Kein Logo</span>
+                      </div>
                     )}
                     {logoLoading && (
-                      <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 flex items-center justify-center z-10">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => document.getElementById('logo-upload')?.click()}
-                      disabled={logoLoading}
-                    >
-                      Logo hochladen
-                    </Button>
-                    {formData.company_logo_url && (
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, company_logo_url: '' }))}
-                        className="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1"
+
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => document.getElementById('logo-upload')?.click()}
+                        disabled={logoLoading}
+                        className="shadow-sm border-slate-200 dark:border-slate-600"
                       >
-                        Logo löschen
-                      </button>
-                    )}
-                    <p className="text-xs text-slate-400 mt-1">Empfohlen: PNG oder JPG, quadratisch.</p>
+                        {formData.company_logo_url ? 'Logo ändern' : 'Logo hochladen'}
+                      </Button>
+
+                      {formData.company_logo_url && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveLogo}
+                          disabled={logoLoading}
+                          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
+                        >
+                          ENTFERNEN
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-slate-500">
+                        Empfohlen: Quadratisch (1:1), PNG oder JPG.
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        Max. 5 MB. Erlaubt: .jpg, .png, .svg
+                      </p>
+                    </div>
+
                     <input
                       id="logo-upload"
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.svg"
                       className="hidden"
                       onChange={handleLogoUpload}
+                      disabled={logoLoading}
                     />
                   </div>
                 </div>
