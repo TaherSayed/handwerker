@@ -22,14 +22,14 @@ router.post('/signed-url', authMiddleware, async (req: AuthRequest, res) => {
     }
 
     // Validate file type
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'image/svg+xml'];
     if (content_type && !allowedMimeTypes.includes(content_type)) {
-      return res.status(400).json({ error: 'Invalid file type. Only JPG, PNG, WEBP and PDF are allowed.' });
+      return res.status(400).json({ error: 'Invalid file type. Only JPG, PNG, WEBP, SVG and PDF are allowed.' });
     }
 
     // Generate unique file path
     const fileExt = file_name.split('.').pop()?.toLowerCase();
-    if (!fileExt || !['jpg', 'jpeg', 'png', 'webp', 'pdf'].includes(fileExt)) {
+    if (!fileExt || !['jpg', 'jpeg', 'png', 'webp', 'pdf', 'svg'].includes(fileExt)) {
       return res.status(400).json({ error: 'Invalid file extension' });
     }
 

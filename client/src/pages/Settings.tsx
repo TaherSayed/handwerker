@@ -161,7 +161,7 @@ export default function Settings() {
       success('Logo gespeichert', 'Ihr Firmenlogo wurde erfolgreich aktualisiert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
-      notifyError('Upload fehlgeschlagen', 'Bitte versuchen Sie es erneut.');
+      notifyError('Upload fehlgeschlagen', error.message || 'Bitte versuchen Sie es erneut.');
     } finally {
       setLogoLoading(false);
       // Reset input
