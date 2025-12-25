@@ -100,8 +100,10 @@ function App() {
   const { warn, success: notifySuccess } = useNotificationStore();
 
   useEffect(() => {
-    // Initialize auth immediately
-    initialize();
+    // Initialize auth immediately (only once)
+    if (!initialized) {
+      initialize();
+    }
 
     // Load sync service after a short delay to not block initial render
     const syncTimeout = setTimeout(() => {
@@ -119,15 +121,23 @@ function App() {
       warn('Offline-Modus', 'Sie sind nicht mit dem Internet verbunden. Änderungen werden lokal gespeichert.');
     };
 
+    // Prevent refetch on tab visibility change - only listen to actual network events
+    const handleVisibilityChange = () => {
+      // Don't do anything on visibility change - state is preserved
+      // Only sync service handles background sync
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearTimeout(syncTimeout);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [initialize, warn, notifySuccess]);
+  }, [initialize, warn, notifySuccess, initialized]);
 
   // Theme support
   const { theme } = useThemeStore();

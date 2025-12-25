@@ -18,6 +18,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
+    
+    // Only refetch if tab becomes visible AND data is stale (older than 5 minutes)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const lastFetch = sessionStorage.getItem('dashboard_last_fetch');
+        const now = Date.now();
+        // Only refetch if last fetch was more than 5 minutes ago
+        if (!lastFetch || (now - parseInt(lastFetch)) > 300000) {
+          loadDashboardData();
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const loadDashboardData = async () => {
@@ -47,6 +62,9 @@ export default function Dashboard() {
       });
 
       setSubmissions(subs);
+      
+      // Store timestamp of last successful fetch
+      sessionStorage.setItem('dashboard_last_fetch', Date.now().toString());
     } catch (error) {
       console.error('Error loading dashboard:', error);
       // Keep cached data if fetch fails

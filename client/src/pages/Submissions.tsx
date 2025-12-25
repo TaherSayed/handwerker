@@ -15,6 +15,21 @@ export default function Submissions() {
 
   useEffect(() => {
     loadSubmissions();
+    
+    // Only refetch if tab becomes visible AND data is stale (older than 5 minutes)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const lastFetch = sessionStorage.getItem(`submissions_last_fetch_${filter}`);
+        const now = Date.now();
+        // Only refetch if last fetch was more than 5 minutes ago
+        if (!lastFetch || (now - parseInt(lastFetch)) > 300000) {
+          loadSubmissions();
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [filter]);
 
   const loadSubmissions = async () => {
@@ -31,6 +46,9 @@ export default function Submissions() {
 
       const data = await Promise.race([dataPromise, timeoutPromise]) as any[];
       setSubmissions(data || []);
+      
+      // Store timestamp of last successful fetch
+      sessionStorage.setItem(`submissions_last_fetch_${filter}`, Date.now().toString());
     } catch (error: any) {
       console.error('Load submissions error:', error);
       setError(error.message || 'Laden des Verlaufs fehlgeschlagen. Bitte versuchen Sie es erneut.');

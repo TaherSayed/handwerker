@@ -18,6 +18,21 @@ export default function FormTemplates() {
 
   useEffect(() => {
     loadTemplates();
+    
+    // Only refetch if tab becomes visible AND data is stale (older than 5 minutes)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const lastFetch = sessionStorage.getItem(`templates_last_fetch_${filter}`);
+        const now = Date.now();
+        // Only refetch if last fetch was more than 5 minutes ago
+        if (!lastFetch || (now - parseInt(lastFetch)) > 300000) {
+          loadTemplates();
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [filter]);
 
   const loadTemplates = async () => {
@@ -28,6 +43,9 @@ export default function FormTemplates() {
         is_archived: filter === 'archived',
       }) as any[];
       setTemplates(data || []);
+      
+      // Store timestamp of last successful fetch
+      sessionStorage.setItem(`templates_last_fetch_${filter}`, Date.now().toString());
     } catch (error: any) {
       console.error('Load templates error:', error);
       setError(error.message || 'Laden der Vorlagen fehlgeschlagen. Bitte erneut versuchen.');
