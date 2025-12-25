@@ -108,9 +108,15 @@ export default function Dashboard() {
         <button
           onClick={() => {
             console.log('Neuer Einsatz button clicked');
+            console.log('Current pathname:', window.location.pathname);
             try {
-              navigate('/visits/new');
-              console.log('Navigation called');
+              const targetPath = '/visits/new';
+              console.log('Navigating to:', targetPath);
+              navigate(targetPath, { replace: false });
+              console.log('Navigation called, checking URL in 100ms...');
+              setTimeout(() => {
+                console.log('URL after navigation:', window.location.pathname);
+              }, 100);
             } catch (err) {
               console.error('Navigation error:', err);
               window.location.href = '/visits/new';

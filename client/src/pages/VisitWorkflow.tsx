@@ -29,6 +29,15 @@ export default function VisitWorkflow() {
     const [currentStep, setCurrentStep] = useState<WorkflowStep>('customer');
     const [error, setError] = useState<string | null>(null);
 
+    // Debug: Log when component mounts
+    useEffect(() => {
+        console.log('VisitWorkflow component mounted');
+        console.log('Current URL:', window.location.pathname);
+        return () => {
+            console.log('VisitWorkflow component unmounting');
+        };
+    }, []);
+
     // Workflow State
     const [customer, setCustomer] = useState<GoogleContact | null>(null);
     const [isManualCustomer, setIsManualCustomer] = useState(false);
