@@ -9,63 +9,59 @@ export default {
     extend: {
 
       colors: {
-        // Industrial Clarity Color Palette - from Flutter theme
+        // Industry-standard colors
         primary: {
-          light: '#2563EB', // Professional blue
-          dark: '#3B82F6', // Lighter blue for dark mode
-        },
-        secondary: {
-          light: '#64748B', // Neutral slate
-          dark: '#94A3B8', // Lighter slate
+          light: '#5865F2', // Discord-style Blurple / Premium Blue
+          dark: '#5865F2',
         },
         success: {
-          light: '#059669', // Clear green
-          dark: '#10B981', // Lighter green
+          light: '#5CC489',
+          dark: '#5CC489',
         },
         warning: {
-          light: '#D97706', // Amber
-          dark: '#FBBF24', // Lighter amber
+          light: '#FFB85C',
+          dark: '#FFB85C',
         },
         error: {
-          light: '#DC2626', // Distinct red
-          dark: '#EF4444', // Lighter red
+          light: '#FF6A6A',
+          dark: '#FF6A6A',
         },
         surface: {
-          light: '#FFFFFF', // Pure white
-          dark: '#1E293B', // Dark surface
+          light: '#FFFFFF',
+          dark: '#181C2A', // Panel Color
         },
         background: {
-          light: '#F8FAFC', // Subtle off-white
-          dark: '#0F172A', // Dark background
+          light: '#F8FAFC',
+          dark: '#0F1220', // Base Color
         },
         border: {
-          light: '#E2E8F0', // Light gray
-          dark: '#334155', // Dark border
+          light: '#E2E8F0',
+          dark: 'rgba(255,255,255,0.06)', // Border Color
         },
-        // Premium Dark Mode Palette (Softer / Blaulastig)
+        // Premium Dark Mode Palette
         dark: {
-          base: '#0f172a',      // Slate 900 - Soft Dark Blue Background
-          card: '#1e293b',      // Slate 800 - Lighter Card
-          input: '#334155',     // Slate 700 - Inputs
-          stroke: 'rgba(255,255,255,0.1)', // Slightly more visible dividers
-          highlight: 'rgba(255,255,255,0.05)', // Hover State
-          'text-head': '#F8FAFC', // Slate 50
-          'text-body': '#94A3B8', // Slate 400
-          'text-muted': '#64748B', // Slate 500
-          'accent-sec': '#60A5FA', // Blue 400
+          base: '#0F1220',
+          card: '#181C2A',
+          input: '#1F2437',
+          stroke: 'rgba(255,255,255,0.06)',
+          highlight: 'rgba(255,255,255,0.04)',
+          'text-head': '#FFFFFF',
+          'text-body': 'rgba(255,255,255,0.86)',
+          'text-muted': 'rgba(255,255,255,0.65)',
+          'accent-sec': '#5865F2',
         },
         text: {
           primary: {
-            light: '#0F172A', // Near-black
-            dark: '#F1F5F9', // Light text
+            light: '#0F172A',
+            dark: '#FFFFFF',
           },
           secondary: {
-            light: '#475569', // Medium gray
-            dark: '#94A3B8', // Medium light text
+            light: '#475569',
+            dark: 'rgba(255,255,255,0.86)',
           },
           disabled: {
             light: '#94A3B8',
-            dark: '#64748B',
+            dark: 'rgba(255,255,255,0.45)',
           },
         },
         card: {

@@ -14,6 +14,8 @@ interface AuthState {
   refreshProfile: () => Promise<void>;
 }
 
+const CACHE_KEY = 'onsite_auth_profile_cache';
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   profile: null,
@@ -22,11 +24,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
+      // 1. Immediate Hydration from Cache (Performance & Multi-platform persistence)
+      const cachedProfile = localStorage.getItem(CACHE_KEY);
+      if (cachedProfile) {
+        try {
+          set({ profile: JSON.parse(cachedProfile) });
+        } catch (e) {
+          console.error('Failed to parse cached profile');
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
         set({ user: session.user });
-        await get().refreshProfile();
+        // Background refresh to ensure fresh data
+        get().refreshProfile();
       }
 
       set({ loading: false, initialized: true });
@@ -38,6 +51,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           await get().refreshProfile();
         } else if (event === 'SIGNED_OUT') {
           set({ user: null, profile: null });
+          localStorage.removeItem(CACHE_KEY);
         }
       });
     } catch (error) {
@@ -64,7 +78,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         console.error('Google sign in error:', error);
         throw new Error(error.message || 'Failed to sign in with Google');
       }
-      // Note: OAuth redirect will happen, so we don't need to do anything here
     } catch (error: any) {
       console.error('Sign in error:', error);
       throw error;
@@ -73,6 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem(CACHE_KEY);
     set({ user: null, profile: null });
   },
 
@@ -81,6 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const profile = await apiService.getMe();
       if (profile) {
         set({ profile });
+        localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
       }
     } catch (error) {
       console.error('Refresh profile error:', error);

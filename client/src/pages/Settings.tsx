@@ -4,7 +4,7 @@ import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
 import {
   User, Building, ShieldCheck, CheckCircle2, Loader2, Info,
-  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight, FileJson, Trash2
+  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
@@ -13,7 +13,7 @@ import { useNotificationStore } from '../store/notificationStore';
 type Tab = 'general' | 'profile' | 'company' | 'data' | 'info';
 
 export default function Settings() {
-  const { profile, refreshProfile, signOut } = useAuthStore();
+  const { user, profile, refreshProfile, signOut } = useAuthStore();
   const { success, error: notifyError } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -199,45 +199,47 @@ export default function Settings() {
     { id: 'data', label: 'Daten', icon: Database },
   ];
 
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Handwerker';
+
   return (
-    <div className="animate-fade-in space-y-6 pb-24">
+    <div className="animate-fade-in space-y-8 pb-32">
       {/* Header with Save Status */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
         <div>
-          <h1 className="heading-xl text-slate-900 dark:text-white mb-1">Einstellungen</h1>
-          <p className="text-slate-500 font-medium text-sm">Verwalten Sie Ihre App-Präferenzen</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Einstellungen</h1>
+          <p className="text-slate-500 dark:text-dark-text-muted font-bold text-[10px] uppercase tracking-widest mt-1">Verwalten Sie Ihre Präferenzen</p>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-dark-input rounded-full border border-slate-200 dark:border-dark-stroke shadow-sm self-start md:self-auto">
+        <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-dark-card rounded-2xl border border-border-light dark:border-dark-stroke shadow-sm self-start md:self-auto transition-all">
           {isSaving ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Speichert...</span>
+              <Loader2 className="w-4 h-4 animate-spin text-primary-light" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Wird gespeichert...</span>
             </>
           ) : lastSaved ? (
             <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Gespeichert {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <CheckCircle2 className="w-4 h-4 text-success-light" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Zuletzt gesichert um {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </>
           ) : (
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Bereit</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest px-2">Synchronisiert</span>
           )}
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 gap-2">
+      <div className="flex overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 gap-3">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 border ${isActive
-                ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30'
-                : 'bg-white dark:bg-dark-card text-slate-600 dark:text-dark-text-body border-slate-200 dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight'
+              className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all duration-300 border uppercase tracking-widest ${isActive
+                ? 'bg-primary-light text-white border-primary-light shadow-xl shadow-primary-light/30'
+                : 'bg-white dark:bg-dark-card text-slate-600 dark:text-dark-text-muted border-border-light dark:border-dark-stroke hover:border-primary-light'
                 }`}
             >
               <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -248,70 +250,83 @@ export default function Settings() {
       </div>
 
       {/* Content Area */}
-      <div className="bg-white dark:bg-dark-card rounded-3xl border border-slate-200 dark:border-dark-stroke shadow-sm p-6 md:p-8 min-h-[400px]">
+      <div className="bg-white dark:bg-dark-card rounded-[32px] border border-border-light dark:border-dark-stroke shadow-sm p-6 md:p-10 min-h-[440px] transition-all">
 
         {/* GENERAL TAB */}
         {activeTab === 'general' && (
-          <div className="space-y-8 animate-slide-up">
-            <section className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                  <Palette className="w-5 h-5" />
+          <div className="space-y-10 animate-slide-up">
+            <section className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark flex items-center justify-center border border-primary-light/10">
+                  <Palette className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Erscheinungsbild</h2>
-                  <p className="text-sm text-slate-500">Passen Sie das Design der App an</p>
+                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Farbschema</h2>
+                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Wählen Sie Ihr bevorzugtes Design</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-between group cursor-pointer" onClick={toggleTheme}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-amber-100 text-amber-600'}`}>
-                    {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  onClick={() => theme !== 'light' && toggleTheme()}
+                  className={`p-5 rounded-3xl border-2 transition-all flex items-center justify-between text-left ${theme === 'light' ? 'border-primary-light bg-primary-light/5' : 'border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input hover:border-slate-300'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-amber-500">
+                      <Sun className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Helles Design</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-900 dark:text-white">{theme === 'dark' ? 'Dunkelmodus' : 'Heller Modus'}</span>
-                    <span className="text-xs text-slate-500">Klicken zum Wechseln</span>
+                  {theme === 'light' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
+                </button>
+
+                <button
+                  onClick={() => theme !== 'dark' && toggleTheme()}
+                  className={`p-5 rounded-3xl border-2 transition-all flex items-center justify-between text-left ${theme === 'dark' ? 'border-primary-light bg-primary-light/5' : 'border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input hover:border-slate-300'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-800 shadow-sm flex items-center justify-center text-blue-400">
+                      <Moon className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Dunkles Design</span>
                   </div>
-                </div>
-                <div className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-300'}`}>
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${theme === 'dark' ? 'translate-x-5' : 'translate-x-0'}`} />
-                </div>
+                  {theme === 'dark' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
+                </button>
               </div>
             </section>
 
-            <hr className="border-slate-100 dark:border-slate-700" />
+            <hr className="border-border-light dark:border-dark-stroke" />
 
-            <section className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center">
-                  <Info className="w-5 h-5" />
+            <section className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-border-light dark:border-dark-stroke">
+                  <Info className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Über die App</h2>
-                  <p className="text-sm text-slate-500">Version & Rechtliches</p>
+                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Über OnSite Forms</h2>
+                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Rechtliches & Version</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <a href="#" className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between group">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Impressum</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
+                  <span className="font-bold text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Impressum</span>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
                 </a>
-                <a href="#" className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between group">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Datenschutz</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
+                  <span className="font-bold text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Datenschutz</span>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
                 </a>
-              </div>
-              <div className="px-1 pt-2 flex justify-between items-center text-xs font-medium text-slate-400">
-                <span>OnSite Forms Pro</span>
-                <span>v1.2.0 (Build 2404)</span>
               </div>
             </section>
 
-            <div className="pt-4 flex justify-center mobile:justify-stretch">
-              <Button variant="ghost" className="text-red-500 w-full md:w-auto" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Ausloggen
+            <div className="pt-6">
+              <Button
+                variant="secondary"
+                className="w-full h-14 bg-red-50 text-error-light hover:bg-red-100 border-red-100 dark:bg-red-900/10 dark:border-red-900/20 rounded-2xl uppercase tracking-widest text-xs"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-5 h-5 mr-3" />
+                Abmelden
               </Button>
             </div>
           </div>
@@ -319,46 +334,47 @@ export default function Settings() {
 
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <div className="space-y-8 animate-slide-up">
-            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-              <div className="w-16 h-16 rounded-full border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden bg-white">
+          <div className="space-y-10 animate-slide-up">
+            <div className="flex items-center gap-6 p-6 bg-slate-50 dark:bg-dark-input rounded-3xl border border-border-light dark:border-dark-stroke">
+              <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-sm overflow-hidden bg-white shrink-0">
                 {profile?.auth_metadata?.avatar_url ? (
                   <img src={profile.auth_metadata.avatar_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xl">
-                    {formData.full_name?.[0]}
+                  <div className="w-full h-full flex items-center justify-center bg-primary-light/10 text-primary-light font-black text-2xl">
+                    {displayName[0]}
                   </div>
                 )}
               </div>
-              <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white">{formData.full_name}</h3>
-                <p className="text-sm text-slate-500 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
-                  Google Konto verbunden
+              <div className="space-y-1">
+                <h3 className="font-black text-xl text-slate-900 dark:text-white uppercase tracking-tight">{displayName}</h3>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-success-light" />
+                  Privat-Konto (Google)
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Anzeigename</label>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Anzeigename</label>
                 <input
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium dark:text-white transition-all"
+                  className="input h-14 font-bold"
+                  placeholder="Ihr Name"
                 />
               </div>
-              <div className="space-y-2 opacity-75">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex justify-between">
-                  <span>E-Mail (Google)</span>
-                  <span className="text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 rounded text-slate-400">READ ONLY</span>
+              <div className="space-y-3 opacity-80">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
+                  <span>E-Mail Adresse</span>
+                  <span className="text-[9px] bg-slate-100 dark:bg-dark-card px-2 py-0.5 rounded-full border dark:border-dark-stroke">Nur Lesezugriff</span>
                 </label>
                 <input
                   type="text"
                   readOnly
                   value={profile?.email || ''}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-950 border-0 text-slate-500 font-medium cursor-not-allowed select-none"
+                  className="input h-14 bg-slate-50 dark:bg-dark-card border-dashed border-2 text-slate-400 font-bold cursor-not-allowed"
                 />
               </div>
             </div>
@@ -367,55 +383,47 @@ export default function Settings() {
 
         {/* COMPANY TAB */}
         {activeTab === 'company' && (
-          <div className="space-y-8 animate-slide-up">
-            <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl flex gap-4 items-start border border-blue-100 dark:border-blue-900/30">
-              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
-                Diese Informationen erscheinen automatisch auf allen Ihren PDF-Berichten und Exporten.
-              </p>
+          <div className="space-y-10 animate-slide-up">
+            <div className="bg-primary-light/5 p-6 rounded-[28px] flex gap-5 items-start border border-primary-light/10">
+              <Info className="w-6 h-6 text-primary-light shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-primary-light text-sm uppercase tracking-wider mb-1">Berichts-Branding</h4>
+                <p className="text-xs text-slate-600 dark:text-dark-text-muted leading-relaxed">
+                  Ihr Logo und Ihre Firmendaten werden automatisch in alle generierten PDF-Berichte eingebettet.
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Firmenname</label>
-                <input
-                  type="text"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="z.B. Mustermann Handwerk GmbH"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium dark:text-white transition-all"
-                />
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Firmenlogo</label>
-                <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                  <div className="w-32 h-32 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center p-4 shadow-sm relative group overflow-hidden">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Firmenlogo</label>
+                <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
+                  <div className="w-40 h-40 bg-white dark:bg-dark-input rounded-[32px] border-2 border-dashed border-border-light dark:border-dark-stroke flex items-center justify-center p-6 shadow-inner relative group overflow-hidden">
                     {formData.company_logo_url ? (
-                      <img src={formData.company_logo_url} alt="Firmenlogo" className="w-full h-full object-contain" />
+                      <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
                     ) : (
-                      <div className="flex flex-col items-center gap-2 text-slate-300">
-                        <Building className="w-8 h-8" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Kein Logo</span>
+                      <div className="flex flex-col items-center gap-3 text-slate-300">
+                        <Building className="w-10 h-10" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.15em]">Kein Logo</span>
                       </div>
                     )}
                     {logoLoading && (
-                      <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 flex items-center justify-center z-10">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                      <div className="absolute inset-0 bg-white/95 dark:bg-dark-card/95 flex items-center justify-center z-10 backdrop-blur-sm">
+                        <Loader2 className="w-10 h-10 animate-spin text-primary-light" />
                       </div>
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-3">
-                    <div className="flex gap-2">
+                  <div className="flex-1 space-y-5">
+                    <div className="flex flex-wrap gap-3">
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                         onClick={() => document.getElementById('logo-upload')?.click()}
                         disabled={logoLoading}
-                        className="shadow-sm border-slate-200 dark:border-slate-600"
+                        className="h-12 px-8 rounded-xl ring-offset-2 dark:ring-offset-dark-card"
                       >
-                        {formData.company_logo_url ? 'Logo ändern' : 'Logo hochladen'}
+                        {formData.company_logo_url ? 'Logo ändern' : 'Datei wählen'}
                       </Button>
 
                       {formData.company_logo_url && (
@@ -424,19 +432,19 @@ export default function Settings() {
                           size="sm"
                           onClick={handleRemoveLogo}
                           disabled={logoLoading}
-                          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
+                          className="h-12 px-6 rounded-xl text-error-light hover:bg-error-light/10 font-bold uppercase tracking-widest text-[10px]"
                         >
-                          ENTFERNEN
+                          Löschen
                         </Button>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-slate-500">
-                        Empfohlen: Quadratisch (1:1), PNG oder JPG.
+                    <div className="space-y-1 px-1">
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                        JPG, PNG oder SVG (Max. 5MB)
                       </p>
-                      <p className="text-[10px] text-slate-400">
-                        Max. 5 MB. Erlaubt: .jpg, .png, .svg
+                      <p className="text-[10px] text-slate-300 dark:text-dark-text-muted">
+                        Idealerweise quadratisch für optimale Darstellung.
                       </p>
                     </div>
 
@@ -451,84 +459,47 @@ export default function Settings() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-              <h3 className="font-bold text-slate-900 dark:text-white">Kontaktinformationen</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Adresse</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Firmenname</label>
                   <input
                     type="text"
-                    value={formData.company_address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
-                    placeholder="Musterstraße 1, 12345 Musterstadt"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                    value={formData.company_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                    placeholder="Eigener Betrieb GmbH"
+                    className="input h-14 font-bold"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Telefon</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Telefonnummer</label>
                   <input
                     type="text"
                     value={formData.company_phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
-                    placeholder="+49 123 456789"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                    placeholder="+49 (0) 123 45678"
+                    className="input h-14 font-bold"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Webseite</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
+                  <input
+                    type="text"
+                    value={formData.company_address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
+                    placeholder="Musterweg 12, 12345 Stadt"
+                    className="input h-14 font-bold"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>
                   <input
                     type="url"
                     value={formData.company_website}
                     onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
-                    placeholder="https://www.ihre-firma.de"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none font-medium dark:text-white transition-all"
+                    placeholder="https://www.firma.de"
+                    className="input h-14 font-bold"
                   />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-              <h3 className="font-bold text-slate-900 dark:text-white">Farbschema (Branding)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Hauptfarbe (Primary)</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={formData.primary_color}
-                      onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
-                      className="w-12 h-12 rounded-xl cursor-pointer border-0 p-1 bg-slate-100 dark:bg-slate-700"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={formData.primary_color}
-                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-sm uppercase"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Akzentfarbe</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={formData.accent_color}
-                      onChange={(e) => setFormData(prev => ({ ...prev, accent_color: e.target.value }))}
-                      className="w-12 h-12 rounded-xl cursor-pointer border-0 p-1 bg-slate-100 dark:bg-slate-700"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={formData.accent_color}
-                        onChange={(e) => setFormData(prev => ({ ...prev, accent_color: e.target.value }))}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-sm uppercase"
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -537,25 +508,24 @@ export default function Settings() {
 
         {/* DATA TAB */}
         {activeTab === 'data' && (
-          <div className="space-y-8 animate-slide-up">
-            <section className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <Database className="w-5 h-5" />
+          <div className="space-y-10 animate-slide-up">
+            <section className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-success-light/10 dark:bg-success-dark/10 text-success-light dark:text-success-dark flex items-center justify-center border border-success-light/10">
+                  <Database className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Datenmanagement</h2>
-                  <p className="text-sm text-slate-500">Import & Export von Vorlagen und Berichten</p>
+                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Daten & Speicher</h2>
+                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Importieren und Verwalten</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                {/* Import Templates */}
-                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Standard-Vorlagen</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Installieren Sie 20 professionelle Handwerker-Vorlagen (Rapporte, Abnahmen, Protokolle).
+              <div className="grid grid-cols-1 gap-5">
+                <div className="p-6 rounded-3xl border border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary-light transition-colors">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">Standard-Vorlagen</h3>
+                    <p className="text-xs text-slate-500 dark:text-dark-text-muted max-w-sm">
+                      Importieren Sie professionelle Vorlagen (Serviceberichte, Abnahmen, Bautagebücher).
                     </p>
                   </div>
                   <Button
@@ -564,25 +534,23 @@ export default function Settings() {
                       try {
                         const { seedService } = await import('../services/seed.service');
                         const count = await seedService.seedTemplates();
-                        success('Import erfolgreich', `${count} Vorlagen erstellt.`);
+                        success('Vorlagen installiert', `${count} neue Vorlagen verfügbar.`);
                       } catch (e) {
                         notifyError('Fehler', 'Import fehlgeschlagen.');
                       }
                     }}
                     size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                    className="h-12 px-6 bg-success-light text-white rounded-xl uppercase tracking-widest text-[10px] shrink-0"
                   >
-                    <Database className="w-4 h-4 mr-2" />
-                    Vorlagen importieren
+                    Installieren
                   </Button>
                 </div>
 
-                {/* Cache Cleanup */}
-                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Lokalen Speicher bereinigen</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Löscht temporäre Dateien und Cache. Es gehen keine gespeicherten Daten verloren.
+                <div className="p-6 rounded-3xl border border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary-light transition-colors">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">System-Bereinigung</h3>
+                    <p className="text-xs text-slate-500 dark:text-dark-text-muted max-w-sm">
+                      Leert den lokalen Cache und aktualisiert die Session. Keine Web-Daten gehen verloren.
                     </p>
                   </div>
                   <Button
@@ -594,29 +562,9 @@ export default function Settings() {
                       }
                     }}
                     size="sm"
-                    className="text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 shrink-0"
+                    className="h-12 px-6 text-warning-light hover:bg-warning-light/10 font-bold uppercase tracking-widest text-[10px] shrink-0"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Cache leeren
-                  </Button>
-                </div>
-
-                {/* JSON Export (Stub) */}
-                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-75 grayscale">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Backup erstellen (Coming Soon)</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Laden Sie alle Ihre Berichte und Einstellungen als JSON-Archiv herunter.
-                    </p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    disabled
-                    size="sm"
-                    className="shrink-0"
-                  >
-                    <FileJson className="w-4 h-4 mr-2" />
-                    Exportieren
+                    Speicher Leeren
                   </Button>
                 </div>
               </div>

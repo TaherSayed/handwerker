@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { FileText, Clock, AlertTriangle, Plus, ArrowRight, ChevronRight, Zap, Settings } from 'lucide-react';
+import { FileText, Clock, Plus, ArrowRight, ChevronRight, Zap, Settings } from 'lucide-react';
 import Button from '../components/common/Button';
 import Skeleton from '../components/common/Skeleton';
-import { supabase } from '../services/supabase';
-import { db } from '../services/db.service';
 import { useAuthStore } from '../store/authStore';
 
 export default function Dashboard() {
@@ -19,7 +17,7 @@ export default function Dashboard() {
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthStore();
+  const { user, profile } = useAuthStore();
 
   useEffect(() => {
     loadDashboardData();
@@ -28,19 +26,14 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
 
-      // 1. Get Stats (with timeout)
-      const today = new Date().toISOString().split('T')[0];
-
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000));
-
-      const [subs, temps] = await Promise.race([
-        Promise.all([apiService.getSubmissions(), apiService.getTemplates()]),
-        timeoutPromise
+      // Parallel fetch with cached fallback logic inside apiService
+      const [subs, temps] = await Promise.all([
+        apiService.getSubmissions(),
+        apiService.getTemplates()
       ]) as [any[], any[]];
 
+      const today = new Date().toISOString().split('T')[0];
       const todayCount = subs.filter((s: any) => s.created_at.startsWith(today)).length;
       const activeCount = subs.filter((s: any) => s.status !== 'submitted').length;
 
@@ -48,26 +41,15 @@ export default function Dashboard() {
         todayVisits: todayCount,
         activeVisits: activeCount,
         templates: temps.length,
-        openTasks: 3 // Mocked for now
+        openTasks: subs.filter((s: any) => s.status === 'draft').length
       });
 
       setRecentSubmissions(subs.slice(0, 5));
       setTemplates(temps);
 
-      // 2. Check Local DB for unsynced
-      const localSubs = await db.submissions.toArray();
-      const unsyncedCount = localSubs.filter(s => !s.is_synced).length;
-
-      if (unsyncedCount > 0) {
-        // Show sync alert?
-      }
-
     } catch (error) {
       console.error('Error loading dashboard:', error);
-      // Fallback values on error
-      setStats({ todayVisits: 0, activeVisits: 0, templates: 0, openTasks: 0 });
-      setRecentSubmissions([]);
-      setTemplates([]);
+      // Stats remain 0 by default
     } finally {
       setLoading(false);
     }
@@ -75,42 +57,41 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 pb-20 lg:pb-0 animate-in fade-in duration-500">
-        <div className="card p-5 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke shadow-sm rounded-xl">
-          <Skeleton variant="text" width="60%" className="h-7 mb-2" />
-          <Skeleton variant="text" width="40%" height="16px" />
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-dark-stroke">
-            <Skeleton variant="rectangular" height="44px" />
+      <div className="space-y-8 pb-32 animate-in fade-in duration-700">
+        {/* Welcome Skeleton */}
+        <div className="card p-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl">
+          <Skeleton variant="text" width="40%" className="h-8 mb-2" />
+          <Skeleton variant="text" width="30%" className="h-4" />
+          <div className="mt-6 pt-6 border-t border-border-light dark:border-dark-stroke">
+            <Skeleton variant="rectangular" height="56px" className="rounded-2xl" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Stats Skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="card p-4 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
-              <Skeleton variant="text" width="50%" height="10px" className="mb-2" />
-              <div className="flex items-end justify-between mt-1">
-                <Skeleton variant="text" width="30px" height="24px" />
-                <Skeleton variant="circular" width="20px" height="20px" />
+            <div key={i} className="card p-5 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl">
+              <Skeleton variant="text" width="60%" className="h-3 mb-4" />
+              <div className="flex items-end justify-between">
+                <Skeleton variant="text" width="40px" className="h-8" />
+                <Skeleton variant="circular" width="24px" height="24px" />
               </div>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2 space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <Skeleton variant="text" width="100px" height="16px" />
-              <Skeleton variant="text" width="40px" height="20px" />
-            </div>
-            <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <section className="lg:col-span-2 space-y-4">
+            <Skeleton variant="text" width="120px" className="h-4 px-1" />
+            <div className="space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="card p-3 flex items-center gap-3 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
-                  <Skeleton variant="circular" width="40px" height="40px" />
+                <div key={i} className="card p-4 flex items-center gap-4 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-2xl">
+                  <Skeleton variant="rectangular" width="48px" height="48px" className="rounded-xl" />
                   <div className="flex-1">
-                    <Skeleton variant="text" width="60%" height="14px" className="mb-2" />
-                    <Skeleton variant="text" width="30%" height="10px" />
+                    <Skeleton variant="text" width="50%" className="h-4 mb-2" />
+                    <Skeleton variant="text" width="30%" className="h-3" />
                   </div>
-                  <Skeleton variant="circular" width="20px" height="20px" />
+                  <Skeleton variant="circular" width="24px" height="24px" />
                 </div>
               ))}
             </div>
@@ -120,144 +101,152 @@ export default function Dashboard() {
     );
   }
 
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Handwerker';
+
   return (
-    <div className="space-y-6 pb-20 lg:pb-0">
+    <div className="space-y-8 pb-32 animate-fade-in">
 
-      {/* 1. Mobile Welcome & Quick Actions */}
-      <div className="flex flex-col gap-3">
-        {/* Welcome Header */}
-        <div className="card p-4 bg-white border-slate-200 shadow-sm rounded-xl dark:bg-dark-card dark:border-dark-stroke">
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Hallo, {user?.user_metadata?.full_name || 'Benutzer'}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Bereit für den heutigen Einsatz?</p>
+      {/* 1. Welcome & Primary Action */}
+      <div className="card p-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl shadow-sm">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Hallo, {displayName}</h1>
+            <p className="text-slate-500 dark:text-dark-text-muted font-semibold text-sm">Bereit für Ihren nächsten Einsatz?</p>
           </div>
+          {profile?.company_logo_url && (
+            <img
+              src={profile.company_logo_url}
+              alt="Logo"
+              className="h-12 w-auto object-contain rounded-lg opacity-80"
+            />
+          )}
+        </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-dark-stroke flex gap-3">
-            <Button
-              onClick={() => navigate('/visits/new')}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-10 text-sm"
-              size="lg"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Neuer Einsatz
-            </Button>
-          </div>
+        <div className="mt-8 pt-6 border-t border-border-light dark:border-dark-stroke">
+          <Button
+            onClick={() => navigate('/visits/new')}
+            variant="primary"
+            className="w-full h-14 text-base font-bold shadow-xl shadow-primary-light/20 rounded-2xl"
+            icon={<Plus className="w-6 h-6 mr-1" />}
+          >
+            Neuer Einsatzbericht
+          </Button>
         </div>
       </div>
 
-      {/* 2. Key Metrics Grid (Condensed) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
-        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
-          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Einsätze Heute</p>
-          <div className="flex items-end justify-between mt-1">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.todayVisits}</span>
-            <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400 mb-1" />
-          </div>
-        </div>
-
-        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-amber-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
-          <div className="flex items-center gap-1.5 mb-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-            <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Aktiv</p>
-          </div>
+      {/* 2. Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div onClick={() => navigate('/submissions')} className="card p-5 hover:border-primary-light dark:hover:border-primary-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Heute</p>
           <div className="flex items-end justify-between">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.activeVisits}</span>
-            <AlertTriangle className="w-5 h-5 text-amber-500 mb-1" />
+            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.todayVisits}</span>
+            <FileText className="w-6 h-6 text-primary-light dark:text-primary-dark opacity-40 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
-        <div onClick={() => navigate('/templates')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
-          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Vorlagen</p>
-          <div className="flex items-end justify-between mt-1">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.templates}</span>
-            <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400 mb-1" />
+        <div onClick={() => navigate('/submissions')} className="card p-5 hover:border-warning-light dark:hover:border-warning-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Entwürfe</p>
+          <div className="flex items-end justify-between">
+            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.openTasks}</span>
+            <Clock className="w-6 h-6 text-warning-light dark:text-warning-dark opacity-40 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
 
-        <div onClick={() => navigate('/settings')} className="card p-3 lg:p-4 hover:border-slate-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
-          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">System</p>
-          <div className="flex items-end justify-between mt-1">
-            <span className="text-lg font-bold text-slate-900 dark:text-white leading-7">Optionen</span>
-            <Settings className="w-5 h-5 text-slate-400 mb-1" />
+        <div onClick={() => navigate('/templates')} className="card p-5 hover:border-primary-light dark:hover:border-primary-dark cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Vorlagen</p>
+          <div className="flex items-end justify-between">
+            <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.templates}</span>
+            <Zap className="w-6 h-6 text-primary-light dark:text-primary-dark opacity-40 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
+
+        <div onClick={() => navigate('/settings')} className="card p-5 hover:border-slate-400 cursor-pointer group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-3xl transition-all active:scale-[0.98]">
+          <p className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase tracking-widest mb-4">Profil</p>
+          <div className="flex items-end justify-between">
+            <span className="text-lg font-black text-slate-900 dark:text-white mb-1">Optionen</span>
+            <Settings className="w-6 h-6 text-slate-300 dark:text-slate-600 opacity-60 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* 3. Recent Activity (List View) */}
-        <section className="lg:col-span-2 space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 3. Recent Activity */}
+        <section className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Letzte Einsätze</h2>
-            <Button onClick={() => navigate('/submissions')} variant="ghost" size="sm" className="text-xs h-8 px-2">Alle</Button>
+            <h2 className="text-xs font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Letzte Einsätze</h2>
+            <Button onClick={() => navigate('/submissions')} variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Alle Berichte</Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentSubmissions.length === 0 ? (
-              <div className="card py-8 flex flex-col items-center justify-center text-center border-dashed bg-slate-50 dark:bg-dark-card/50">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Keine Einsätze gefunden.</p>
-                <Button onClick={() => navigate('/visits/new')} variant="ghost" size="sm" className="mt-2 text-blue-600">Ersten starten</Button>
+              <div className="card py-12 flex flex-col items-center justify-center text-center border-dashed border-2 bg-slate-50 dark:bg-dark-card/30 rounded-3xl border-border-light dark:border-dark-stroke">
+                <FileText className="w-12 h-12 text-slate-200 dark:text-slate-800 mb-4" />
+                <p className="text-slate-500 dark:text-dark-text-muted text-sm font-semibold max-w-[200px]">Noch keine Einsätze erfasst.</p>
+                <Button onClick={() => navigate('/visits/new')} variant="ghost" className="mt-4 text-primary-light">Jetzt starten</Button>
               </div>
             ) : (
               recentSubmissions.map((sub) => (
                 <div key={sub.id}
                   onClick={() => navigate(`/submissions/${sub.id}`)}
-                  className="card p-3 flex items-center gap-3 active:scale-[0.99] transition-transform cursor-pointer bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke"
+                  className="card p-4 flex items-center gap-4 active:scale-[0.99] transition-all cursor-pointer bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-2xl hover:border-primary-light dark:hover:border-primary-dark"
                 >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${sub.status === 'submitted'
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 text-green-600 dark:text-green-400'
-                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/30 text-amber-600 dark:text-amber-400'
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${sub.status === 'submitted'
+                    ? 'bg-success-light/10 border-success-light/20 text-success-light'
+                    : 'bg-warning-light/10 border-warning-light/20 text-warning-light'
                     }`}>
-                    {sub.status === 'submitted' ? <Zap className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                    {sub.status === 'submitted' ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900 dark:text-white truncate text-sm leading-tight">{sub.customer_name || 'Unbekannt'}</h3>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-medium px-1.5 py-px rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 truncate max-w-[120px]">
-                        {sub.form_templates?.name || 'Formular'}
+                    <h3 className="font-bold text-slate-900 dark:text-white truncate text-base leading-tight mb-1">{sub.customer_name || 'Unbekannt'}</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="badge badge-success !bg-slate-100 dark:!bg-dark-input !text-[9px] !text-slate-500 dark:!text-dark-text-muted truncate max-w-[140px]">
+                        {sub.form_templates?.name || 'Protokoll'}
                       </span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                        {new Date(sub.created_at).toLocaleDateString()}
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        {new Date(sub.created_at).toLocaleDateString('de-DE')}
                       </span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                  <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-700" />
                 </div>
               ))
             )}
           </div>
         </section>
 
-        {/* 4. Quick Templates */}
-        <section className="space-y-2">
+        {/* 4. Quick Start Templates */}
+        <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Schnellstart</h2>
+            <h2 className="text-xs font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.15em]">Schnellstart</h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
             {templates.slice(0, 4).map(t => (
               <button
                 key={t.id}
-                onClick={() => navigate(`/visits/new?template=${t.id}`)}
-                className="card p-3 text-left hover:border-blue-400 transition-colors group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke"
+                onClick={() => navigate(`/templates/${t.id}/fill`)}
+                className="card p-4 text-left hover:border-primary-light dark:hover:border-primary-dark transition-all group bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-2xl active:scale-[0.98]"
               >
-                <div className="flex justify-between items-start mb-1.5">
-                  <div className="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                    <FileText className="w-3.5 h-3.5" />
+                <div className="flex justify-between items-start mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary-light/5 dark:bg-primary-dark/5 flex items-center justify-center text-primary-light dark:text-primary-dark group-hover:bg-primary-light/10 transition-colors border border-primary-light/10">
+                    <FileText className="w-5 h-5" />
                   </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 -mr-1" />
+                  <ArrowRight className="w-5 h-5 text-slate-200 dark:text-slate-800 group-hover:text-primary-light transition-all -mr-1" />
                 </div>
-                <p className="font-bold text-xs text-slate-700 dark:text-slate-200 truncate select-none">{t.name}</p>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 select-none truncate">{t.description || 'Standardvorlage'}</p>
+                <p className="font-bold text-sm text-slate-900 dark:text-dark-text-body truncate select-none mb-1">{t.name}</p>
+                <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-semibold uppercase tracking-wider select-none truncate">
+                  {t.fields?.length || 0} Felder
+                </p>
               </button>
             ))}
             <button
               onClick={() => navigate('/templates')}
-              className="card p-3 flex flex-col items-center justify-center gap-2 border-dashed bg-slate-50 dark:bg-dark-card/50 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-dark-stroke"
+              className="card p-5 flex flex-col items-center justify-center gap-3 border-dashed border-2 bg-slate-50 dark:bg-dark-card/30 hover:bg-slate-100 dark:hover:bg-dark-highlight border-border-light dark:border-dark-stroke rounded-2xl transition-colors"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                <Plus className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </div>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Mehr Vorlagen</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-widest">Mehr</span>
             </button>
           </div>
         </section>

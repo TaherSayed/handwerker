@@ -237,23 +237,23 @@ export default function SubmissionDetail() {
   const status = getStatusDisplay(submission);
 
   return (
-    <div className="pb-32 max-w-2xl mx-auto space-y-4 animate-in slide-in-from-bottom-4">
+    <div className="pb-40 lg:pb-12 max-w-2xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 text-slate-900 dark:text-dark-text-body">
       {/* Mobile Header */}
-      <div className="flex items-center justify-between py-2 -mx-2 px-2">
+      <div className="flex items-center justify-between py-3 px-2 lg:mb-6 transition-colors">
         <button
           onClick={() => navigate('/submissions')}
-          className="p-2 -ml-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white active:bg-slate-100 dark:active:bg-slate-800 rounded-lg transition-colors"
+          className="p-2.5 -ml-2 text-slate-500 hover:text-slate-900 dark:text-dark-text-muted dark:hover:text-white hover:bg-slate-100 dark:hover:bg-dark-highlight rounded-2xl transition-all active:scale-95"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">Einsatzdetails</h1>
+        <h1 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Protokoll-Details</h1>
 
         {/* Secondary Actions (Top Right) */}
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           {submission.status === 'draft' && (
             <button
               onClick={() => navigate(`/fill/${submission.template_id}?edit=${submission.id}`)}
-              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              className="p-2.5 text-primary-light hover:bg-primary-light/10 dark:text-primary-dark dark:hover:bg-primary-dark/10 rounded-2xl transition-colors"
               title="Bearbeiten"
             >
               <Edit3 className="w-5 h-5" />
@@ -261,7 +261,7 @@ export default function SubmissionDetail() {
           )}
           <button
             onClick={handleShare}
-            className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 active:bg-slate-100 dark:active:bg-slate-800 rounded-lg transition-colors"
+            className="p-2.5 text-slate-500 hover:text-primary-light dark:text-dark-text-muted dark:hover:text-primary-dark hover:bg-slate-100 dark:hover:bg-dark-highlight rounded-2xl transition-colors"
             title="Teilen"
           >
             <Share2 className="w-5 h-5" />
@@ -270,50 +270,52 @@ export default function SubmissionDetail() {
       </div>
 
       {/* Meta Status Card */}
-      <div className="card flex items-center justify-between p-4 py-3 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${status.color}`}>
-            <status.icon className="w-4 h-4" />
+      <div className="card p-5 flex items-center justify-between bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[32px] shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className={`p-3 rounded-2xl ${status.color ? status.color.replace('bg-', 'bg-opacity-10 bg-') : ''} ${status.color}`}>
+            <status.icon className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Status</p>
-            <p className="text-sm font-bold text-slate-900 dark:text-white">{status.label}</p>
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">Status</p>
+            <p className="text-base font-black text-slate-900 dark:text-white tracking-tight">{status.label}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">ID</p>
-          <p className="text-sm font-mono text-slate-600 dark:text-slate-300 font-medium">#{submission.id.slice(0, 6)}</p>
+          <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] mb-1">ID</p>
+          <p className="text-base font-mono text-slate-600 dark:text-slate-300 font-bold tracking-tight">#{submission.id.slice(0, 6)}</p>
         </div>
       </div>
 
       {/* Customer Information */}
-      <div className="card p-5 space-y-4 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2 pb-2 
-        border-b border-slate-50 dark:border-dark-stroke">
-          <User className="w-4 h-4 text-slate-400" />
+      <div className="card p-8 space-y-6 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[40px] shadow-sm">
+        <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-3 pb-4 
+        border-b border-border-light dark:border-dark-stroke/50">
+          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+            <User className="w-4 h-4" />
+          </div>
           Kunde
         </h2>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-0.5">Name</label>
-            <p className="text-base font-bold text-slate-900 dark:text-white">{submission.customer_name || '— Nicht verfügbar —'}</p>
+        <div className="space-y-6">
+          <div className="group">
+            <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Name</label>
+            <p className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary-light transition-colors">{submission.customer_name || '— Nicht verfügbar —'}</p>
           </div>
 
           {(submission.customer_email || submission.customer_phone) && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {submission.customer_email && (
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-0.5">Email</label>
-                  <a href={`mailto:${submission.customer_email}`} className="text-sm font-medium text-blue-600 hover:underline truncate block dark:text-blue-400">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Email</label>
+                  <a href={`mailto:${submission.customer_email}`} className="text-base font-bold text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors truncate block">
                     {submission.customer_email}
                   </a>
                 </div>
               )}
               {submission.customer_phone && (
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-0.5">Telefon</label>
-                  <a href={`tel:${submission.customer_phone}`} className="text-sm font-medium text-slate-700 hover:text-blue-600 block dark:text-slate-300 dark:hover:text-blue-400">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-1">Telefon</label>
+                  <a href={`tel:${submission.customer_phone}`} className="text-base font-bold text-slate-700 hover:text-primary-light dark:text-slate-300 dark:hover:text-primary-dark transition-colors block">
                     {submission.customer_phone}
                   </a>
                 </div>
@@ -323,10 +325,10 @@ export default function SubmissionDetail() {
 
           {submission.customer_address && (
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-0.5">Adresse</label>
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">{submission.customer_address}</p>
+              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block mb-2">Adresse</label>
+              <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-dark-highlight rounded-2xl">
+                <MapPin className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-snug">{submission.customer_address}</p>
               </div>
             </div>
           )}
@@ -334,34 +336,39 @@ export default function SubmissionDetail() {
       </div>
 
       {/* Form Data */}
-      <div className="card p-5 space-y-4 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-50 dark:border-dark-stroke">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Protokoll</h2>
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">
+      <div className="card p-8 space-y-8 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke rounded-[40px] shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-border-light dark:border-dark-stroke/50">
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Protokoll</h2>
+          </div>
+          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-highlight px-3 py-1.5 rounded-full uppercase tracking-wide">
             {submission.form_templates?.name || 'Formular'}
           </span>
         </div>
 
-        <div className="flex flex-col gap-5 divide-y divide-slate-50 dark:divide-slate-800">
+        <div className="space-y-8">
           {submission.form_templates?.fields ? (
             submission.form_templates.fields.map((field: any) => (
-              <div key={field.id} className="pt-4 first:pt-0">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1.5">
+              <div key={field.id} className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em] block">
                   {field.label}
                 </label>
-                <div className="text-sm text-slate-900 dark:text-slate-100">
+                <div className="text-base font-medium text-slate-900 dark:text-white pl-1">
                   {renderFieldValue(field, submission.field_values?.[field.id])}
                 </div>
               </div>
             ))
           ) : (
-            <div className="py-4 text-center">
-              <p className="text-slate-400 italic text-sm">Formulardefinition nicht verfügbar.</p>
+            <div className="py-8 text-center bg-slate-50 dark:bg-dark-highlight rounded-3xl border border-dashed border-slate-200 dark:border-dark-stroke">
+              <p className="text-slate-400 dark:text-slate-500 font-medium text-sm">Formulardefinition nicht verfügbar.</p>
               {/* Fallback to raw values dump if template is missing but values exist */}
               {Object.keys(submission.field_values || {}).length > 0 && (
-                <div className="mt-4 text-left">
-                  <p className="text-xs font-bold mb-2 uppercase text-slate-500">Rohdaten:</p>
-                  <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-2 rounded overflow-auto">
+                <div className="mt-6 text-left px-6">
+                  <p className="text-[10px] font-black mb-2 uppercase text-slate-400 tracking-widest">Rohdaten:</p>
+                  <pre className="text-xs bg-white dark:bg-dark-card p-4 rounded-xl border border-slate-100 dark:border-dark-stroke overflow-auto font-mono text-slate-600 dark:text-slate-400">
                     {JSON.stringify(submission.field_values, null, 2)}
                   </pre>
                 </div>
@@ -372,18 +379,20 @@ export default function SubmissionDetail() {
       </div>
 
       {/* Timestamp Footer */}
-      <div className="px-4 py-2 text-center text-xs text-slate-400 font-medium">
-        Erstellt: {submission.created_at ? format(new Date(submission.created_at), 'dd.MM.yyyy HH:mm') + ' Uhr' : '-'}
+      <div className="px-4 py-4 text-center">
+        <p className="text-[10px] font-black text-slate-300 dark:text-dark-text-muted uppercase tracking-[0.2em]">
+          Erstellt: {submission.created_at ? format(new Date(submission.created_at), 'dd.MM.yyyy HH:mm') : '-'}
+        </p>
       </div>
 
       {/* Safe Bottom Action Area - Mobile Optimized */}
-      <div className="sticky-action-bar grid grid-cols-1 lg:grid-cols-2 gap-3 lg:static lg:bg-transparent lg:border-0 lg:p-0">
+      <div className="sticky-action-bar grid grid-cols-1 lg:grid-cols-2 gap-4 lg:static lg:bg-transparent lg:border-0 lg:p-0">
         {submission.status === 'draft' ? (
-          <div className="flex gap-3 w-full">
+          <div className="flex gap-4 w-full">
             <Button
               onClick={handleDelete}
               variant="ghost"
-              className="w-14 justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 shrink-0"
+              className="w-16 h-14 justify-center bg-red-50 hover:bg-red-100 text-red-500 dark:bg-error-dark/10 dark:hover:bg-error-dark/20 dark:text-error-light rounded-2xl shrink-0"
               icon={<Trash2 className="w-5 h-5" />}
             >
             </Button>
@@ -391,7 +400,7 @@ export default function SubmissionDetail() {
               onClick={handleDownloadPDF}
               loading={generating}
               variant="primary"
-              className="flex-1 justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
+              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-black uppercase tracking-widest h-14 rounded-2xl"
               size="lg"
               icon={<Zap className="w-5 h-5" />}
             >
@@ -399,18 +408,18 @@ export default function SubmissionDetail() {
             </Button>
           </div>
         ) : (
-          <div className="flex gap-3 w-full">
+          <div className="flex gap-4 w-full">
             <Button
               onClick={handleDelete}
               variant="ghost"
-              className="w-14 justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0"
+              className="w-16 h-14 justify-center bg-red-50 hover:bg-red-100 text-red-500 dark:bg-error-dark/10 dark:hover:bg-error-dark/20 dark:text-error-light rounded-2xl shrink-0"
               icon={<Trash2 className="w-5 h-5" />}
             />
             <Button
               onClick={handleDownloadPDF}
               loading={generating}
               variant="primary"
-              className="flex-1 justify-center shadow-lg shadow-blue-500/20 text-base font-bold h-14"
+              className="flex-1 justify-center shadow-xl shadow-primary-light/20 text-xs font-black uppercase tracking-widest h-14 rounded-2xl"
               size="lg"
               icon={<Download className="w-5 h-5" />}
             >

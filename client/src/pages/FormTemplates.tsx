@@ -13,6 +13,8 @@ export default function FormTemplates() {
   const { success, error: notifyError } = useNotificationStore();
   const [filter, setFilter] = useState<'active' | 'archived'>('active');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     loadTemplates();
@@ -72,31 +74,42 @@ export default function FormTemplates() {
     }
   };
 
+  const handleRename = async (id: string, name: string) => {
+    try {
+      await apiService.updateTemplate(id, { name });
+      setTemplates(templates.map(t => t.id === id ? { ...t, name } : t));
+      success('Vorlage umbenannt');
+      setEditingTemplateId(null);
+    } catch (error: any) {
+      notifyError('Fehler', 'Umbenennen fehlgeschlagen');
+    }
+  };
+
   return (
     <div className="space-y-8 pb-32 lg:pb-8">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-1">
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
             Formularvorlagen
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+          <p className="text-slate-500 dark:text-dark-text-muted font-semibold text-[10px] uppercase tracking-widest mt-1">
             Verwalten Sie Ihre Berichtsstrukturen
           </p>
         </div>
         <Button
           onClick={() => navigate('/templates/new')}
           variant="secondary"
-          className="w-full md:w-auto justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-          icon={<Plus className="w-4 h-4 text-slate-500" />}
+          className="w-full md:w-auto justify-center bg-white dark:bg-dark-card border border-border-light dark:border-dark-stroke text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight shadow-sm h-12"
+          icon={<Plus className="w-5 h-5 text-slate-400" />}
         >
           Neue Vorlage
         </Button>
       </div>
 
       {/* Filter Tabs */}
-      <div className="border-b border-slate-200">
-        <div className="flex gap-6">
+      <div className="border-b border-border-light dark:border-dark-stroke px-1">
+        <div className="flex gap-8">
           {[
             { id: 'active', label: 'Aktiv' },
             { id: 'archived', label: 'Archiviert' }
@@ -104,12 +117,15 @@ export default function FormTemplates() {
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${filter === f.id
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+              className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all relative ${filter === f.id
+                ? 'text-primary-light dark:text-primary-dark'
+                : 'text-slate-400 dark:text-dark-text-muted hover:text-slate-600'
                 }`}
             >
               {f.label}
+              {filter === f.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-light dark:bg-primary-dark rounded-full shadow-lg shadow-primary-light/40" />
+              )}
             </button>
           ))}
         </div>
@@ -117,28 +133,26 @@ export default function FormTemplates() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <p className="text-red-700 text-sm font-medium">{error}</p>
-          </div>
-          <button onClick={loadTemplates} className="text-red-600 text-xs font-bold hover:underline">Wiederholen</button>
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 flex items-center justify-between mx-1">
+          <p className="text-red-700 dark:text-red-400 text-sm font-medium">{error}</p>
+          <button onClick={loadTemplates} className="text-red-600 dark:text-red-400 text-xs font-bold hover:underline px-2 py-1">Wiederholen</button>
         </div>
       )}
 
       {/* Templates Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-1">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-64 bg-slate-50 rounded-2xl animate-pulse" />
+            <div key={i} className="h-64 bg-slate-50 dark:bg-dark-card rounded-3xl animate-pulse" />
           ))}
         </div>
       ) : templates.length === 0 ? (
         <div className="py-20 text-center">
-          <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8" />
+          <div className="w-20 h-20 bg-slate-50 dark:bg-dark-card text-slate-300 dark:text-dark-text-muted rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <FileText className="w-10 h-10" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">Keine {filter === 'active' ? 'aktiven' : 'archivierten'} Vorlagen</h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-8 text-sm">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Keine {filter === 'active' ? 'aktiven' : 'archivierten'} Vorlagen</h3>
+          <p className="text-slate-500 dark:text-dark-text-muted max-w-sm mx-auto mb-8 text-sm px-4">
             {filter === 'active'
               ? "Erstellen Sie Ihre erste Vorlage, um standardisierte Berichte zu ermöglichen."
               : "Hier finden Sie Ihre archivierten Vorlagen."}
@@ -147,39 +161,55 @@ export default function FormTemplates() {
             <Button
               onClick={() => navigate('/templates/new')}
               variant="primary"
+              className="px-10 h-14 shadow-xl shadow-primary-light/20 mx-auto"
             >
-              Erste Vorlage erstellen
+              Vorlage erstellen
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-1">
           {templates.map((template) => (
             <div
               key={template.id}
               onClick={() => navigate(`/visits/new?templateId=${template.id}`)}
-              className="card group hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer transition-all hover:shadow-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 flex flex-col h-full p-6"
+              className="card group hover:border-primary-light dark:hover:border-primary-dark cursor-pointer transition-all hover:shadow-xl hover:shadow-primary-light/5 bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke flex flex-col h-full p-6 lg:p-7 rounded-3xl"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5" />
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-12 h-12 bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark rounded-2xl flex items-center justify-center shrink-0 border border-primary-light/10">
+                  <FileText className="w-6 h-6" />
                 </div>
                 {template.category && (
-                  <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-lg">
+                  <span className="badge badge-success">
                     {template.category}
                   </span>
                 )}
               </div>
 
-              <div className="flex-1 mb-4">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 truncate">{template.name}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">
+              <div className="flex-1 mb-5">
+                {editingTemplateId === template.id ? (
+                  <input
+                    autoFocus
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={() => handleRename(template.id, newName)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRename(template.id, newName);
+                      if (e.key === 'Escape') setEditingTemplateId(null);
+                    }}
+                    className="w-full px-3 py-1.5 rounded-lg border-2 border-primary-light outline-none bg-white dark:bg-dark-input dark:text-white font-bold mb-2"
+                  />
+                ) : (
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-dark-text-head mb-2 truncate group-hover:text-primary-light transition-colors">{template.name}</h3>
+                )}
+                <p className="text-slate-500 dark:text-dark-text-muted text-sm line-clamp-2 leading-relaxed font-medium">
                   {template.description || 'Keine Beschreibung verfügbar.'}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700 mt-auto">
-                <div className="text-xs text-slate-400 font-medium">
+              <div className="flex items-center justify-between pt-5 border-t border-border-light dark:border-dark-stroke mt-auto">
+                <div className="text-[11px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-widest">
                   {template.fields?.length || 0} Felder
                 </div>
 
@@ -190,34 +220,49 @@ export default function FormTemplates() {
                       e.stopPropagation();
                       setOpenMenuId(openMenuId === template.id ? null : template.id);
                     }}
-                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-3 -mr-3 text-slate-400 dark:text-dark-text-muted hover:text-primary-light dark:hover:text-primary-dark rounded-full hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all active:scale-90"
                   >
-                    <MoreVertical className="w-5 h-5" />
+                    <MoreVertical className="w-6 h-6" />
                   </button>
 
                   {openMenuId === template.id && (
-                    <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-right">
-                      <div className="p-1">
+                    <div className="absolute right-0 bottom-full mb-3 w-56 bg-white dark:bg-dark-card rounded-2xl shadow-2xl shadow-black/20 border border-border-light dark:border-dark-stroke z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom-right">
+                      <div className="p-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2"
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Edit className="w-4 h-4 text-slate-400" />
-                          Bearbeiten
+                          Design Bearbeiten
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNewName(template.name);
+                            setEditingTemplateId(template.id);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
+                        >
+                          <Edit className="w-4 h-4 text-slate-400" />
+                          Umbenennen
                         </button>
 
                         <button
                           onClick={(e) => { handleDuplicate(template.id, e); setOpenMenuId(null); }}
-                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2"
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Copy className="w-4 h-4 text-slate-400" />
                           Duplizieren
                         </button>
 
+                        <div className="h-px bg-border-light dark:bg-dark-stroke my-2 mx-2" />
+
                         {filter === 'active' ? (
                           <button
                             onClick={(e) => { handleArchive(template.id, true, e); setOpenMenuId(null); }}
-                            className="w-full text-left px-3 py-2.5 text-sm font-medium text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg flex items-center gap-2"
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-warning-light dark:text-warning-dark hover:bg-warning-light/5 rounded-xl flex items-center gap-3 transition-colors"
                           >
                             <Archive className="w-4 h-4" />
                             Archivieren
@@ -225,18 +270,16 @@ export default function FormTemplates() {
                         ) : (
                           <button
                             onClick={(e) => { handleArchive(template.id, false, e); setOpenMenuId(null); }}
-                            className="w-full text-left px-3 py-2.5 text-sm font-medium text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg flex items-center gap-2"
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-success-light dark:text-success-dark hover:bg-success-light/5 rounded-xl flex items-center gap-3 transition-colors"
                           >
                             <Archive className="w-4 h-4" />
                             Wiederherstellen
                           </button>
                         )}
 
-                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
-
                         <button
                           onClick={(e) => { handleDelete(template.id, e); setOpenMenuId(null); }}
-                          className="w-full text-left px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-2"
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-error-light hover:bg-error-light/5 rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                           Löschen

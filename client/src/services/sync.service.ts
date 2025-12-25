@@ -40,79 +40,66 @@ class SyncService {
         if (this.isSyncing) return;
 
         if (!navigator.onLine) {
-            console.log('[Sync] Offline - pausing sync.');
+            console.log('[Sync] Disconnected - skipping sync attempt.');
             return;
         }
 
         const queue = offlineService.getSyncQueue();
         if (queue.length === 0) {
-            // Nothing to sync, check again later (keep low level polling or stop)
-            // We'll set a default keep-alive check of 60s if idle
-            this.syncTimeout = setTimeout(() => this.startSync(), 60000);
+            // Check again in 2 minutes if idle
+            this.syncTimeout = setTimeout(() => this.startSync(), 120000);
             return;
         }
 
         if (!immediate && this.syncTimeout) {
-            // Already scheduled
             return;
         }
 
         this.isSyncing = true;
-        console.log(`[Sync] Processing queue (${queue.length} items)...`);
+        console.log(`[Sync] Syncing ${queue.length} pending items...`);
 
         try {
             let successCount = 0;
             let failedCount = 0;
 
-            // Process queue sequentially to maintain order
             for (const item of queue) {
                 try {
-                    // Attempt sync based on type
-                    if (item.action === 'create' && item.type === 'submission') {
-                        // We need a specific endpoint to "sync" a draft, converting it to real submission
-                        // Or primarily just call createSubmission again but force network?
-                        // Actually apiService.createSubmission is smart, but we need to bypass its offline check logic
-                        // to force a real request.
-                        await this.processItem(item);
-                    }
+                    await this.processItem(item);
 
-                    // If successful (no error thrown), remove from queue
                     offlineService.removeFromSyncQueue(item.id);
-                    offlineService.removeDraft(item.data.id); // Remove the draft copy too if it exists
+                    offlineService.removeDraft(item.data.id);
                     successCount++;
                 } catch (err) {
-                    console.error('[Sync] Item failed:', item, err);
+                    console.error('[Sync] Item sync failed. Stopping to preserve order.', item, err);
                     failedCount++;
-                    // If 5xx or Network error, stop and retry later. 
-                    // If 4xx validation error, maybe remove or flag? 
-                    // For now, we assume transient errors and stop.
-                    break; // Stop processing rest of queue to preserve order
+                    break;
                 }
             }
 
             if (failedCount > 0) {
-                // Increase backoff
                 this.backoffLevel++;
                 const delay = this.getNextDelay();
-                console.log(`[Sync] Failures detected. Backing off for ${delay}ms (Level ${this.backoffLevel})`);
+                console.warn(`[Sync] Batch paused early. Retrying in ${delay}ms (Backoff Level ${this.backoffLevel})`);
                 this.isSyncing = false;
                 this.syncTimeout = setTimeout(() => this.startSync(), delay);
             } else {
-                // All good, reset backoff
                 if (successCount > 0) {
-                    console.log('[Sync] Batch complete.');
-                    // Notify user? "useNotificationStore" is a React hook, can't use here easily.
-                    // We could dispatch a custom event.
-                    window.dispatchEvent(new CustomEvent('sync-complete', { detail: { count: successCount } }));
+                    console.log(`[Sync] Successfully synchronized ${successCount} items.`);
+                    window.dispatchEvent(new CustomEvent('sync-complete', {
+                        detail: {
+                            count: successCount,
+                            timestamp: new Date().toISOString()
+                        }
+                    }));
                 }
                 this.resetBackoff();
                 this.isSyncing = false;
-                // Check again soon just in case
-                this.syncTimeout = setTimeout(() => this.startSync(), 5000);
+                // Idle check in 10s
+                this.syncTimeout = setTimeout(() => this.startSync(), 10000);
             }
 
         } catch (e) {
-            console.error('[Sync] System error:', e);
+            console.error('[Sync] Fatal sync worker error:', e);
             this.isSyncing = false;
         }
     }
