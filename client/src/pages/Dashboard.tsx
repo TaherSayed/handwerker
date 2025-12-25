@@ -106,8 +106,13 @@ export default function Dashboard() {
           <p className="text-sm text-slate-500 mt-1">Übersicht Ihrer Einsatzberichte</p>
         </div>
         <button
-          onClick={() => navigate('/visits/new')}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigate('/visits/new');
+          }}
+          type="button"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95 cursor-pointer z-10 relative"
         >
           <Plus className="w-5 h-5" />
           <span>Neuer Einsatz</span>
@@ -228,8 +233,13 @@ export default function Dashboard() {
 
       {/* Floating Action Button for New Submission (Mobile Only) */}
       <button
-        onClick={() => navigate('/visits/new')}
-        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          navigate('/visits/new');
+        }}
+        type="button"
+        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden cursor-pointer"
       >
         <Plus className="w-6 h-6" />
       </button>
