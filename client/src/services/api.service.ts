@@ -387,10 +387,10 @@ class ApiService {
   }
 
   // Uploads
-  async getSignedUploadUrl(bucket: string, fileName: string) {
+  async getSignedUploadUrl(bucket: string, fileName: string, contentType?: string) {
     return this.request('/uploads/signed-url', {
       method: 'POST',
-      body: JSON.stringify({ bucket, file_name: fileName }),
+      body: JSON.stringify({ bucket, file_name: fileName, content_type: contentType }),
     });
   }
 

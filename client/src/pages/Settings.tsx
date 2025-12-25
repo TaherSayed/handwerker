@@ -110,29 +110,27 @@ export default function Settings() {
 
     try {
       setLogoLoading(true);
-
       const fileExt = file.name.split('.').pop();
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || 'unknown';
-      // Use consistent filename to prevent clutter, or timestamp for uniqueness?
-      // Timestamp ensures browser cache busting.
-      const fileName = `${userId}/company-logo-${Date.now()}.${fileExt}`;
+      const fileName = `company-logo-${Date.now()}.${fileExt}`;
 
-      // DIRECT UPLOAD
+      // 1. Get Signed URL from Backend (bypasses RLS issues)
+      // We don't need userId in filename here, backend handles the path
+      const { path, token } = await apiService.getSignedUploadUrl('company-logos', fileName, file.type) as any;
+
+      // 2. Upload to Supabase Storage using the token
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
-        .upload(fileName, file, {
-          cacheControl: '3600',
+        .uploadToSignedUrl(path, token, file, {
+          contentType: file.type,
           upsert: true
         });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
+      // 3. Get Public URL
       const { data: publicUrlData } = supabase.storage
         .from('company-logos')
-        .getPublicUrl(fileName);
+        .getPublicUrl(path);
 
       const newLogoUrl = publicUrlData.publicUrl;
 
