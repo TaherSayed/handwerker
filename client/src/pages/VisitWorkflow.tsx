@@ -49,40 +49,48 @@ export default function VisitWorkflow() {
     const [, setIsSavingDraft] = useState(false);
     const [submissionResult, setSubmissionResult] = useState<any>(null);
 
+    // Load templates and initial template on mount
     useEffect(() => {
-        if (initialTemplateId) {
-            loadInitialTemplate(initialTemplateId);
-        }
-        loadTemplates();
+        let isMounted = true;
+        
+        const loadData = async () => {
+            if (initialTemplateId) {
+                try {
+                    const data = await apiService.getTemplate(initialTemplateId);
+                    if (isMounted) {
+                        setSelectedTemplate(data);
+                    }
+                } catch (err) {
+                    console.error('Failed to load initial template:', err);
+                }
+            }
+            
+            setIsLoadingTemplates(true);
+            try {
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 15000)
+                );
+                const fetchPromise = apiService.getTemplates({ is_archived: false });
+                const data = await Promise.race([fetchPromise, timeoutPromise]) as any[];
+                if (isMounted) {
+                    setTemplates(data || []);
+                    setIsLoadingTemplates(false);
+                }
+            } catch (err) {
+                console.error('Failed to load templates:', err);
+                if (isMounted) {
+                    setIsLoadingTemplates(false);
+                }
+            }
+        };
+        
+        loadData();
+        
+        return () => {
+            isMounted = false;
+        };
     }, [initialTemplateId]);
 
-    const loadInitialTemplate = async (id: string) => {
-        try {
-            const data = await apiService.getTemplate(id);
-            setSelectedTemplate(data);
-        } catch (err) {
-            console.error('Failed to load initial template:', err);
-        }
-    };
-
-    const loadTemplates = async () => {
-        setIsLoadingTemplates(true);
-        try {
-            // Add a timeout to prevent infinite loading
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout')), 15000)
-            );
-            const fetchPromise = apiService.getTemplates({ is_archived: false });
-
-            const data = await Promise.race([fetchPromise, timeoutPromise]) as any[];
-            setTemplates(data || []);
-        } catch (err) {
-            console.error('Failed to load templates:', err);
-            // Don't show critical error for templates load fail, just empty list
-        } finally {
-            setIsLoadingTemplates(false);
-        }
-    };
 
     const handleContactSelect = (contact: GoogleContact) => {
         setCustomer(contact);

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
@@ -98,6 +98,12 @@ function App() {
   const { user, loading, initialized, initialize } = useAuthStore();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { warn, success: notifySuccess } = useNotificationStore();
+  const userRef = useRef(user);
+
+  // Keep user ref in sync to prevent unnecessary remounts
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     // Initialize auth immediately (only once)
@@ -153,7 +159,10 @@ function App() {
     return <LoadingScreen text="System wird gestartet..." />;
   }
 
-  if (!user) {
+  // Use ref to prevent flickering during auth state transitions
+  const currentUser = userRef.current || user;
+  
+  if (!currentUser) {
     return (
       <BrowserRouter>
         <Suspense fallback={<LoadingScreen />}>
