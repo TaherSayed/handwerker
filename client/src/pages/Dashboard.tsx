@@ -102,12 +102,12 @@ export default function Dashboard() {
       {/* Header with New Submission Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Übersicht Ihrer Einsatzberichte</p>
+          <h1 className="heading-lg">Dashboard</h1>
+          <p className="text-body mt-1">Übersicht Ihrer Einsatzberichte</p>
         </div>
         <button
           onClick={() => navigate('/visits/new')}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95"
+          className="btn-primary w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           <span>Neuer Einsatz</span>
@@ -115,110 +115,113 @@ export default function Dashboard() {
       </div>
 
       {/* 1. KPI Cards */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="bg-primary-light text-white p-3 rounded-xl shadow-sm flex flex-col justify-between h-24">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="card card-compact bg-primary-500 text-white flex flex-col justify-between h-28">
           <span className="text-2xl font-bold">{stats.total}</span>
-          <span className="text-xs font-medium opacity-90">Gesamt</span>
+          <span className="text-sm font-medium opacity-90">Gesamt</span>
         </div>
-        <div className="bg-primary-light text-white p-3 rounded-xl shadow-sm flex flex-col justify-between h-24">
+        <div className="card card-compact bg-primary-500 text-white flex flex-col justify-between h-28">
           <span className="text-2xl font-bold">{stats.sync}</span>
-          <span className="text-xs font-medium opacity-90">Sync</span>
+          <span className="text-sm font-medium opacity-90">Sync</span>
         </div>
-        <div className="bg-primary-light text-white p-3 rounded-xl shadow-sm flex flex-col justify-between h-24">
+        <div className="card card-compact bg-primary-500 text-white flex flex-col justify-between h-28">
           <span className="text-2xl font-bold">{stats.drafts}</span>
-          <span className="text-xs font-medium opacity-90">Entwürfe</span>
+          <span className="text-sm font-medium opacity-90">Entwürfe</span>
         </div>
       </div>
 
       {/* 2. Search & Filter */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary pointer-events-none" />
           <input
             type="text"
             placeholder="Berichte durchsuchen..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary-light focus:ring-1 focus:ring-primary-light outline-none text-sm shadow-sm"
+            className="input pl-10"
           />
         </div>
-        <button className="w-12 h-12 flex items-center justify-center bg-primary-light text-white rounded-xl shadow-sm hover:bg-primary-dark transition-colors">
+        <button className="btn-secondary w-12 h-12 p-0 flex items-center justify-center">
           <Filter className="w-5 h-5" />
         </button>
       </div>
 
-      {/* 3. Tabs */}
-      <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-100 flex text-sm font-medium">
+      {/* 3. Tabs - Pill Style */}
+      <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-dark-input rounded-full">
         <button
           onClick={() => setActiveTab('all')}
-          className={`flex-1 py-2.5 rounded-lg transition-colors ${activeTab === 'all' ? 'bg-primary-light text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+          className={`tab flex-1 ${activeTab === 'all' ? 'tab-active' : 'tab-inactive'}`}
         >
           Alle
         </button>
         <button
           onClick={() => setActiveTab('draft')}
-          className={`flex-1 py-2.5 rounded-lg transition-colors ${activeTab === 'draft' ? 'bg-primary-light text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+          className={`tab flex-1 ${activeTab === 'draft' ? 'tab-active' : 'tab-inactive'}`}
         >
           Entwürfe
         </button>
         <button
           onClick={() => setActiveTab('submitted')}
-          className={`flex-1 py-2.5 rounded-lg transition-colors ${activeTab === 'submitted' ? 'bg-primary-light text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+          className={`tab flex-1 ${activeTab === 'submitted' ? 'tab-active' : 'tab-inactive'}`}
         >
           Eingereicht
         </button>
       </div>
 
       {/* 4. List Header */}
-      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
+      <h3 className="text-caption font-semibold uppercase tracking-wider px-1">
         EINSATZBERICHTE & DOKUMENTATIONEN
       </h3>
 
       {/* 5. List Items */}
       <div className="space-y-3">
         {filteredSubmissions.length === 0 ? (
-          <div className="text-center py-10 text-slate-400 text-sm">Keine Berichte gefunden.</div>
+          <div className="card card-compact text-center py-12 text-text-tertiary">
+            Keine Berichte gefunden.
+          </div>
         ) : (
           filteredSubmissions.map((sub) => (
             <div
               key={sub.id}
               onClick={() => navigate(`/submissions/${sub.id}`)}
-              className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-start gap-4 active:scale-[0.99] transition-transform cursor-pointer"
+              className="card card-hover card-compact flex items-start gap-4"
             >
               {/* Avatar Icon */}
-              <div className="w-10 h-10 rounded-lg bg-primary-light text-white flex items-center justify-center shrink-0">
-                <User className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-lg bg-primary-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <User className="w-6 h-6" />
               </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex justify-between items-start">
-                  <h4 className="font-bold text-slate-900 truncate pr-2">{sub.customer_name || 'Kunde'}</h4>
-                  <span className="text-primary-light">
-                    <code className="text-[10px]">&gt;</code>
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex justify-between items-start gap-2">
+                  <h4 className="heading-sm truncate">{sub.customer_name || 'Kunde'}</h4>
+                  <span className="text-primary-500 shrink-0">
+                    <code className="text-xs">&gt;</code>
                   </span>
                 </div>
 
-                <p className="text-slate-400 text-xs truncate">
+                <p className="text-caption truncate">
                   {sub.user?.email || 'user@example.com'}
                 </p>
 
-                {/* Sync Badge */}
+                {/* Status Badge */}
                 {sub.status === 'submitted' && (
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-primary-light/30 bg-primary-light/5 text-primary-light text-[10px] font-medium mt-1">
+                  <div className="badge badge-success inline-flex items-center gap-1.5">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>Synchronisiert</span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-50">
-                  <FileText className="w-3 h-3 text-primary-light" />
-                  <span className="text-xs font-bold text-slate-700 truncate">{sub.form_templates?.name || 'Formular'}</span>
+                <div className="flex items-center gap-2 pt-2 border-t border-border-subtle">
+                  <FileText className="w-4 h-4 text-primary-500 shrink-0" />
+                  <span className="text-sm font-medium text-text-secondary truncate">{sub.form_templates?.name || 'Formular'}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-1">
-                  <span>📅 {new Date(sub.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                  <span>⏰ {new Date(sub.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr</span>
+                <div className="flex items-center gap-3 text-caption">
+                  <span>{new Date(sub.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  <span>•</span>
+                  <span>{new Date(sub.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr</span>
                 </div>
               </div>
             </div>
@@ -229,7 +232,7 @@ export default function Dashboard() {
       {/* Floating Action Button for New Submission (Mobile Only) */}
       <button
         onClick={() => navigate('/visits/new')}
-        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden"
+        className="fixed right-4 bottom-20 w-14 h-14 btn-primary rounded-full shadow-lg z-sticky lg:hidden"
       >
         <Plus className="w-6 h-6" />
       </button>

@@ -560,14 +560,14 @@ export default function VisitWorkflow() {
                         <div className="sticky-action-bar grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleSave('draft')}
-                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
+                                className="btn-secondary"
                             >
                                 <Save className="w-4 h-4" /> Entwurf
                             </button>
                             <button
                                 onClick={() => handleSave('submitted')}
                                 disabled={isSubmitting}
-                                className="flex items-center justify-center gap-2 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                                className="btn-primary"
                             >
                                 {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
                                 Abschließen

@@ -1,3 +1,5 @@
+@import './styles/design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,59 +36,218 @@
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border border-white/20 dark:border-dark-stroke shadow-lg dark:shadow-dark-card-shadow;
-  }
-
+  /* ===== BUTTON SYSTEM ===== */
+  
+  /* Primary Button - Main CTA */
   .btn-primary {
-    @apply bg-primary-light dark:bg-primary-dark text-white font-medium text-base py-3 px-6 rounded-xl shadow-lg shadow-primary-light/20 active:scale-[0.98] transition-all min-h-[44px] flex items-center justify-center;
+    @apply bg-primary-500 hover:bg-primary-600 active:bg-primary-700 
+           text-white font-medium text-base 
+           py-3 px-6 rounded-lg 
+           shadow-md hover:shadow-lg 
+           active:scale-[0.98] 
+           transition-all duration-200 
+           min-h-[44px] 
+           flex items-center justify-center gap-2
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
+  /* Secondary Button */
   .btn-secondary {
-    @apply bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body font-medium text-base py-3 px-6 rounded-xl border border-border-light dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight active:scale-[0.98] transition-all shadow-sm min-h-[44px] flex items-center justify-center;
+    @apply bg-surface-base dark:bg-dark-card
+           text-text-primary dark:text-dark-text-body
+           font-medium text-base
+           py-3 px-6 rounded-lg
+           border border-border-default dark:border-dark-stroke
+           hover:bg-neutral-50 dark:hover:bg-dark-highlight
+           active:scale-[0.98]
+           transition-all duration-200
+           shadow-sm
+           min-h-[44px]
+           flex items-center justify-center gap-2
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Outline Button */
+  .btn-outline {
+    @apply bg-transparent
+           text-primary-500 dark:text-primary-400
+           font-medium text-base
+           py-3 px-6 rounded-lg
+           border-2 border-primary-500 dark:border-primary-400
+           hover:bg-primary-50 dark:hover:bg-primary-500/10
+           active:scale-[0.98]
+           transition-all duration-200
+           min-h-[44px]
+           flex items-center justify-center gap-2
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost Button */
   .btn-ghost {
-    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-dark-highlight text-slate-600 dark:text-dark-text-muted font-medium text-base py-2 px-4 rounded-lg transition-colors min-h-[44px] flex items-center justify-center;
+    @apply bg-transparent
+           text-text-secondary dark:text-dark-text-body
+           font-medium text-base
+           py-2 px-4 rounded-lg
+           hover:bg-neutral-100 dark:hover:bg-dark-highlight
+           active:scale-[0.98]
+           transition-colors duration-200
+           min-h-[44px]
+           flex items-center justify-center gap-2
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Danger Button */
+  .btn-danger {
+    @apply bg-danger-500 hover:bg-danger-600 active:bg-danger-700
+           text-white font-medium text-base
+           py-3 px-6 rounded-lg
+           shadow-md hover:shadow-lg
+           active:scale-[0.98]
+           transition-all duration-200
+           min-h-[44px]
+           flex items-center justify-center gap-2
+           focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ===== CARD SYSTEM ===== */
+  
   .card {
-    @apply bg-white dark:bg-dark-card border-border-light dark:border-dark-stroke border rounded-xl shadow-sm dark:shadow-dark-card-shadow text-slate-900 dark:text-dark-text-body transition-colors duration-200;
+    @apply bg-surface-base dark:bg-dark-card
+           border border-border-subtle dark:border-dark-stroke
+           rounded-lg
+           shadow-sm dark:shadow-dark-card
+           text-text-primary dark:text-dark-text-body
+           transition-all duration-200;
   }
 
-  /* Compact padding for mobile cards */
+  .card-hover {
+    @apply card hover:shadow-md dark:hover:shadow-lg
+           hover:border-border-default dark:hover:border-dark-stroke
+           cursor-pointer;
+  }
+
+  .card-elevated {
+    @apply card shadow-md dark:shadow-dark-card;
+  }
+
   .card-compact {
     @apply p-4 lg:p-6;
   }
 
-  .heading-lg {
-    @apply text-[22px] lg:text-2xl font-semibold tracking-tight text-slate-900 dark:text-dark-text-head;
-  }
-
+  /* ===== INPUT SYSTEM ===== */
+  
   .input {
-    @apply w-full px-4 py-3 rounded-xl border border-border-light dark:border-dark-stroke bg-white dark:bg-dark-input text-slate-900 dark:text-dark-text-head focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-dark-text-muted text-base;
+    @apply w-full px-4 py-3 rounded-lg
+           border border-border-default dark:border-dark-stroke
+           bg-surface-base dark:bg-dark-input
+           text-text-primary dark:text-dark-text-head
+           text-base
+           placeholder:text-text-tertiary dark:placeholder:text-dark-text-muted
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* ===== BADGE SYSTEM ===== */
+  
   .badge {
-    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full
+           text-xs font-medium
+           transition-colors;
+  }
+
+  .badge-primary {
+    @apply bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300;
   }
 
   .badge-success {
-    @apply bg-success-light/10 dark:bg-success-dark/10 text-success-light dark:text-success-dark;
+    @apply bg-success-50 dark:bg-success-500/20 text-success-700 dark:text-success-300;
   }
 
   .badge-warning {
-    @apply bg-warning-light/10 dark:bg-warning-dark/10 text-warning-light dark:text-warning-dark;
+    @apply bg-warning-50 dark:bg-warning-500/20 text-warning-700 dark:text-warning-300;
   }
 
-  /* Sticky Action Bar Container */
+  .badge-danger {
+    @apply bg-danger-50 dark:bg-danger-500/20 text-danger-700 dark:text-danger-300;
+  }
+
+  .badge-neutral {
+    @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300;
+  }
+
+  /* ===== TAB SYSTEM ===== */
+  
+  .tab {
+    @apply px-4 py-2 rounded-full
+           text-sm font-medium
+           transition-all duration-200
+           cursor-pointer
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .tab-active {
+    @apply bg-primary-500 text-white shadow-md;
+  }
+
+  .tab-inactive {
+    @apply bg-transparent text-text-secondary dark:text-dark-text-muted
+           hover:bg-neutral-100 dark:hover:bg-dark-highlight;
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  
+  .heading-lg {
+    @apply text-2xl lg:text-3xl font-semibold tracking-tight
+           text-text-primary dark:text-dark-text-head;
+  }
+
+  .heading-md {
+    @apply text-xl lg:text-2xl font-semibold tracking-tight
+           text-text-primary dark:text-dark-text-head;
+  }
+
+  .heading-sm {
+    @apply text-lg font-medium tracking-tight
+           text-text-primary dark:text-dark-text-head;
+  }
+
+  .text-body {
+    @apply text-base text-text-secondary dark:text-dark-text-body;
+  }
+
+  .text-caption {
+    @apply text-sm text-text-tertiary dark:text-dark-text-muted;
+  }
+
+  /* ===== LAYOUT ===== */
+  
   .sticky-action-bar {
-    @apply fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md border-t border-border-light dark:border-dark-stroke z-50 shadow-sticky-nav pb-safe;
+    @apply fixed bottom-0 left-0 right-0 p-4
+           bg-surface-base/95 dark:bg-dark-card/95
+           backdrop-blur-md
+           border-t border-border-subtle dark:border-dark-stroke
+           z-fixed
+           shadow-sticky-nav
+           pb-safe;
   }
 
-  /* Add padding to bottom of page to prevent content being hidden by sticky bar */
   .has-sticky-bar {
     @apply pb-32;
+  }
+
+  /* ===== GLASS EFFECT ===== */
+  
+  .glass-card {
+    @apply bg-white/80 dark:bg-dark-card/80
+           backdrop-blur-md
+           border border-border-subtle dark:border-dark-stroke
+           shadow-lg dark:shadow-dark-card;
   }
 }
 

@@ -141,24 +141,27 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0 relative">
         {/* Top Header */}
         <header
-          className={`sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-14 md:h-16 transition-all duration-200 ${scrolled ? 'bg-white/95 dark:bg-dark-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-dark-stroke shadow-sm' : 'bg-transparent'
-            }`}
+          className={`sticky top-0 z-sticky flex items-center justify-between px-4 md:px-8 h-14 md:h-16 transition-all duration-200 ${
+            scrolled 
+              ? 'bg-surface-base/95 dark:bg-dark-card/95 backdrop-blur-sm border-b border-border-subtle dark:border-dark-stroke shadow-sm' 
+              : 'bg-transparent'
+          }`}
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-slate-200 overflow-hidden bg-white">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-border-subtle overflow-hidden bg-surface-base">
               {profile?.company_logo_url ? (
                 <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
                 <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain p-1" />
               )}
             </div>
-            <span className="font-bold text-xl text-slate-900">OnSite</span>
+            <span className="heading-sm text-text-primary">OnSite</span>
           </div>
 
           <div className="hidden lg:block">
             {/* Desktop Page Title */}
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h1 className="heading-md">
               {location.pathname === '/dashboard' ? 'Übersicht' :
                 location.pathname === '/templates' ? 'Formularvorlagen' :
                   location.pathname === '/submissions' ? 'Einsatzverlauf' :
@@ -167,22 +170,22 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Online</span>
+            <div className="hidden md:flex items-center px-3 py-1.5 bg-surface-base dark:bg-dark-card border border-border-subtle rounded-full shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-success-500 mr-2 animate-pulse"></span>
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">Online</span>
             </div>
 
             <button
               onClick={() => useNotificationStore.getState().info('Mitteilungen', 'Keine neuen Benachrichtigungen')}
-              className="relative p-2 bg-white border border-slate-200 rounded text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group"
+              className="btn-ghost relative p-2"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white group-hover:scale-110 transition-transform" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-danger-500 rounded-full border-2 border-surface-base dark:border-dark-card" />
             </button>
 
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden w-9 h-9 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
+              className="lg:hidden btn-ghost w-10 h-10 p-0 overflow-hidden"
             >
               {profile?.auth_metadata?.avatar_url ? (
                 <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -199,8 +202,8 @@ export default function Layout() {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation - Solid & Robust */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-card border-t border-slate-200 dark:border-dark-stroke px-2 py-2 flex items-center justify-around z-40 pb-safe shadow-sticky-nav">
+      {/* Mobile Bottom Navigation - Professional & Tappable */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-base dark:bg-dark-card border-t border-border-subtle dark:border-dark-stroke px-2 py-2 flex items-center justify-around z-sticky pb-safe shadow-sticky-nav">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
@@ -210,13 +213,21 @@ export default function Layout() {
                 if (isActive) return;
                 navigate(item.to);
               }}
-              className={`flex flex-col items-center justify-center gap-0.5 w-full py-1 transition-all duration-200 ${isActive ? 'text-blue-700' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex flex-col items-center justify-center gap-1 w-full py-2 min-h-[56px] transition-all duration-200 ${
+                isActive 
+                  ? 'text-primary-500 dark:text-primary-400' 
+                  : 'text-text-tertiary dark:text-dark-text-muted hover:text-text-primary dark:hover:text-dark-text-body'
+              }`}
             >
-              <div className={`relative ${isActive ? '-translate-y-0.5' : ''} transition-transform duration-200`}>
-                <item.icon className={`w-5 h-5 ${isActive ? 'fill-blue-100' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
-                {isActive && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600"></span>}
+              <div className={`relative ${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
+                <item.icon 
+                  className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
+                />
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary-500 dark:bg-primary-400"></span>
+                )}
               </div>
-              <span className={`text-[10px] font-bold leading-none mt-1 ${isActive ? 'text-blue-800' : 'text-slate-600'}`}>
+              <span className={`text-xs font-medium leading-none ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-text-tertiary dark:text-dark-text-muted'}`}>
                 {item.label}
               </span>
             </button>

@@ -93,18 +93,18 @@ export default function Submissions() {
       {/* Header Area */}
       <div className="mb-8">
         <div className="mb-1">
-          <h1 className="text-3xl md:text-4xl font-medium text-slate-900 dark:text-white tracking-normal leading-tight">
+          <h1 className="heading-lg">
             Verlauf
           </h1>
         </div>
         <div className="mb-8 mt-2">
-          <p className="text-sm text-slate-500 dark:text-dark-text-muted font-normal">
+          <p className="text-body">
             Einsatzberichte & Kundendokumentationen
           </p>
         </div>
 
-        {/* Filter Tabs - Connected to content */}
-        <div className="flex p-1 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-xl shadow-sm">
+        {/* Filter Tabs - Pill Style */}
+        <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-dark-input rounded-full">
           {[
             { id: 'all', label: 'Alle' },
             { id: 'draft', label: 'Entwürfe' },
@@ -113,11 +113,7 @@ export default function Submissions() {
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                filter === f.id
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-dark-text-muted hover:text-slate-900 dark:hover:text-white'
-              }`}
+              className={`tab flex-1 ${filter === f.id ? 'tab-active' : 'tab-inactive'}`}
             >
               {f.label}
             </button>
@@ -129,12 +125,12 @@ export default function Submissions() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 dark:bg-error-dark/10 border-l-4 border-red-500 rounded-xl p-4 shadow-sm flex items-center justify-between animate-in slide-in-from-top-4">
+          <div className="card card-compact bg-danger-50 dark:bg-danger-500/10 border-l-4 border-danger-500 flex items-center justify-between animate-in slide-in-from-top-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 dark:bg-error-dark/20 text-red-600 dark:text-error-light rounded-full flex items-center justify-center font-medium">!</div>
-              <p className="text-red-800 dark:text-error-light font-medium text-sm">{error}</p>
+              <div className="w-8 h-8 bg-danger-100 dark:bg-danger-500/20 text-danger-600 dark:text-danger-400 rounded-full flex items-center justify-center font-medium">!</div>
+              <p className="text-danger-800 dark:text-danger-400 font-medium text-sm">{error}</p>
             </div>
-            <button onClick={loadSubmissions} className="text-red-600 dark:text-error-light font-medium text-xs px-3 py-1.5 hover:bg-red-100 dark:hover:bg-error-dark/20 rounded-lg transition-colors">Wiederholen</button>
+            <button onClick={loadSubmissions} className="btn-ghost text-danger-600 dark:text-danger-400 text-xs">Wiederholen</button>
           </div>
         )}
 
