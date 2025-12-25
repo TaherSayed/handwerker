@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
-import { Search, Filter, CheckCircle2, FileText, User } from 'lucide-react';
+import { Search, Filter, CheckCircle2, FileText, User, Plus } from 'lucide-react';
 import Skeleton from '../components/common/Skeleton';
 
 export default function Dashboard() {
@@ -64,6 +64,21 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
+
+      {/* Header with New Submission Button */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">Übersicht Ihrer Einsatzberichte</p>
+        </div>
+        <button
+          onClick={() => navigate('/visits/new')}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Neuer Einsatz</span>
+        </button>
+      </div>
 
       {/* 1. KPI Cards */}
       <div className="grid grid-cols-3 gap-2">
@@ -177,12 +192,12 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Floating Action Button for New Submission */}
+      {/* Floating Action Button for New Submission (Mobile Only) */}
       <button
         onClick={() => navigate('/visits/new')}
-        className="fixed right-4 bottom-20 w-14 h-14 bg-primary-light text-white rounded-full shadow-lg shadow-primary-light/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden"
+        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden"
       >
-        <span className="text-3xl font-light mb-1">+</span>
+        <Plus className="w-6 h-6" />
       </button>
 
     </div>
