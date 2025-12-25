@@ -162,7 +162,7 @@
   }
 
   .badge-primary {
-    @apply bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-400;
+    @apply bg-primary-100 dark:bg-primary-500/20 text-primary-800 dark:text-primary-400;
   }
 
   .badge-success {
