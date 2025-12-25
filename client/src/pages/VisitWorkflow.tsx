@@ -657,7 +657,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                                 try {
                                     // Try direct download endpoint as fallback
                                     const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://hw.sata26.cloud/api';
-                                    const { supabase } = await import('../lib/supabase');
+                                    const { supabase } = await import('../services/supabase');
                                     const { data: { session } } = await supabase.auth.getSession();
                                     const directUrl = `${apiBaseUrl}/submissions/${submissionResult.id}/pdf`;
                                     const directResponse = await fetch(directUrl, {
