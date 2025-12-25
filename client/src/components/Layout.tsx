@@ -146,14 +146,14 @@ export default function Layout() {
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-12 h-12 rounded flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden bg-white">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-slate-200 overflow-hidden bg-white">
               {profile?.company_logo_url ? (
-                <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
+                <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
-                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain p-1" />
               )}
             </div>
-            <span className="font-bold text-lg text-slate-900">OnSite</span>
+            <span className="font-bold text-xl text-slate-900">OnSite</span>
           </div>
 
           <div className="hidden lg:block">
