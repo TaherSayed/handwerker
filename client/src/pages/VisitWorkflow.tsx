@@ -383,6 +383,13 @@ export default function VisitWorkflow() {
         );
     };
 
+    // Early return if component hasn't initialized
+    if (!templates && isLoadingTemplates) {
+        console.log('VisitWorkflow: Still loading templates, showing loading state');
+    }
+
+    console.log('VisitWorkflow: Rendering with step:', currentStep);
+
     return (
         <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
             {/* Navigation Header */}
