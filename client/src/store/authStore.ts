@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
 
         if (session?.user) {
-          set({ user: session.user });
+          set({ user: session.user, loading: false, initialized: true });
           // Background refresh ensures data consistency without blocking
           get().refreshProfile();
         } else if (!cachedProfile) {
