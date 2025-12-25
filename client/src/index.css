@@ -162,19 +162,19 @@
   }
 
   .badge-primary {
-    @apply bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300;
+    @apply bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-400;
   }
 
   .badge-success {
-    @apply bg-success-50 dark:bg-success-500/20 text-success-700 dark:text-success-300;
+    @apply bg-success-50 dark:bg-success-500/20 text-success-600 dark:text-success-400;
   }
 
   .badge-warning {
-    @apply bg-warning-50 dark:bg-warning-500/20 text-warning-700 dark:text-warning-300;
+    @apply bg-warning-50 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400;
   }
 
   .badge-danger {
-    @apply bg-danger-50 dark:bg-danger-500/20 text-danger-700 dark:text-danger-300;
+    @apply bg-danger-50 dark:bg-danger-500/20 text-danger-600 dark:text-danger-400;
   }
 
   .badge-neutral {
