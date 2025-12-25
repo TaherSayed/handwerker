@@ -168,11 +168,13 @@ export class UserService {
 
         if (workspaceError || !workspace) {
             console.log(`[UserService] Creating missing workspace for ${userId}`);
+            // Type assertion to allow accessing optional fields
+            const profileWithCompany = profile as any;
             const { data: newWorkspace, error: createWorkspaceError } = await userClient
                 .from('workspaces')
                 .insert({
                     owner_id: userId,
-                    name: profile?.company_name || profile?.full_name || 'My Workspace',
+                    name: profileWithCompany?.company_name || profile?.full_name || 'My Workspace',
                 })
                 .select()
                 .single();

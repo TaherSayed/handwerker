@@ -27,6 +27,9 @@ interface SubmissionData {
     company_name?: string;
     company_logo_url?: string;
     company_address?: string;
+    company_city?: string;
+    company_zip?: string;
+    company_country?: string;
     company_phone?: string;
     company_website?: string;
     primary_color?: string;
