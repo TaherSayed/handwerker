@@ -243,8 +243,13 @@ export default function VisitWorkflow() {
                 return (
                     <textarea
                         value={value || ''}
+                        rows={3}
+                        onInput={(e) => {
+                            e.currentTarget.style.height = 'auto';
+                            e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+                        }}
                         onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        className={`input min-h-[120px] ${hasError ? 'border-red-500 bg-red-50' : ''}`}
+                        className={`input min-h-[80px] py-3 resize-none overflow-hidden ${hasError ? 'border-red-500 bg-red-50' : ''}`}
                         placeholder={field.placeholder || 'Type notes here...'}
                     />
                 );
@@ -356,9 +361,9 @@ export default function VisitWorkflow() {
     };
 
     return (
-        <div className="animate-slide-up max-w-2xl mx-auto py-8 px-4 pb-48 lg:pb-8">
+        <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
             {/* Navigation Header */}
-            <div className="flex items-center gap-6 mb-12">
+            <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={() => {
                         if (currentStep === 'customer') navigate('/dashboard');
@@ -366,13 +371,13 @@ export default function VisitWorkflow() {
                         else if (currentStep === 'form') setCurrentStep('template');
                         else if (currentStep === 'finish') navigate('/dashboard');
                     }}
-                    className="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm group"
+                    className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm group"
                 >
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">New Visit</h1>
-                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-2">{currentStep}</p>
+                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">New Visit</h1>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">{currentStep}</p>
                 </div>
             </div>
 
@@ -468,26 +473,19 @@ export default function VisitWorkflow() {
                 )}
 
                 {currentStep === 'form' && selectedTemplate && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-white rounded-[2.5rem] p-8 md:p-12 space-y-12 border border-slate-100 shadow-2xl shadow-indigo-500/5">
-                            <div className="pb-8 border-b border-slate-100 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                                <div>
-                                    <div className="flex items-center gap-3 text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
-                                        <User className="w-4 h-4" />
-                                        {isManualCustomer ? manualCustomer.name : customer?.name}
-                                    </div>
-                                    <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedTemplate.name}</h2>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-white rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 shadow-xl shadow-indigo-500/5">
+                            <div className="pb-6 border-b border-slate-100 flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.2em]">
+                                    <User className="w-3.5 h-3.5" />
+                                    <span className="truncate">{isManualCustomer ? manualCustomer.name : customer?.name}</span>
                                 </div>
-                                <div className="hidden md:block">
-                                    <button onClick={() => handleSave('draft')} className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-indigo-600 transition-colors">
-                                        <Save className="w-4 h-4" /> Save Draft
-                                    </button>
-                                </div>
+                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">{selectedTemplate.name}</h2>
                             </div>
 
-                            <div className="space-y-10">
+                            <div className="space-y-6">
                                 {selectedTemplate.fields?.map((field: any) => (
-                                    <div key={field.id} className="space-y-3">
+                                    <div key={field.id} className="space-y-1.5">
                                         {field.type !== 'section' && (
                                             <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.1em] ml-1 block">
                                                 {field.label}
@@ -498,24 +496,24 @@ export default function VisitWorkflow() {
                                     </div>
                                 ))}
                             </div>
+                        </div>
 
-                            {/* Action Bar (at bottom of form) */}
-                            <div className="pt-12 flex flex-col sm:flex-row gap-4">
-                                <button
-                                    onClick={() => handleSave('submitted')}
-                                    disabled={isSubmitting}
-                                    className="flex-1 flex items-center justify-center gap-4 bg-indigo-900 text-white py-6 rounded-3xl font-black text-lg uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-2xl shadow-indigo-200 disabled:opacity-50"
-                                >
-                                    {isSubmitting ? <Loader className="w-6 h-6 animate-spin" /> : <Zap className="w-6 h-6 fill-current" />}
-                                    FINISH VISIT
-                                </button>
-                                <button
-                                    onClick={() => handleSave('draft')}
-                                    className="sm:hidden btn-secondary py-5 text-[10px]"
-                                >
-                                    <Save className="w-4 h-4" /> Save as Draft
-                                </button>
-                            </div>
+                        {/* Sticky Action Bar */}
+                        <div className="sticky-action-bar grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => handleSave('draft')}
+                                className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]"
+                            >
+                                <Save className="w-4 h-4" /> Entwurf
+                            </button>
+                            <button
+                                onClick={() => handleSave('submitted')}
+                                disabled={isSubmitting}
+                                className="flex items-center justify-center gap-2 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                            >
+                                {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
+                                Abschließen
+                            </button>
                         </div>
                     </div>
                 )}

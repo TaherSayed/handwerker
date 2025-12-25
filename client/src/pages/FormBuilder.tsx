@@ -128,86 +128,90 @@ export default function FormBuilder() {
   }
 
   return (
-    <div className="animate-slide-up p-4 md:p-8 max-w-7xl mx-auto pb-40">
+    <div className="animate-slide-up p-3 md:p-8 max-w-7xl mx-auto pb-32 has-sticky-bar">
       {/* Messages */}
       {error && (
-        <div className="mb-8 bg-red-50 border-l-4 border-red-500 rounded-3xl p-6 shadow-xl shadow-red-500/5 animate-in slide-in-from-top-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black">!</div>
-            <p className="text-red-800 font-bold tracking-tight">{error}</p>
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-3xl p-5 shadow-xl shadow-red-500/5 animate-in slide-in-from-top-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black text-sm">!</div>
+            <p className="text-red-800 font-bold tracking-tight text-sm">{error}</p>
           </div>
         </div>
       )}
 
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
           <button
             onClick={() => navigate('/templates')}
-            className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-4 transition-colors"
+            className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-3 transition-colors"
           >
             <X className="w-4 h-4" />
             Änderungen verwerfen
           </button>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-2 uppercase tracking-tighter leading-none">
-            {id ? 'Vorlage bearbeiten' : 'Vorlage erstellen'}
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-1 uppercase tracking-tighter leading-none">
+            {id ? 'Bearbeiten' : 'Erstellen'}
           </h1>
           <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">
             Standardisieren Sie Ihre Arbeitsabläufe
           </p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="group flex items-center justify-center gap-4 bg-indigo-900 text-white w-full md:w-auto px-12 py-6 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-indigo-800 transition-all shadow-2xl shadow-indigo-100 active:scale-95"
-        >
-          {saving ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          )}
-          {saving ? 'Speichert...' : 'Vorlage speichern'}
-        </button>
+
+        {/* Helper for desktop, but main action is now sticky for mobile */}
+        <div className="hidden lg:block">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="group flex items-center justify-center gap-4 bg-indigo-900 text-white px-12 py-4 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 active:scale-95"
+          >
+            {saving ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            )}
+            {saving ? 'Speichert...' : 'Speichern'}
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-4 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+        <div className="lg:col-span-4 space-y-6">
           {/* Template Info Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                <Edit className="w-5 h-5" />
+          <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                <Edit className="w-4 h-4" />
               </div>
-              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Basisdaten</h2>
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">Basisdaten</h2>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
+            <div className="space-y-4">
+              <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vorlagen Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input px-6 py-4 text-lg font-bold placeholder:text-slate-200"
+                  className="input px-4 py-3 text-base font-bold placeholder:text-slate-200"
                   placeholder="z.B. Installations Protokoll"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategorie / Gruppe</label>
                 <input
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="input px-6 py-4 font-bold placeholder:text-slate-200"
+                  className="input px-4 py-3 font-bold placeholder:text-slate-200"
                   placeholder="z.B. Sicherheit & Wartung"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Beschreibung</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="input px-6 py-4 font-bold placeholder:text-slate-200 min-h-[100px]"
+                  className="input px-4 py-3 font-bold placeholder:text-slate-200 min-h-[80px]"
                   placeholder="Wofür wird dieses Formular verwendet?"
                 />
               </div>
@@ -215,27 +219,27 @@ export default function FormBuilder() {
           </div>
 
           {/* Add Fields Palette */}
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-900/10 lg:sticky lg:top-8 overflow-hidden relative">
+          <div className="bg-slate-900 rounded-[2rem] p-6 shadow-2xl shadow-slate-900/10 lg:sticky lg:top-8 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[4rem]" />
-            <div className="flex items-center gap-4 mb-8 relative z-10">
-              <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center">
-                <Plus className="w-5 h-5" />
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <div className="w-8 h-8 bg-white/10 text-white rounded-xl flex items-center justify-center">
+                <Plus className="w-4 h-4" />
               </div>
-              <h2 className="text-lg font-black text-white uppercase tracking-tight leading-none">Elemente</h2>
+              <h2 className="text-base font-black text-white uppercase tracking-tight leading-none">Elemente</h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 relative z-10">
+            <div className="grid grid-cols-2 gap-2 relative z-10">
               {FIELD_TYPES.map((type) => (
                 <button
                   key={type.value}
                   onClick={() => addField(type.value)}
-                  className={`group flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 active:scale-95
+                  className={`group flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 active:scale-95
                     ${type.value === 'section'
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500 col-span-2 py-6 border-b-4 border-indigo-800'
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-500 col-span-2 py-4 border-b-4 border-indigo-800'
                       : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20'}`}
                 >
-                  <Plus className={`w-4 h-4 mb-2 transition-transform duration-300 group-hover:rotate-90 ${type.value === 'section' ? 'w-5 h-5' : ''}`} />
-                  <span className={`font-black text-[9px] uppercase tracking-widest ${type.value === 'section' ? 'text-[11px]' : ''}`}>
+                  <Plus className={`w-3.5 h-3.5 mb-1.5 transition-transform duration-300 group-hover:rotate-90 ${type.value === 'section' ? 'w-4 h-4' : ''}`} />
+                  <span className={`font-black text-[9px] uppercase tracking-widest ${type.value === 'section' ? 'text-[10px]' : ''}`}>
                     {type.label}
                   </span>
                 </button>
@@ -245,23 +249,23 @@ export default function FormBuilder() {
         </div>
 
         <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center gap-4 px-4 mb-4">
-            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-              <GripVertical className="w-5 h-5" />
+          <div className="flex items-center gap-3 px-2 mb-2">
+            <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+              <GripVertical className="w-4 h-4" />
             </div>
-            <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">Struktur</h2>
+            <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">Struktur</h2>
           </div>
 
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="fields">
               {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                   {formData.fields.length === 0 ? (
-                    <div className="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 py-32 text-center text-slate-300 shadow-inner">
-                      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Plus className="w-10 h-10 opacity-20" />
+                    <div className="bg-white rounded-[2.5rem] border-4 border-dashed border-slate-100 py-24 text-center text-slate-300 shadow-inner">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Plus className="w-8 h-8 opacity-20" />
                       </div>
-                      <p className="font-black uppercase tracking-[0.2em] text-sm">Fügen Sie Ihr erstes Element hinzu</p>
+                      <p className="font-black uppercase tracking-[0.2em] text-xs">Fügen Sie Ihr erstes Element hinzu</p>
                     </div>
                   ) : (
                     formData.fields.map((field, index) => (
@@ -270,66 +274,66 @@ export default function FormBuilder() {
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className={`group bg-white rounded-[2rem] border border-slate-100 transition-all duration-300 shadow-xl shadow-slate-200/20 ${snapshot.isDragging ? 'rotate-1 scale-[1.02] shadow-2xl ring-4 ring-indigo-500/20 z-50' : ''
+                            className={`group bg-white rounded-[1.5rem] border border-slate-100 transition-all duration-300 shadow-xl shadow-slate-200/20 ${snapshot.isDragging ? 'rotate-1 scale-[1.02] shadow-2xl ring-4 ring-indigo-500/20 z-50' : ''
                               } ${field.type === 'section' ? 'border-l-8 border-l-slate-900 bg-slate-50/50' : 'hover:border-indigo-100 hover:shadow-indigo-500/5'}`}
                           >
-                            <div className="flex p-6 md:p-8 gap-6">
-                              <div {...provided.dragHandleProps} className="flex items-center text-slate-200 cursor-grab active:cursor-grabbing hover:text-slate-400 transition-colors">
-                                <GripVertical className="w-6 h-6" />
+                            <div className="flex p-4 md:p-6 gap-3">
+                              <div {...provided.dragHandleProps} className="flex items-center text-slate-200 cursor-grab active:cursor-grabbing hover:text-slate-400 transition-colors pt-1">
+                                <GripVertical className="w-5 h-5" />
                               </div>
 
-                              <div className="flex-1 space-y-6">
-                                <div className="flex flex-col md:flex-row md:items-center gap-6">
+                              <div className="flex-1 space-y-4">
+                                <div className="flex flex-col md:flex-row md:items-center gap-4">
                                   <input
                                     type="text"
                                     value={field.label}
                                     onChange={(e) => updateField(index, { label: e.target.value })}
                                     className={`flex-1 bg-transparent border-none focus:ring-0 font-black p-0 placeholder:text-slate-200 transition-colors
-                                      ${field.type === 'section' ? 'text-2xl text-slate-900 uppercase' : 'text-xl text-slate-800'}`}
+                                      ${field.type === 'section' ? 'text-lg text-slate-900 uppercase' : 'text-base text-slate-800'}`}
                                     placeholder={field.type === 'section' ? 'Neuer Abschnitt' : 'Feld Bezeichnung'}
                                   />
 
-                                  <div className="flex items-center gap-4">
-                                    <span className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] shadow-sm
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-[0.2em] shadow-sm
                                       ${field.type === 'section' ? 'bg-slate-900 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
                                       {field.type}
                                     </span>
                                     {field.type !== 'section' && (
-                                      <label className="flex items-center gap-3 cursor-pointer select-none group/req">
-                                        <div className="relative">
+                                      <label className="flex items-center gap-2 cursor-pointer select-none group/req bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                                        <div className="relative flex items-center">
                                           <input
                                             type="checkbox"
                                             checked={field.required}
                                             onChange={(e) => updateField(index, { required: e.target.checked })}
-                                            className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-0 peer opacity-0 absolute cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-0 opacity-0 absolute cursor-pointer inset-0 z-10"
                                           />
-                                          <div className={`w-5 h-5 border-2 rounded-md transition-all ${field.required ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-300'}`}>
-                                            {field.required && <div className="w-2 h-2 bg-white rounded-full m-auto mt-1" />}
+                                          <div className={`w-4 h-4 border-2 rounded transition-all mr-2 ${field.required ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-300'}`}>
+                                            {field.required && <div className="w-1.5 h-1.5 bg-white rounded-full m-auto mt-0.5" />}
                                           </div>
+                                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest group-hover/req:text-slate-600 transition-colors">Pflicht</span>
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover/req:text-slate-600 transition-colors">Pflichtfeld</span>
                                       </label>
                                     )}
                                     <button
                                       onClick={() => removeField(index)}
-                                      className="p-3 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                      className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                     >
-                                      <Trash2 className="w-5 h-5" />
+                                      <Trash2 className="w-4 h-4" />
                                     </button>
                                   </div>
                                 </div>
 
                                 {field.type === 'dropdown' && (
-                                  <div className="pl-6 border-l-4 border-indigo-100 py-2 animate-in slide-in-from-left-4">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Auswahlmöglichkeiten (kommagetrennt)</label>
+                                  <div className="pl-4 border-l-2 border-indigo-100 py-1 animate-in slide-in-from-left-4">
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Auswahlmöglichkeiten</label>
                                     <input
                                       type="text"
                                       value={field.options?.join(', ') || ''}
                                       onChange={(e) => updateField(index, {
                                         options: e.target.value.split(',').map((o: string) => o.trim()).filter(Boolean)
                                       })}
-                                      className="input px-6 py-4 font-bold text-sm bg-slate-50 border-none placeholder:text-slate-300"
-                                      placeholder="z.B. Erfolg, Wartung nötig, Kritischer Fehler..."
+                                      className="input px-4 py-3 font-bold text-sm bg-slate-50 border-none placeholder:text-slate-300"
+                                      placeholder="Kommagetrennt: Option A, Option B..."
                                     />
                                   </div>
                                 )}
@@ -347,6 +351,23 @@ export default function FormBuilder() {
           </DragDropContext>
         </div>
       </div>
+
+      {/* Sticky Action Bar */}
+      <div className="sticky-action-bar flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 flex items-center justify-center gap-3 bg-indigo-900 text-white py-3.5 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-indigo-800 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+        >
+          {saving ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {saving ? 'Speichert...' : 'Vorlage speichern'}
+        </button>
+      </div>
+
     </div>
   );
 }

@@ -133,13 +133,13 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0 relative">
         {/* Top Header */}
         <header
-          className={`sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16 transition-all duration-200 ${scrolled ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-transparent'
+          className={`sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-14 md:h-16 transition-all duration-200 ${scrolled ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-transparent'
             }`}
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-9 h-9 bg-blue-600 rounded flex items-center justify-center shadow-sm">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center shadow-sm">
+              <FileText className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-lg text-slate-900">OnSite</span>
           </div>
@@ -170,7 +170,7 @@ export default function Layout() {
 
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
+              className="lg:hidden w-9 h-9 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all overflow-hidden"
             >
               {profile?.auth_metadata?.avatar_url ? (
                 <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -182,13 +182,13 @@ export default function Layout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-3 md:p-8 max-w-[1600px] w-full mx-auto">
           <Outlet />
         </main>
       </div>
 
       {/* Mobile Bottom Navigation - Solid & Robust */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-2 py-1 flex items-center justify-around z-40 pb-safe shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-2 py-2 flex items-center justify-around z-40 pb-safe shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
@@ -198,13 +198,13 @@ export default function Layout() {
                 if (isActive) return;
                 navigate(item.to);
               }}
-              className={`flex flex-col items-center justify-center gap-1 w-full py-2.5 transition-all duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex flex-col items-center justify-center gap-0.5 w-full py-1 transition-all duration-200 ${isActive ? 'text-blue-700' : 'text-slate-500 hover:text-slate-700'}`}
             >
               <div className={`relative ${isActive ? '-translate-y-0.5' : ''} transition-transform duration-200`}>
-                <item.icon className={`w-6 h-6 ${isActive ? 'fill-blue-100' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                <item.icon className={`w-5 h-5 ${isActive ? 'fill-blue-100' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                 {isActive && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600"></span>}
               </div>
-              <span className={`text-[10px] font-bold leading-none mt-1 ${isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+              <span className={`text-[10px] font-bold leading-none mt-1 ${isActive ? 'text-blue-800' : 'text-slate-600'}`}>
                 {item.label}
               </span>
             </button>

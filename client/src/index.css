@@ -6,6 +6,24 @@
   :root {
     @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-200;
   }
+
+  /* Global Mobile Typography Scale */
+  h1 {
+    @apply text-[22px] leading-tight font-bold lg:text-4xl;
+  }
+  
+  h2 {
+    @apply text-lg leading-snug font-bold lg:text-2xl;
+  }
+  
+  h3 {
+    @apply text-base leading-snug font-bold lg:text-xl;
+  }
+  
+  /* Inputs minimum 16px to prevent iOS zoom */
+  input, textarea, select {
+    @apply text-base !important;
+  }
 }
 
 @layer components {
@@ -14,28 +32,32 @@
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all;
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all shadow-sm;
+    @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-base py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all shadow-sm;
   }
 
   .btn-ghost {
-    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-base py-2 px-4 rounded-lg transition-colors;
   }
 
   .card {
     @apply bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border rounded-xl shadow-sm text-slate-900 dark:text-white;
+  }
 
+  /* Compact padding for mobile cards */
+  .card-compact {
+    @apply p-4 lg:p-6;
   }
 
   .heading-lg {
-    @apply text-2xl font-bold tracking-tight text-slate-900 dark:text-white;
+    @apply text-[22px] lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-white;
   }
 
   .input {
-    @apply w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400;
+    @apply w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-base;
   }
 
   .badge {
@@ -48,6 +70,16 @@
 
   .badge-warning {
     @apply bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400;
+  }
+  
+  /* Sticky Action Bar Container */
+  .sticky-action-bar {
+    @apply fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe;
+  }
+  
+  /* Add padding to bottom of page to prevent content being hidden by sticky bar */
+  .has-sticky-bar {
+    @apply pb-32;
   }
 }
 
@@ -70,9 +102,9 @@
 
 /* Mobile Safe Area Utilities */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 .pt-safe {
-  padding-top: env(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top, 20px);
 }

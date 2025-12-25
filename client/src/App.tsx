@@ -9,7 +9,9 @@ import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
 
-// Lazy load pages for better performance
+import LoadingScreen from './components/common/LoadingScreen';
+
+// Lazy loading pages with min-h-screen to prevent layout shift
 const GoogleSignInScreen = lazy(() => import('./pages/GoogleSignInScreen'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const FormTemplates = lazy(() => import('./pages/FormTemplates'));
@@ -20,8 +22,6 @@ const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
 const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
 
-
-// OAuth callback handler
 
 // OAuth callback handler
 function AuthCallback() {
@@ -84,7 +84,7 @@ function AuthCallback() {
     );
   }
 
-  return <SplashScreen />;
+  return <LoadingScreen text="Authentifiziere..." />;
 }
 
 function App() {
@@ -124,13 +124,13 @@ function App() {
   }, [theme]);
 
   if (!initialized || loading) {
-    return <SplashScreen />;
+    return <LoadingScreen text="System wird gestartet..." />;
   }
 
   if (!user) {
     return (
       <BrowserRouter>
-        <Suspense fallback={<SplashScreen />}>
+        <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="*" element={<GoogleSignInScreen />} />
