@@ -181,7 +181,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="visits/new" element={<VisitWorkflow />} />
+            <Route path="/visits/new" element={<VisitWorkflow />} />
             <Route path="templates" element={<FormTemplates />} />
             <Route path="templates/new" element={<FormBuilder />} />
             <Route path="templates/:id/edit" element={<FormBuilder />} />
