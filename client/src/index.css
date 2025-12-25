@@ -54,11 +54,11 @@
 
   /* Secondary Button */
   .btn-secondary {
-    @apply bg-surface-base dark:bg-dark-card
-           text-text-primary dark:text-dark-text-body
+    @apply bg-white dark:bg-dark-card
+           text-slate-900 dark:text-dark-text-body
            font-medium text-base
            py-3 px-6 rounded-lg
-           border border-border-default dark:border-dark-stroke
+           border border-neutral-300 dark:border-dark-stroke
            hover:bg-neutral-50 dark:hover:bg-dark-highlight
            active:scale-[0.98]
            transition-all duration-200
@@ -88,7 +88,7 @@
   /* Ghost Button */
   .btn-ghost {
     @apply bg-transparent
-           text-text-secondary dark:text-dark-text-body
+           text-neutral-600 dark:text-dark-text-body
            font-medium text-base
            py-2 px-4 rounded-lg
            hover:bg-neutral-100 dark:hover:bg-dark-highlight
@@ -117,17 +117,17 @@
   /* ===== CARD SYSTEM ===== */
   
   .card {
-    @apply bg-surface-base dark:bg-dark-card
-           border border-border-subtle dark:border-dark-stroke
+    @apply bg-white dark:bg-dark-card
+           border border-neutral-200 dark:border-dark-stroke
            rounded-lg
            shadow-sm dark:shadow-dark-card
-           text-text-primary dark:text-dark-text-body
+           text-slate-900 dark:text-dark-text-body
            transition-all duration-200;
   }
 
   .card-hover {
     @apply card hover:shadow-md dark:hover:shadow-lg
-           hover:border-border-default dark:hover:border-dark-stroke
+           hover:border-neutral-300 dark:hover:border-dark-stroke
            cursor-pointer;
   }
 
@@ -143,11 +143,11 @@
   
   .input {
     @apply w-full px-4 py-3 rounded-lg
-           border border-border-default dark:border-dark-stroke
-           bg-surface-base dark:bg-dark-input
-           text-text-primary dark:text-dark-text-head
+           border border-neutral-300 dark:border-dark-stroke
+           bg-white dark:bg-dark-input
+           text-slate-900 dark:text-dark-text-head
            text-base
-           placeholder:text-text-tertiary dark:placeholder:text-dark-text-muted
+           placeholder:text-neutral-500 dark:placeholder:text-dark-text-muted
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
            transition-all duration-200
            disabled:opacity-50 disabled:cursor-not-allowed;
@@ -196,7 +196,7 @@
   }
 
   .tab-inactive {
-    @apply bg-transparent text-text-secondary dark:text-dark-text-muted
+    @apply bg-transparent text-neutral-600 dark:text-dark-text-muted
            hover:bg-neutral-100 dark:hover:bg-dark-highlight;
   }
 
@@ -204,34 +204,34 @@
   
   .heading-lg {
     @apply text-2xl lg:text-3xl font-semibold tracking-tight
-           text-text-primary dark:text-dark-text-head;
+           text-slate-900 dark:text-dark-text-head;
   }
 
   .heading-md {
     @apply text-xl lg:text-2xl font-semibold tracking-tight
-           text-text-primary dark:text-dark-text-head;
+           text-slate-900 dark:text-dark-text-head;
   }
 
   .heading-sm {
     @apply text-lg font-medium tracking-tight
-           text-text-primary dark:text-dark-text-head;
+           text-slate-900 dark:text-dark-text-head;
   }
 
   .text-body {
-    @apply text-base text-text-secondary dark:text-dark-text-body;
+    @apply text-base text-neutral-600 dark:text-dark-text-body;
   }
 
   .text-caption {
-    @apply text-sm text-text-tertiary dark:text-dark-text-muted;
+    @apply text-sm text-neutral-500 dark:text-dark-text-muted;
   }
 
   /* ===== LAYOUT ===== */
   
   .sticky-action-bar {
     @apply fixed bottom-0 left-0 right-0 p-4
-           bg-surface-base/95 dark:bg-dark-card/95
+           bg-white/95 dark:bg-dark-card/95
            backdrop-blur-md
-           border-t border-border-subtle dark:border-dark-stroke
+           border-t border-neutral-200 dark:border-dark-stroke
            z-fixed
            shadow-sticky-nav
            pb-safe;
@@ -246,7 +246,7 @@
   .glass-card {
     @apply bg-white/80 dark:bg-dark-card/80
            backdrop-blur-md
-           border border-border-subtle dark:border-dark-stroke
+           border border-neutral-200 dark:border-dark-stroke
            shadow-lg dark:shadow-dark-card;
   }
 }
