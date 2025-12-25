@@ -18,20 +18,48 @@ export class UserService {
             .single();
 
         // If profile exists, try to get extended fields (may not exist yet)
+        // Fetch them in smaller groups to avoid schema cache issues
         if (profile && !profileError) {
             try {
-                const { data: extendedProfile } = await adminClient
+                // Try to get company fields first
+                const { data: companyFields } = await adminClient
                     .from('user_profiles')
-                    .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+                    .select('id, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website')
                     .eq('id', userId)
                     .single();
                 
-                if (extendedProfile) {
-                    profile = { ...profile, ...extendedProfile };
+                if (companyFields) {
+                    profile = { ...profile, ...companyFields };
                 }
-            } catch (extendedError) {
-                // If extended fields don't exist yet, that's OK - use basic profile
-                console.warn(`[UserService] Extended profile fields not available yet for ${userId}, using basic profile`);
+            } catch (companyError: any) {
+                // Company fields might not exist - that's OK
+                if (!companyError.message?.includes('column') && !companyError.message?.includes('schema cache')) {
+                    console.warn(`[UserService] Company fields fetch failed for ${userId}:`, companyError.message);
+                }
+            }
+
+            // Try to get branding fields separately (most likely to be missing)
+            try {
+                const { data: brandingFields } = await adminClient
+                    .from('user_profiles')
+                    .select('id, primary_color, accent_color')
+                    .eq('id', userId)
+                    .single();
+                
+                if (brandingFields) {
+                    profile = { ...profile, ...brandingFields };
+                }
+            } catch (brandingError: any) {
+                // Branding fields might not exist - that's OK, use defaults
+                if (!brandingError.message?.includes('column') && !brandingError.message?.includes('schema cache')) {
+                    console.warn(`[UserService] Branding fields fetch failed for ${userId}:`, brandingError.message);
+                }
+                // Set defaults if fields don't exist
+                profile = {
+                    ...profile,
+                    primary_color: profile.primary_color || '#2563eb',
+                    accent_color: profile.accent_color || '#1e40af',
+                };
             }
         }
 
@@ -76,23 +104,56 @@ export class UserService {
                     throw new Error(`Failed to ensure user profile exists: ${basicError?.message || 'Profile not found'}`);
                 }
                 
-                // Try to get extended fields, but don't fail if they don't exist
+                // Try to get extended fields in smaller groups, but don't fail if they don't exist
+                profile = existingBasic;
+                
+                // Try company fields
                 try {
-                    const { data: extendedProfile } = await adminClient
+                    const { data: companyFields } = await adminClient
                         .from('user_profiles')
-                        .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
+                        .select('id, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website')
                         .eq('id', userId)
                         .single();
                     
-                    if (extendedProfile) {
-                        profile = { ...existingBasic, ...extendedProfile };
-                    } else {
-                        profile = existingBasic;
+                    if (companyFields) {
+                        profile = { ...profile, ...companyFields };
                     }
-                } catch (extendedError) {
-                    // Extended fields don't exist yet - that's OK, use basic profile
-                    console.warn(`[UserService] Extended profile fields not available for ${userId}, using basic profile`);
-                    profile = existingBasic;
+                } catch (companyError: any) {
+                    // Company fields might not exist - that's OK
+                    if (!companyError.message?.includes('column') && !companyError.message?.includes('schema cache')) {
+                        console.warn(`[UserService] Company fields not available for ${userId}`);
+                    }
+                }
+
+                // Try branding fields separately
+                try {
+                    const { data: brandingFields } = await adminClient
+                        .from('user_profiles')
+                        .select('id, primary_color, accent_color')
+                        .eq('id', userId)
+                        .single();
+                    
+                    if (brandingFields) {
+                        profile = { ...profile, ...brandingFields };
+                    } else {
+                        // Set defaults if fields don't exist
+                        profile = {
+                            ...profile,
+                            primary_color: '#2563eb',
+                            accent_color: '#1e40af',
+                        };
+                    }
+                } catch (brandingError: any) {
+                    // Branding fields might not exist - that's OK, use defaults
+                    if (!brandingError.message?.includes('column') && !brandingError.message?.includes('schema cache')) {
+                        console.warn(`[UserService] Branding fields not available for ${userId}`);
+                    }
+                    // Set defaults
+                    profile = {
+                        ...profile,
+                        primary_color: profile.primary_color || '#2563eb',
+                        accent_color: profile.accent_color || '#1e40af',
+                    };
                 }
             }
         }

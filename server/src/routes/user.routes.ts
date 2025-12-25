@@ -46,6 +46,9 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     if (company_address !== undefined) updates.company_address = company_address;
     if (company_phone !== undefined) updates.company_phone = company_phone;
     if (company_website !== undefined) updates.company_website = company_website;
+    
+    // Only update branding fields if they exist in the schema
+    // We'll try to update them, but handle errors gracefully
     if (primary_color !== undefined) updates.primary_color = primary_color;
     if (accent_color !== undefined) updates.accent_color = accent_color;
 
@@ -53,10 +56,36 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
       .from('user_profiles')
       .update(updates)
       .eq('id', userId)
-      .select()
+      .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
       .single();
 
     if (error) {
+      // If error is about missing columns (accent_color, primary_color), try again without them
+      if (error.message?.includes('accent_color') || error.message?.includes('primary_color') || error.message?.includes('schema cache')) {
+        console.warn(`[UserRoutes] Branding columns not available, updating without them for ${userId}`);
+        const safeUpdates: any = { ...updates };
+        delete safeUpdates.primary_color;
+        delete safeUpdates.accent_color;
+        
+        const { data: safeData, error: safeError } = await userClient
+          .from('user_profiles')
+          .update(safeUpdates)
+          .eq('id', userId)
+          .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
+          .single();
+        
+        if (safeError) {
+          return res.status(400).json({ error: safeError.message });
+        }
+        
+        // Return data with default colors if branding fields were requested but don't exist
+        return res.json({
+          ...safeData,
+          primary_color: primary_color !== undefined ? primary_color : '#2563eb',
+          accent_color: accent_color !== undefined ? accent_color : '#1e40af',
+        });
+      }
+      
       return res.status(400).json({ error: error.message });
     }
 
