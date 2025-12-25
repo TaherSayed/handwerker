@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { Search, Filter, CheckCircle2, FileText, User, Plus } from 'lucide-react';
 import Skeleton from '../components/common/Skeleton';
@@ -105,22 +105,13 @@ export default function Dashboard() {
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">Dashboard</h1>
           <p className="text-sm text-slate-500 mt-1">Übersicht Ihrer Einsatzberichte</p>
         </div>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            try {
-              navigate('/visits/new');
-            } catch (error) {
-              console.error('Navigation error:', error);
-            }
-          }}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95 cursor-pointer"
-          type="button"
+        <Link
+          to="/visits/new"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all active:scale-95 cursor-pointer no-underline"
         >
           <Plus className="w-5 h-5" />
           <span>Neuer Einsatz</span>
-        </button>
+        </Link>
       </div>
 
       {/* 1. KPI Cards */}
@@ -236,21 +227,12 @@ export default function Dashboard() {
       </div>
 
       {/* Floating Action Button for New Submission (Mobile Only) */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          try {
-            navigate('/visits/new');
-          } catch (error) {
-            console.error('Navigation error:', error);
-          }
-        }}
-        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden cursor-pointer"
-        type="button"
+      <Link
+        to="/visits/new"
+        className="fixed right-4 bottom-20 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center active:scale-95 transition-transform z-30 lg:hidden no-underline"
       >
         <Plus className="w-6 h-6" />
-      </button>
+      </Link>
 
     </div>
   );
