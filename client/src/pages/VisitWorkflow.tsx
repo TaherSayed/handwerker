@@ -538,13 +538,15 @@ export default function VisitWorkflow() {
 
                         <div className="max-w-xs mx-auto space-y-4 pt-6">
                             {submissionResult.pdf_url && (
-                                <button
-                                    onClick={() => window.open(submissionResult.pdf_url, '_blank')}
+                                <a
+                                    href={submissionResult.pdf_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl"
                                 >
                                     <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     PDF-Bericht ansehen
-                                </button>
+                                </a>
                             )}
                             <button
                                 onClick={() => navigate('/dashboard')}
