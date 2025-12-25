@@ -90,10 +90,10 @@ export default function FormTemplates() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-1">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+          <h1 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">
             Formularvorlagen
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-muted font-semibold text-[10px] uppercase tracking-widest mt-1">
+          <p className="text-slate-400 dark:text-dark-text-muted font-medium text-sm mt-0.5">
             Verwalten Sie Ihre Berichtsstrukturen
           </p>
         </div>
@@ -117,14 +117,14 @@ export default function FormTemplates() {
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all relative ${filter === f.id
+              className={`pb-4 text-sm font-medium transition-all relative ${filter === f.id
                 ? 'text-primary-light dark:text-primary-dark'
-                : 'text-slate-400 dark:text-dark-text-muted hover:text-slate-600'
+                : 'text-slate-500 dark:text-dark-text-muted hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
             >
               {f.label}
               {filter === f.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary-light dark:bg-primary-dark rounded-full shadow-lg shadow-primary-light/40" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-light dark:bg-primary-dark rounded-full" />
               )}
             </button>
           ))}
@@ -201,7 +201,7 @@ export default function FormTemplates() {
                     className="w-full px-3 py-1.5 rounded-lg border-2 border-primary-light outline-none bg-white dark:bg-dark-input dark:text-white font-bold mb-2"
                   />
                 ) : (
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-dark-text-head mb-2 truncate group-hover:text-primary-light transition-colors">{template.name}</h3>
+                  <h3 className="text-lg font-medium text-slate-900 dark:text-dark-text-head mb-2 truncate group-hover:text-primary-light transition-colors">{template.name}</h3>
                 )}
                 <p className="text-slate-500 dark:text-dark-text-muted text-sm line-clamp-2 leading-relaxed font-medium">
                   {template.description || 'Keine Beschreibung verfügbar.'}
@@ -209,7 +209,7 @@ export default function FormTemplates() {
               </div>
 
               <div className="flex items-center justify-between pt-5 border-t border-border-light dark:border-dark-stroke mt-auto">
-                <div className="text-[11px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-widest">
+                <div className="text-[11px] text-slate-400 dark:text-dark-text-muted font-medium">
                   {template.fields?.length || 0} Felder
                 </div>
 
@@ -230,7 +230,7 @@ export default function FormTemplates() {
                       <div className="p-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/templates/${template.id}/edit`); }}
-                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Edit className="w-4 h-4 text-slate-400" />
                           Design Bearbeiten
@@ -243,7 +243,7 @@ export default function FormTemplates() {
                             setEditingTemplateId(template.id);
                             setOpenMenuId(null);
                           }}
-                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Edit className="w-4 h-4 text-slate-400" />
                           Umbenennen
@@ -251,7 +251,7 @@ export default function FormTemplates() {
 
                         <button
                           onClick={(e) => { handleDuplicate(template.id, e); setOpenMenuId(null); }}
-                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 dark:text-dark-text-body hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Copy className="w-4 h-4 text-slate-400" />
                           Duplizieren
@@ -262,7 +262,7 @@ export default function FormTemplates() {
                         {filter === 'active' ? (
                           <button
                             onClick={(e) => { handleArchive(template.id, true, e); setOpenMenuId(null); }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-warning-light dark:text-warning-dark hover:bg-warning-light/5 rounded-xl flex items-center gap-3 transition-colors"
+                            className="w-full text-left px-4 py-3 text-sm font-medium text-warning-light dark:text-warning-dark hover:bg-warning-light/5 rounded-xl flex items-center gap-3 transition-colors"
                           >
                             <Archive className="w-4 h-4" />
                             Archivieren
@@ -270,7 +270,7 @@ export default function FormTemplates() {
                         ) : (
                           <button
                             onClick={(e) => { handleArchive(template.id, false, e); setOpenMenuId(null); }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-success-light dark:text-success-dark hover:bg-success-light/5 rounded-xl flex items-center gap-3 transition-colors"
+                            className="w-full text-left px-4 py-3 text-sm font-medium text-success-light dark:text-success-dark hover:bg-success-light/5 rounded-xl flex items-center gap-3 transition-colors"
                           >
                             <Archive className="w-4 h-4" />
                             Wiederherstellen
@@ -279,7 +279,7 @@ export default function FormTemplates() {
 
                         <button
                           onClick={(e) => { handleDelete(template.id, e); setOpenMenuId(null); }}
-                          className="w-full text-left px-4 py-3 text-sm font-bold text-error-light hover:bg-error-light/5 rounded-xl flex items-center gap-3 transition-colors"
+                          className="w-full text-left px-4 py-3 text-sm font-medium text-error-light hover:bg-error-light/5 rounded-xl flex items-center gap-3 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                           Löschen
@@ -298,9 +298,10 @@ export default function FormTemplates() {
                 )}
               </div>
             </div>
-          ))}
-        </div>
+          ))
+          }
+        </div >
       )}
-    </div>
+    </div >
   );
 }
