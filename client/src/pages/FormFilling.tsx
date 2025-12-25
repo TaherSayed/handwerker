@@ -133,10 +133,14 @@ export default function FormFilling() {
         status,
       };
 
-      await apiService.createSubmission(submissionData);
+      const result = await apiService.createSubmission(submissionData);
 
       if (status === 'submitted') {
-        success('Einsatz eingereicht', 'Bericht wurde erfolgreich gespeichert und archiviert.');
+        if ((result as any).is_offline) {
+          success('Einsatz lokal gespeichert', 'Daten werden übertragen sobald Internet verfügbar ist.');
+        } else {
+          success('Einsatz eingereicht', 'Bericht wurde erfolgreich gespeichert und archiviert.');
+        }
         navigate('/submissions');
       } else {
         success('Entwurf gespeichert', 'Sie können diesen Einsatz später im Verlauf fortsetzen.');

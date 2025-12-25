@@ -8,6 +8,7 @@ import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
+import './services/sync.service'; // Start Sync Service
 
 import LoadingScreen from './components/common/LoadingScreen';
 

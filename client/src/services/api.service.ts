@@ -248,34 +248,46 @@ class ApiService {
   // Submissions
   async getSubmissions(params?: { status?: string; template_id?: string }) {
     const query = params ? `?${new URLSearchParams(params as any)}` : '';
+    let submissions: any[] = [];
 
-    if (!this.isOnline()) {
-      // Return cached submissions when offline
-      const cached = offlineService.getCachedSubmissions();
-      let filtered = cached;
-      if (params?.status) {
-        filtered = filtered.filter((s: any) => s.status === params.status);
+    // 1. Try Network
+    if (this.isOnline()) {
+      try {
+        submissions = await this.request(`/submissions${query}`) as any[];
+        // Cache submissions
+        offlineService.cacheSubmissions(submissions);
+      } catch (error: any) {
+        console.warn('Network failed, using cache', error);
+        submissions = offlineService.getCachedSubmissions();
       }
-      if (params?.template_id) {
-        filtered = filtered.filter((s: any) => s.template_id === params.template_id);
-      }
-      return filtered;
+    } else {
+      submissions = offlineService.getCachedSubmissions();
     }
 
-    try {
-      const data = await this.request(`/submissions${query}`) as any[];
-      // Cache submissions
-      offlineService.cacheSubmissions(data);
-      return data;
-    } catch (error: any) {
-      // If request fails and we have cached data, return it
-      const cached = offlineService.getCachedSubmissions();
-      if (cached.length > 0) {
-        console.warn('Using cached submissions due to network error');
-        return cached;
+    // 2. Merge with Local Drafts (Pending Sync)
+    const drafts = offlineService.getDraftSubmissions();
+    const draftIds = new Set(drafts.map(d => d.id));
+
+    // Filter out submissions that are also in drafts (theoretically shouldn't happen unless ID collision)
+    // But mainly we want to APPEND drafts
+    const merged = [...drafts, ...submissions.filter(s => !draftIds.has(s.id))];
+
+    // 3. Client-side filtering if we fell back to cache or merged drafts
+    let filtered = merged;
+    if (params?.status) {
+      if (params.status === 'draft') {
+        // Show both server drafts and local drafts? Or just local?
+        filtered = filtered.filter((s: any) => s.status === 'draft' || s.id.toString().startsWith('draft_'));
+      } else {
+        filtered = filtered.filter((s: any) => s.status === params.status && !s.id.toString().startsWith('draft_'));
       }
-      throw error;
     }
+    if (params?.template_id) {
+      filtered = filtered.filter((s: any) => s.template_id === params.template_id);
+    }
+
+    // Sort by date desc
+    return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async getSubmission(id: string) {
@@ -312,16 +324,7 @@ class ApiService {
 
   async createSubmission(data: any) {
     if (!this.isOnline()) {
-      // Save to local storage and queue for sync
-      const draftSubmission = {
-        ...data,
-        id: `draft_${Date.now()}`,
-        is_offline: true,
-        created_at: new Date().toISOString(),
-      };
-      offlineService.saveDraftSubmission(draftSubmission);
-      offlineService.addToSyncQueue('create', 'submission', data);
-      return draftSubmission;
+      return this.saveOfflineDraft(data);
     }
 
     try {
@@ -331,20 +334,33 @@ class ApiService {
       });
       return result;
     } catch (error: any) {
-      // If request fails, save as draft
-      if (error.message.includes('Network error') || error.message.includes('fetch')) {
-        const draftSubmission = {
-          ...data,
-          id: `draft_${Date.now()}`,
-          is_offline: true,
-          created_at: new Date().toISOString(),
-        };
-        offlineService.saveDraftSubmission(draftSubmission);
-        offlineService.addToSyncQueue('create', 'submission', data);
-        return draftSubmission;
+      // If request fails (Network/500), save as draft for sync
+      if (error.message.includes('Network error') || error.message.includes('fetch') || error.message.includes('500')) {
+        console.warn('[API] Submission failed, saving offline:', error);
+        return this.saveOfflineDraft(data);
       }
-      throw error;
+      throw error; // Validation errors (400) should throw
     }
+  }
+
+  // Used by SyncService - throws error if fails (so backoff works), doesn't re-queue
+  async syncSubmission(data: any) {
+    return this.request('/submissions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, 1); // 1 retry only for sync
+  }
+
+  private saveOfflineDraft(data: any) {
+    const draftSubmission = {
+      ...data,
+      id: `draft_${Date.now()}`,
+      is_offline: true,
+      created_at: new Date().toISOString(),
+    };
+    offlineService.saveDraftSubmission(draftSubmission);
+    offlineService.addToSyncQueue('create', 'submission', data);
+    return draftSubmission;
   }
 
   async updateSubmission(id: string, data: any) {
