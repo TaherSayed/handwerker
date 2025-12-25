@@ -404,7 +404,7 @@ export default function VisitWorkflow() {
                                 <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">ODER MANUELL</span></div>
                             </div>
 
-                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white p-8 space-y-6 border-slate-100 shadow-2xl shadow-indigo-500/5">
+                            <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-8 space-y-6 border-slate-100 dark:border-dark-stroke shadow-2xl shadow-indigo-500/5">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kunde / Projektname</label>
                                     <input
@@ -452,16 +452,16 @@ export default function VisitWorkflow() {
                                     <button
                                         key={t.id}
                                         onClick={() => handleTemplateSelect(t)}
-                                        className="group flex items-center gap-5 p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all text-left"
+                                        className="group flex items-center gap-5 p-6 bg-white dark:bg-dark-input rounded-[2.5rem] border border-slate-100 dark:border-dark-stroke hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all text-left"
                                     >
-                                        <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                        <div className="w-16 h-16 bg-slate-50 dark:bg-dark-card text-slate-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
                                             <FileText className="w-8 h-8" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-indigo-600 transition-colors truncate">{t.name}</h4>
                                             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1 truncate">{t.description || 'Service record template'}</p>
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all shrink-0">
+                                        <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-dark-card flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shrink-0">
                                             <ArrowRight className="w-5 h-5" />
                                         </div>
                                     </button>
@@ -478,8 +478,8 @@ export default function VisitWorkflow() {
 
                 {currentStep === 'form' && selectedTemplate && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-white rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 shadow-xl shadow-indigo-500/5">
-                            <div className="pb-6 border-b border-slate-100 flex flex-col gap-2">
+                        <div className="bg-white dark:bg-dark-card rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 dark:border-dark-stroke shadow-xl shadow-indigo-500/5">
+                            <div className="pb-6 border-b border-slate-100 dark:border-dark-stroke flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.2em]">
                                     <User className="w-3.5 h-3.5" />
                                     <span className="truncate">{isManualCustomer ? manualCustomer.name : customer?.name}</span>
@@ -506,7 +506,7 @@ export default function VisitWorkflow() {
                         <div className="sticky-action-bar grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleSave('draft')}
-                                className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]"
+                                className="flex items-center justify-center gap-2 bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body border border-slate-200 dark:border-dark-stroke py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-dark-highlight transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Save className="w-4 h-4" /> Entwurf
                             </button>
@@ -645,7 +645,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
     };
 
     return (
-        <div className="w-full h-48 relative bg-white rounded-[2rem] overflow-hidden">
+        <div className="w-full h-48 relative bg-white dark:bg-white rounded-[2rem] overflow-hidden">
             <canvas
                 ref={canvasRef}
                 className="w-full h-full cursor-crosshair touch-none"

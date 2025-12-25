@@ -76,17 +76,17 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-6 pb-20 lg:pb-0 animate-in fade-in duration-500">
-        <div className="card p-5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
+        <div className="card p-5 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke shadow-sm rounded-xl">
           <Skeleton variant="text" width="60%" className="h-7 mb-2" />
           <Skeleton variant="text" width="40%" height="16px" />
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-dark-stroke">
             <Skeleton variant="rectangular" height="44px" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="card p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <div key={i} className="card p-4 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
               <Skeleton variant="text" width="50%" height="10px" className="mb-2" />
               <div className="flex items-end justify-between mt-1">
                 <Skeleton variant="text" width="30px" height="24px" />
@@ -104,7 +104,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="card p-3 flex items-center gap-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <div key={i} className="card p-3 flex items-center gap-3 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke">
                   <Skeleton variant="circular" width="40px" height="40px" />
                   <div className="flex-1">
                     <Skeleton variant="text" width="60%" height="14px" className="mb-2" />
@@ -126,13 +126,13 @@ export default function Dashboard() {
       {/* 1. Mobile Welcome & Quick Actions */}
       <div className="flex flex-col gap-3">
         {/* Welcome Header */}
-        <div className="card p-4 bg-white border-slate-200 shadow-sm rounded-xl dark:bg-slate-800 dark:border-slate-700">
+        <div className="card p-4 bg-white border-slate-200 shadow-sm rounded-xl dark:bg-dark-card dark:border-dark-stroke">
           <div className="flex flex-col gap-0.5">
             <h1 className="text-lg font-bold text-slate-900 dark:text-white">Hallo, {user?.user_metadata?.full_name || 'Benutzer'}</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Bereit für den heutigen Einsatz?</p>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-dark-stroke flex gap-3">
             <Button
               onClick={() => navigate('/visits/new')}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-10 text-sm"
@@ -147,7 +147,7 @@ export default function Dashboard() {
 
       {/* 2. Key Metrics Grid (Condensed) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
-        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 card-compact">
+        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
           <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Einsätze Heute</p>
           <div className="flex items-end justify-between mt-1">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.todayVisits}</span>
@@ -155,7 +155,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-amber-400 cursor-pointer group bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 card-compact">
+        <div onClick={() => navigate('/submissions')} className="card p-3 lg:p-4 hover:border-amber-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
           <div className="flex items-center gap-1.5 mb-1">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
             <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Aktiv</p>
@@ -166,7 +166,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div onClick={() => navigate('/templates')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 card-compact">
+        <div onClick={() => navigate('/templates')} className="card p-3 lg:p-4 hover:border-blue-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
           <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">Vorlagen</p>
           <div className="flex items-end justify-between mt-1">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.templates}</span>
@@ -174,7 +174,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div onClick={() => navigate('/settings')} className="card p-3 lg:p-4 hover:border-slate-400 cursor-pointer group bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 card-compact">
+        <div onClick={() => navigate('/settings')} className="card p-3 lg:p-4 hover:border-slate-400 cursor-pointer group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke card-compact">
           <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider truncate">System</p>
           <div className="flex items-end justify-between mt-1">
             <span className="text-lg font-bold text-slate-900 dark:text-white leading-7">Optionen</span>
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
           <div className="space-y-2">
             {recentSubmissions.length === 0 ? (
-              <div className="card py-8 flex flex-col items-center justify-center text-center border-dashed bg-slate-50 dark:bg-slate-800/50">
+              <div className="card py-8 flex flex-col items-center justify-center text-center border-dashed bg-slate-50 dark:bg-dark-card/50">
                 <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Keine Einsätze gefunden.</p>
                 <Button onClick={() => navigate('/visits/new')} variant="ghost" size="sm" className="mt-2 text-blue-600">Ersten starten</Button>
               </div>
@@ -201,7 +201,7 @@ export default function Dashboard() {
               recentSubmissions.map((sub) => (
                 <div key={sub.id}
                   onClick={() => navigate(`/submissions/${sub.id}`)}
-                  className="card p-3 flex items-center gap-3 active:scale-[0.99] transition-transform cursor-pointer bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  className="card p-3 flex items-center gap-3 active:scale-[0.99] transition-transform cursor-pointer bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke"
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${sub.status === 'submitted'
                     ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 text-green-600 dark:text-green-400'
@@ -238,7 +238,7 @@ export default function Dashboard() {
               <button
                 key={t.id}
                 onClick={() => navigate(`/visits/new?template=${t.id}`)}
-                className="card p-3 text-left hover:border-blue-400 transition-colors group bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                className="card p-3 text-left hover:border-blue-400 transition-colors group bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke"
               >
                 <div className="flex justify-between items-start mb-1.5">
                   <div className="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
@@ -252,7 +252,7 @@ export default function Dashboard() {
             ))}
             <button
               onClick={() => navigate('/templates')}
-              className="card p-3 flex flex-col items-center justify-center gap-2 border-dashed bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700"
+              className="card p-3 flex flex-col items-center justify-center gap-2 border-dashed bg-slate-50 dark:bg-dark-card/50 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-dark-stroke"
             >
               <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                 <Plus className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />

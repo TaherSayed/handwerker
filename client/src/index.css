@@ -4,31 +4,33 @@
 
 @layer base {
   :root {
-    @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all duration-200;
+    @apply bg-white dark:bg-dark-base rounded-xl border border-slate-200 dark:border-dark-stroke shadow-sm transition-all duration-200 text-slate-900 dark:text-dark-text-body;
   }
 
   /* Global Mobile Typography Scale */
   h1 {
     @apply text-[22px] leading-tight font-bold lg:text-4xl;
   }
-  
+
   h2 {
     @apply text-lg leading-snug font-bold lg:text-2xl;
   }
-  
+
   h3 {
     @apply text-base leading-snug font-bold lg:text-xl;
   }
-  
+
   /* Inputs minimum 16px to prevent iOS zoom */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply text-base !important;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg;
+    @apply bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border border-white/20 dark:border-dark-stroke shadow-lg dark:shadow-dark-card-shadow;
   }
 
   .btn-primary {
@@ -36,15 +38,15 @@
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-base py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all shadow-sm;
+    @apply bg-white dark:bg-dark-input text-slate-700 dark:text-dark-text-body font-bold text-base py-3 px-6 rounded-xl border border-slate-200 dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight active:scale-[0.98] transition-all shadow-sm;
   }
 
   .btn-ghost {
-    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-base py-2 px-4 rounded-lg transition-colors;
+    @apply bg-transparent hover:bg-slate-100 dark:hover:bg-dark-highlight text-slate-600 dark:text-dark-text-muted font-semibold text-base py-2 px-4 rounded-lg transition-colors;
   }
 
   .card {
-    @apply bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border rounded-xl shadow-sm text-slate-900 dark:text-white;
+    @apply bg-white dark:bg-dark-card border-slate-200 dark:border-dark-stroke border rounded-xl shadow-sm dark:shadow-dark-card-shadow text-slate-900 dark:text-dark-text-body;
   }
 
   /* Compact padding for mobile cards */
@@ -53,11 +55,11 @@
   }
 
   .heading-lg {
-    @apply text-[22px] lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-white;
+    @apply text-[22px] lg:text-2xl font-bold tracking-tight text-slate-900 dark:text-dark-text-head;
   }
 
   .input {
-    @apply w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-base;
+    @apply w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-dark-stroke bg-white dark:bg-dark-input text-slate-900 dark:text-dark-text-head focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-dark-text-muted text-base;
   }
 
   .badge {
@@ -71,12 +73,12 @@
   .badge-warning {
     @apply bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400;
   }
-  
+
   /* Sticky Action Bar Container */
   .sticky-action-bar {
-    @apply fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe;
+    @apply fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md border-t border-slate-200 dark:border-dark-stroke z-50 shadow-sticky-nav pb-safe;
   }
-  
+
   /* Add padding to bottom of page to prevent content being hidden by sticky bar */
   .has-sticky-bar {
     @apply pb-32;

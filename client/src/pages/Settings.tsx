@@ -193,7 +193,7 @@ export default function Settings() {
           <p className="text-slate-500 font-medium text-sm">Verwalten Sie Ihre App-Präferenzen</p>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm self-start md:self-auto">
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-dark-input rounded-full border border-slate-200 dark:border-dark-stroke shadow-sm self-start md:self-auto">
           {isSaving ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
@@ -222,7 +222,7 @@ export default function Settings() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 border ${isActive
                 ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                : 'bg-white dark:bg-dark-card text-slate-600 dark:text-dark-text-body border-slate-200 dark:border-dark-stroke hover:bg-slate-50 dark:hover:bg-dark-highlight'
                 }`}
             >
               <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -233,7 +233,7 @@ export default function Settings() {
       </div>
 
       {/* Content Area */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 md:p-8 min-h-[400px]">
+      <div className="bg-white dark:bg-dark-card rounded-3xl border border-slate-200 dark:border-dark-stroke shadow-sm p-6 md:p-8 min-h-[400px]">
 
         {/* GENERAL TAB */}
         {activeTab === 'general' && (

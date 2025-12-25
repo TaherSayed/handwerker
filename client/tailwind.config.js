@@ -7,6 +7,7 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+
       colors: {
         // Industrial Clarity Color Palette - from Flutter theme
         primary: {
@@ -41,6 +42,18 @@ export default {
           light: '#E2E8F0', // Light gray
           dark: '#334155', // Dark border
         },
+        // Premium Dark Mode Palette
+        dark: {
+          base: '#0F1115',      // Layer 1 - Background
+          card: '#141820',      // Layer 2 - Cards/Sections
+          input: '#1B1F28',     // Layer 3 - Inputs/Surfaces
+          stroke: 'rgba(255,255,255,0.07)', // Soft Dividers
+          highlight: 'rgba(255,255,255,0.04)', // Hover State
+          'text-head': '#FFFFFF',
+          'text-body': '#D6DAE2',
+          'text-muted': '#A0A6B4',
+          'accent-sec': '#9DB4FF', // Secondary Accent
+        },
         text: {
           primary: {
             light: '#0F172A', // Near-black
@@ -72,6 +85,8 @@ export default {
       boxShadow: {
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
         'elevated': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'dark-card-shadow': '0px 8px 24px rgba(0,0,0,0.45)',
+        'sticky-nav': '0 -4px 6px -1px rgba(0, 0, 0, 0.1)',
       },
       letterSpacing: {
         'button': '1.25px',

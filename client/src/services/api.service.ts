@@ -30,15 +30,27 @@ class ApiService {
     };
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  // Internal logging for debugging
+  private logs: any[] = [];
+
+  private log(type: string, message: string, data?: any) {
+    if (import.meta.env.DEV) {
+      const entry = { timestamp: new Date(), type, message, data };
+      this.logs.push(entry);
+      if (this.logs.length > 100) this.logs.shift(); // Keep last 100 logs
+      console.log(`[API:${type}] ${message}`, data || '');
+    }
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}, retries = 3, timeout = 10000): Promise<T> {
+    const url = `${API_URL}${endpoint}`;
+    this.log('REQ', `${options.method || 'GET'} ${url}`);
+
     try {
       const headers = await this.getAuthHeader();
-      const url = `${API_URL}${endpoint}`;
 
-      // Debug logging in development
-      if (import.meta.env.DEV) {
-        console.log(`[API] ${options.method || 'GET'} ${url}`, options.body ? JSON.parse(options.body as string) : '');
-      }
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(url, {
         ...options,
@@ -46,13 +58,23 @@ class ApiService {
           ...headers,
           ...options.headers,
         },
+        signal: controller.signal,
       });
+
+      clearTimeout(id);
 
       // Handle non-JSON responses
       const contentType = response.headers.get('content-type');
       const isJson = contentType && contentType.includes('application/json');
 
       if (!response.ok) {
+        // Retry logic for 5xx errors or network issues
+        if (retries > 0 && (response.status >= 500 || response.status === 408)) {
+          this.log('RETRY', `Retrying ${url} (${retries} left)`);
+          await new Promise(res => setTimeout(res, 1000)); // Wait 1s
+          return this.request(endpoint, options, retries - 1, timeout);
+        }
+
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
 
         if (isJson) {
@@ -60,17 +82,16 @@ class ApiService {
             const errorData = await response.json();
             errorMessage = errorData.error || errorData.message || errorMessage;
           } catch (e) {
-            // Failed to parse JSON, use default error message
+            // Failed to parse JSON
           }
         } else {
           try {
             const text = await response.text();
             if (text) errorMessage = text;
-          } catch (e) {
-            // Failed to read text, use default error message
-          }
+          } catch (e) { }
         }
 
+        this.log('ERR', errorMessage, { status: response.status });
         throw new Error(errorMessage);
       }
 
@@ -79,30 +100,80 @@ class ApiService {
       }
 
       if (!isJson) {
+        // Retry if we expected JSON but got HTML (often bad gateway)
+        if (retries > 0) {
+          this.log('RETRY', `Received non-JSON, retrying... (${retries} left)`);
+          await new Promise(res => setTimeout(res, 1000));
+          return this.request(endpoint, options, retries - 1, timeout);
+        }
         throw new Error('Expected JSON response but received non-JSON');
       }
 
-      return await response.json();
+      const data = await response.json();
+      // Simple validity check (optional, can be expanded)
+      this.log('RES', `Success ${url}`, { size: JSON.stringify(data).length });
+      return data;
+
     } catch (error: any) {
-      // Handle network errors
+      this.log('ERR', `Request failed: ${error.message}`);
+
+      // Handle network errors / timeouts with retry
+      if (retries > 0 && (error.name === 'AbortError' || error.message.includes('Network error') || error.message.includes('fetch'))) {
+        this.log('RETRY', `Network error/Timeout, retrying... (${retries} left)`);
+        await new Promise(res => setTimeout(res, 1000));
+        return this.request(endpoint, options, retries - 1, timeout);
+      }
+
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error('Network error: Unable to connect to server. Please check your connection.');
       }
 
-      // Re-throw if it's already an Error with a message
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please check your connection.');
+      }
+
       if (error instanceof Error) {
         throw error;
       }
 
-      // Otherwise wrap in Error
       throw new Error(error.message || 'An unexpected error occurred');
     }
   }
 
-  // User
-  async getMe() {
-    return this.request('/user/me');
+  // Auth (unchanged)
+  async signInWithGoogle() {
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/contacts.readonly'
+        }
+      }
+    });
   }
+
+  async signOut() {
+    return supabase.auth.signOut();
+  }
+
+  async getMe() {
+    return this.request('/auth/me');
+  }
+
+  async updateCompanyInfo(data: any) {
+    return this.request('/auth/company', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // User
+  // async getMe() { // This was moved to Auth section
+  //   return this.request('/user/me');
+  // }
 
   async updateProfile(data: any) {
     return this.request('/user/me', {
@@ -204,7 +275,35 @@ class ApiService {
   }
 
   async getSubmission(id: string) {
-    return this.request(`/submissions/${id}`);
+    // 1. Try to get from local drafts first (fastest)
+    if (id.startsWith('draft_')) {
+      const drafts = offlineService.getCachedSubmissions();
+      const draft = drafts.find(s => s.id === id);
+      if (draft) return draft;
+    }
+
+    // 2. Try network request
+    if (this.isOnline()) {
+      try {
+        const data = await this.request(`/submissions/${id}`);
+        return data;
+      } catch (error) {
+        console.warn(`[API] Failed to fetch submission ${id}, trying cache fallback.`);
+      }
+    }
+
+    // 3. Fallback to cache (Offline or Network Error)
+    const cached = offlineService.getCachedSubmissions();
+    const found = cached.find((s: any) => s.id === id);
+
+    if (found) {
+      return {
+        ...found,
+        _is_cached: true // Marker for UI
+      };
+    }
+
+    throw new Error('Einsatzbericht konnte nicht geladen werden (Offline & nicht im Cache).');
   }
 
   async createSubmission(data: any) {
