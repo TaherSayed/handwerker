@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { Search, Filter, CheckCircle2, FileText, User } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
 import Skeleton from '../components/common/Skeleton';
 
 export default function Dashboard() {
@@ -16,8 +15,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'draft' | 'submitted'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const { profile } = useAuthStore();
 
   useEffect(() => {
     loadDashboardData();
