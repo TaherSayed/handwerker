@@ -18,20 +18,36 @@ export class UserService {
 
         if (profileError || !profile) {
             console.log(`[UserService] Creating missing profile for ${userId}`);
+            // Use upsert with ignoreDuplicates to avoid race conditions (duplicate key errors)
             const { data: newProfile, error: createProfileError } = await adminClient
                 .from('user_profiles')
-                .insert({
+                .upsert({
                     id: userId,
                     email: email,
                     full_name: email.split('@')[0] || 'User',
-                })
+                }, { onConflict: 'id', ignoreDuplicates: true })
                 .select()
                 .single();
 
             if (createProfileError) {
                 throw new Error(`Failed to create user profile: ${createProfileError.message}`);
             }
-            profile = newProfile;
+
+            // If upsert ignored the duplicate, newProfile might be null. Fetch existing one.
+            if (!newProfile) {
+                const { data: existingProfile, error: refetchError } = await adminClient
+                    .from('user_profiles')
+                    .select('id, full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color')
+                    .eq('id', userId)
+                    .single();
+
+                if (refetchError || !existingProfile) {
+                    throw new Error(`Failed to ensure user profile exists: ${refetchError?.message}`);
+                }
+                profile = existingProfile;
+            } else {
+                profile = newProfile;
+            }
         }
 
         // 2. Ensure workspace exists
