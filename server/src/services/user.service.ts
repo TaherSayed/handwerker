@@ -12,7 +12,7 @@ export class UserService {
 
         let { data: profile, error: profileError } = await adminClient
             .from('user_profiles')
-            .select('id, full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color')
+            .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
             .eq('id', userId)
             .single();
 
@@ -25,6 +25,7 @@ export class UserService {
                     id: userId,
                     email: email,
                     full_name: email.split('@')[0] || 'User',
+                    updated_at: new Date().toISOString(),
                 }, { onConflict: 'id', ignoreDuplicates: true })
                 .select()
                 .maybeSingle();
@@ -37,7 +38,7 @@ export class UserService {
             if (!newProfile) {
                 const { data: existingProfile, error: refetchError } = await adminClient
                     .from('user_profiles')
-                    .select('id, full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color')
+                    .select('id, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
                     .eq('id', userId)
                     .single();
 
