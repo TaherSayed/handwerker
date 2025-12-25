@@ -383,17 +383,26 @@ export default function VisitWorkflow() {
     return (
         <div className={`animate-slide-up max-w-2xl mx-auto py-4 px-3 lg:py-8 lg:px-4 ${currentStep === 'form' ? 'pb-32 has-sticky-bar' : 'pb-24'}`}>
             {/* Navigation Header - Modern Typography */}
-            <div className="flex items-center gap-4 mb-10">
+            <div className="flex items-center gap-4 mb-10 relative z-10">
                 <button
-                    onClick={() => {
-                        if (currentStep === 'customer') navigate('/dashboard');
-                        else if (currentStep === 'template') setCurrentStep('customer');
-                        else if (currentStep === 'form') setCurrentStep('template');
-                        else if (currentStep === 'finish') navigate('/dashboard');
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (currentStep === 'customer') {
+                            navigate('/dashboard');
+                        } else if (currentStep === 'template') {
+                            setCurrentStep('customer');
+                        } else if (currentStep === 'form') {
+                            setCurrentStep('template');
+                        } else if (currentStep === 'finish') {
+                            navigate('/dashboard');
+                        }
                     }}
-                    className="w-11 h-11 bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow-md group"
+                    className="w-11 h-11 bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow-md group cursor-pointer relative z-20"
+                    aria-label="Zurück"
                 >
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform duration-300" strokeWidth={2.5} />
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform duration-300 pointer-events-none" strokeWidth={2.5} />
                 </button>
                 <div>
                     <h1 className="text-2xl md:text-3xl font-medium text-slate-900 dark:text-white tracking-[-0.02em] leading-tight">
