@@ -24,6 +24,7 @@ export default function FormBuilder() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showElementPalette, setShowElementPalette] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -96,6 +97,7 @@ export default function FormBuilder() {
       help_text: '',
     };
     setFormData({ ...formData, fields: [...formData.fields, newField] });
+    setShowElementPalette(false); // Hide palette after adding field
   };
 
   const updateField = (index: number, updates: any) => {
@@ -227,50 +229,72 @@ export default function FormBuilder() {
             </div>
 
             {/* Add Fields Palette */}
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-2xl lg:sticky lg:top-24 border border-slate-700/50">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-lg font-black text-white uppercase tracking-tight">Elemente</h2>
-              </div>
-
-              <div className="space-y-3">
-                {/* Section Header - Special Styling */}
-                <button
-                  onClick={() => addField('section')}
-                  className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl transition-all active:scale-[0.98] border-2 border-indigo-500/50"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                    <span>Abschnittsüberschrift</span>
+            {showElementPalette && (
+              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-2xl lg:sticky lg:top-24 border border-slate-700/50">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-lg font-black text-white uppercase tracking-tight">Elemente</h2>
                   </div>
-                </button>
+                  <button
+                    onClick={() => setShowElementPalette(false)}
+                    className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/70 hover:text-white"
+                    title="Schließen"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-                {/* Other Field Types */}
-                <div className="grid grid-cols-2 gap-2">
-                  {FIELD_TYPES.filter(t => t.value !== 'section').map((type) => {
-                    const Icon = type.icon;
-                    return (
-                      <button
-                        key={type.value}
-                        onClick={() => addField(type.value)}
-                        className="group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white p-3 rounded-xl transition-all active:scale-95 backdrop-blur-sm"
-                      >
-                        <div className="flex flex-col items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                            <Icon className="w-4 h-4 text-white" />
+                <div className="space-y-3">
+                  {/* Section Header - Special Styling */}
+                  <button
+                    onClick={() => addField('section')}
+                    className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl transition-all active:scale-[0.98] border-2 border-indigo-500/50"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                      <span>Abschnittsüberschrift</span>
+                    </div>
+                  </button>
+
+                  {/* Other Field Types */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {FIELD_TYPES.filter(t => t.value !== 'section').map((type) => {
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.value}
+                          onClick={() => addField(type.value)}
+                          className="group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white p-3 rounded-xl transition-all active:scale-95 backdrop-blur-sm"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                              <Icon className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="font-bold text-[10px] uppercase tracking-wide text-center leading-tight">
+                              {type.label}
+                            </span>
                           </div>
-                          <span className="font-bold text-[10px] uppercase tracking-wide text-center leading-tight">
-                            {type.label}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Add Element Button - Show when palette is hidden */}
+            {!showElementPalette && (
+              <button
+                onClick={() => setShowElementPalette(true)}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-2xl font-bold text-sm uppercase tracking-wide shadow-lg hover:shadow-xl transition-all active:scale-[0.98] border-2 border-indigo-500/50 flex items-center justify-center gap-3"
+              >
+                <Plus className="w-6 h-6" />
+                <span>Element hinzufügen</span>
+              </button>
+            )}
           </div>
 
           {/* Main Content Area */}
@@ -289,15 +313,12 @@ export default function FormBuilder() {
                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                       {formData.fields.length === 0 ? (
                         <div className="border-3 border-dashed border-slate-200 rounded-2xl p-16 text-center bg-gradient-to-br from-slate-50 to-white">
-                          <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <button
+                            onClick={() => setShowElementPalette(true)}
+                            className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg hover:shadow-xl hover:scale-110 transition-all active:scale-95"
+                          >
                             <Plus className="w-10 h-10 text-indigo-600" />
-                          </div>
-                          <p className="text-slate-400 font-bold text-sm uppercase tracking-wide mb-2">
-                            Noch keine Elemente
-                          </p>
-                          <p className="text-slate-300 text-xs">
-                            Fügen Sie Ihr erstes Element hinzu
-                          </p>
+                          </button>
                         </div>
                       ) : (
                         formData.fields.map((field, index) => {
