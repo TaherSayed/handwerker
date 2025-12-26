@@ -106,10 +106,15 @@ export default function Layout() {
               <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
-                    {profile?.auth_metadata?.avatar_url ? (
-                      <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture ? (
+                      <img 
+                        src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer" 
+                      />
                     ) : (
-                      <span>{profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase()}</span>
+                      <span>{profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase() || 'U'}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -185,10 +190,15 @@ export default function Layout() {
 
             <button
               onClick={() => navigate('/settings')}
-              className="lg:hidden btn-ghost w-10 h-10 p-0 overflow-hidden"
+              className="lg:hidden btn-ghost w-10 h-10 p-0 overflow-hidden rounded-full"
             >
-              {profile?.auth_metadata?.avatar_url ? (
-                <img src={profile.auth_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture ? (
+                <img 
+                  src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover rounded-full" 
+                  referrerPolicy="no-referrer" 
+                />
               ) : (
                 <UserIcon className="w-5 h-5" />
               )}

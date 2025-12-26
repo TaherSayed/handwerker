@@ -17,10 +17,20 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     // Ensure user is provisioned safely
     const { profile, workspace } = await userService.getOrCreateWorkspace(userId, userEmail!, userClient);
 
+    // Get Google profile information from user metadata
+    const userMetadata = req.user!.user_metadata || {};
+    const authMetadata = {
+      ...userMetadata,
+      avatar_url: userMetadata.avatar_url || userMetadata.picture,
+      full_name: userMetadata.full_name || userMetadata.name,
+      email: req.user!.email,
+    };
+
     const fullProfile = {
       ...profile,
+      email: profile.email || req.user!.email, // Ensure email is included
       workspaces: workspace ? [workspace] : [],
-      auth_metadata: req.user!.metadata,
+      auth_metadata: authMetadata,
     };
 
     res.json(fullProfile);

@@ -197,7 +197,20 @@ export default function Settings() {
     { id: 'data', label: 'Daten', icon: Database },
   ];
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Handwerker';
+  // Get Google profile information from auth_metadata or user_metadata
+  const googleAvatar = profile?.auth_metadata?.avatar_url || 
+                       profile?.auth_metadata?.picture || 
+                       user?.user_metadata?.avatar_url || 
+                       user?.user_metadata?.picture;
+  
+  const googleName = profile?.auth_metadata?.full_name || 
+                     profile?.auth_metadata?.name || 
+                     user?.user_metadata?.full_name || 
+                     user?.user_metadata?.name;
+  
+  const googleEmail = profile?.email || user?.email || '';
+  
+  const displayName = profile?.full_name || googleName || 'Handwerker';
 
   return (
     <div className="animate-fade-in space-y-8 pb-32">
@@ -335,18 +348,21 @@ export default function Settings() {
           <div className="space-y-10 animate-slide-up">
             <div className="flex items-center gap-6 p-6 bg-slate-50 dark:bg-dark-input rounded-3xl border border-border-light dark:border-dark-stroke">
               <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-sm overflow-hidden bg-white shrink-0">
-                {profile?.auth_metadata?.avatar_url ? (
-                  <img src={profile.auth_metadata.avatar_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                {googleAvatar ? (
+                  <img src={googleAvatar} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary-light/10 text-primary-light font-black text-2xl">
-                    {displayName[0]}
+                  <div className="w-full h-full flex items-center justify-center bg-primary-500/10 dark:bg-primary-500/20 text-primary-500 dark:text-primary-400 font-black text-2xl">
+                    {displayName[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
               </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white uppercase tracking-tight">{displayName}</h3>
+              <div className="space-y-1 flex-1 min-w-0">
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white uppercase tracking-tight truncate">{displayName}</h3>
+                {googleEmail && (
+                  <p className="text-sm text-slate-600 dark:text-dark-text-body truncate">{googleEmail}</p>
+                )}
                 <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-success-light" />
+                  <ShieldCheck className="w-4 h-4 text-success-light shrink-0" />
                   Privat-Konto (Google)
                 </p>
               </div>
@@ -366,12 +382,12 @@ export default function Settings() {
               <div className="space-y-3 opacity-80">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
                   <span>E-Mail Adresse</span>
-                  <span className="text-[9px] bg-slate-100 dark:bg-dark-card px-2 py-0.5 rounded-full border dark:border-dark-stroke">Nur Lesezugriff</span>
+                  <span className="text-[9px] bg-slate-100 dark:bg-dark-card px-2 py-0.5 rounded-full border dark:border-dark-stroke">Von Google</span>
                 </label>
                 <input
                   type="text"
                   readOnly
-                  value={profile?.email || ''}
+                  value={googleEmail}
                   className="input h-14 bg-slate-50 dark:bg-dark-card border-dashed border-2 text-slate-400 font-medium cursor-not-allowed"
                 />
               </div>
