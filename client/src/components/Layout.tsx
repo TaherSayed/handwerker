@@ -49,7 +49,7 @@ export default function Layout() {
         {/* Sidebar Logo */}
         <div className="h-16 flex items-center px-5 mb-2 border-b border-slate-50">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden bg-white">
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden bg-white">
               {profile?.company_logo_url ? (
                 <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
               ) : (
@@ -154,11 +154,11 @@ export default function Layout() {
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-border-subtle overflow-hidden bg-surface-base">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shrink-0 shadow-md border border-border-subtle overflow-hidden bg-surface-base">
               {profile?.company_logo_url ? (
-                <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
+                <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
               ) : (
-                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain p-1" />
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
               )}
             </div>
             <span className="heading-sm text-text-primary">OnSite</span>
