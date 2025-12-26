@@ -6,29 +6,54 @@ import {
   Trash2, Save, X, 
   Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare, 
   ToggleLeft, List, Calendar, Clock, StickyNote, PenTool, Camera,
-  Heading, Plus
+  Heading, Plus, User, Mail, MapPin, Phone, FileText, Radio,
+  Upload, Minus, Star, BarChart3, AlignLeft
 } from 'lucide-react';
 
 // Categorized field types like Jotform
 const FIELD_CATEGORIES = {
   basic: [
-    { value: 'section', label: 'Abschnittsüberschrift', icon: Heading, color: '#6366f1' },
-    { value: 'text', label: 'Text', icon: Type, color: '#3b82f6' },
-    { value: 'number', label: 'Zahl', icon: Hash, color: '#10b981' },
-    { value: 'checkbox', label: 'Checkbox', icon: CheckSquare, color: '#f59e0b' },
-    { value: 'toggle', label: 'Ja/Nein Schalter', icon: ToggleLeft, color: '#ec4899' },
-    { value: 'dropdown', label: 'Auswahlliste', icon: List, color: '#8b5cf6' },
-    { value: 'date', label: 'Datum', icon: Calendar, color: '#14b8a6' },
-    { value: 'datetime', label: 'Datum & Zeit', icon: Clock, color: '#0ea5e9' },
-    { value: 'notes', label: 'Notizen', icon: StickyNote, color: '#64748b' },
+    { value: 'section', label: 'Heading', icon: Heading, color: '#6366f1' },
+    { value: 'fullname', label: 'Full Name', icon: User, color: '#3b82f6' },
+    { value: 'email', label: 'Email', icon: Mail, color: '#3b82f6' },
+    { value: 'address', label: 'Address', icon: MapPin, color: '#3b82f6' },
+    { value: 'phone', label: 'Phone', icon: Phone, color: '#3b82f6' },
+    { value: 'text', label: 'Short Text', icon: Type, color: '#3b82f6' },
+    { value: 'longtext', label: 'Long Text', icon: FileText, color: '#3b82f6' },
+    { value: 'paragraph', label: 'Paragraph', icon: AlignLeft, color: '#3b82f6' },
+    { value: 'dropdown', label: 'Dropdown', icon: List, color: '#8b5cf6' },
+    { value: 'radio', label: 'Single Choice', icon: Radio, color: '#8b5cf6' },
+    { value: 'checkbox', label: 'Multiple Choice', icon: CheckSquare, color: '#f59e0b' },
+    { value: 'number', label: 'Number', icon: Hash, color: '#10b981' },
+    { value: 'date', label: 'Date Picker', icon: Calendar, color: '#14b8a6' },
+    { value: 'time', label: 'Time', icon: Clock, color: '#0ea5e9' },
+    { value: 'datetime', label: 'Appointment', icon: Calendar, color: '#0ea5e9' },
+    { value: 'photo', label: 'Image', icon: Camera, color: '#6366f1' },
+    { value: 'fileupload', label: 'File Upload', icon: Upload, color: '#6366f1' },
+    { value: 'spinner', label: 'Spinner', icon: Hash, color: '#10b981' },
+  ],
+  survey: [
+    { value: 'table', label: 'Input Table', icon: List, color: '#8b5cf6' },
+    { value: 'starrating', label: 'Star Rating', icon: Star, color: '#f59e0b' },
+    { value: 'scalerating', label: 'Scale Rating', icon: BarChart3, color: '#14b8a6' },
+  ],
+  page: [
+    { value: 'divider', label: 'Divider', icon: Minus, color: '#64748b' },
   ],
   advanced: [
-    { value: 'signature', label: 'Unterschrift', icon: PenTool, color: '#ef4444' },
-    { value: 'photo', label: 'Foto', icon: Camera, color: '#6366f1' },
+    { value: 'signature', label: 'Signature', icon: PenTool, color: '#ef4444' },
+    { value: 'fillblank', label: 'Fill in the Blank', icon: Type, color: '#3b82f6' },
+    { value: 'notes', label: 'Notizen', icon: StickyNote, color: '#64748b' },
+    { value: 'toggle', label: 'Ja/Nein Schalter', icon: ToggleLeft, color: '#ec4899' },
   ]
 };
 
-const ALL_FIELD_TYPES = [...FIELD_CATEGORIES.basic, ...FIELD_CATEGORIES.advanced];
+const ALL_FIELD_TYPES = [
+  ...FIELD_CATEGORIES.basic, 
+  ...FIELD_CATEGORIES.survey, 
+  ...FIELD_CATEGORIES.page, 
+  ...FIELD_CATEGORIES.advanced
+];
 
 export default function FormBuilder() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +61,7 @@ export default function FormBuilder() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<'basic' | 'advanced'>('basic');
+  const [activeCategory, setActiveCategory] = useState<'basic' | 'survey' | 'page' | 'advanced'>('basic');
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showElementPalette, setShowElementPalette] = useState(false);
@@ -127,7 +152,7 @@ export default function FormBuilder() {
       label: fieldType?.label || 'Neues Feld',
       sublabel: '',
       required: false,
-      options: type === 'dropdown' ? ['Option 1', 'Option 2'] : undefined,
+      options: (type === 'dropdown' || type === 'radio' || type === 'checkbox') ? ['Option 1', 'Option 2'] : undefined,
       placeholder: '',
       help_text: '',
     };
@@ -203,7 +228,11 @@ export default function FormBuilder() {
           </div>
         );
       case 'text':
-      case 'number':
+      case 'fullname':
+      case 'email':
+      case 'phone':
+      case 'fillblank':
+      case 'spinner':
         return (
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
@@ -211,10 +240,57 @@ export default function FormBuilder() {
             </label>
             {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
             <input
-              type={field.type}
+              type={field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
               disabled
               placeholder={field.placeholder || 'Antwort eingeben...'}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+            />
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'number':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Zahl'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <input
+              type="number"
+              disabled
+              placeholder={field.placeholder || 'Zahl eingeben...'}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+            />
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'address':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Adresse'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <textarea
+              disabled
+              placeholder={field.placeholder || 'Adresse eingeben...'}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[80px]"
+            />
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'longtext':
+      case 'paragraph':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Langer Text'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <textarea
+              disabled
+              placeholder={field.placeholder || 'Text eingeben...'}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[100px]"
             />
             {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
           </div>
@@ -223,13 +299,35 @@ export default function FormBuilder() {
         return (
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
-              {field.label || 'Checkbox'} {field.required && <span className="text-red-500">*</span>}
+              {field.label || 'Multiple Choice'} {field.required && <span className="text-red-500">*</span>}
             </label>
             {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" disabled className="w-4 h-4" />
-              <span className="text-sm text-slate-600">Option auswählen</span>
+            <div className="space-y-2">
+              {field.options?.map((opt: string, i: number) => (
+                <label key={i} className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" disabled className="w-4 h-4" />
+                  <span className="text-sm text-slate-600">{opt}</span>
+                </label>
+              ))}
+            </div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'radio':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Single Choice'} {field.required && <span className="text-red-500">*</span>}
             </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <div className="space-y-2">
+              {field.options?.map((opt: string, i: number) => (
+                <label key={i} className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" disabled name={`radio_${field.id}`} className="w-4 h-4" />
+                  <span className="text-sm text-slate-600">{opt}</span>
+                </label>
+              ))}
+            </div>
             {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
           </div>
         );
@@ -264,15 +362,44 @@ export default function FormBuilder() {
           </div>
         );
       case 'date':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Date Picker'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <input
+              type="date"
+              disabled
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+            />
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'time':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Time'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <input
+              type="time"
+              disabled
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+            />
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
       case 'datetime':
         return (
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
-              {field.label || 'Datum'} {field.required && <span className="text-red-500">*</span>}
+              {field.label || 'Appointment'} {field.required && <span className="text-red-500">*</span>}
             </label>
             {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
             <input
-              type={field.type === 'datetime' ? 'datetime-local' : 'date'}
+              type="datetime-local"
               disabled
               className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
             />
@@ -311,13 +438,95 @@ export default function FormBuilder() {
         return (
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
-              {field.label || 'Foto'} {field.required && <span className="text-red-500">*</span>}
+              {field.label || 'Image'} {field.required && <span className="text-red-500">*</span>}
             </label>
             {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
             <div className="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center">
-              <span className="text-sm text-slate-400">Foto hier</span>
+              <span className="text-sm text-slate-400">Image here</span>
             </div>
             {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'fileupload':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'File Upload'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <div className="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center">
+              <span className="text-sm text-slate-400">Upload file here</span>
+            </div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'table':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Input Table'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <div className="border border-slate-300 rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 border-r border-slate-300">Column 1</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Column 2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border-r border-t border-slate-300">
+                      <input type="text" disabled className="w-full px-2 py-1 border border-slate-300 rounded bg-slate-50 text-slate-500 text-xs" />
+                    </td>
+                    <td className="px-3 py-2 border-t border-slate-300">
+                      <input type="text" disabled className="w-full px-2 py-1 border border-slate-300 rounded bg-slate-50 text-slate-500 text-xs" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'starrating':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Star Rating'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span key={star} className="text-2xl text-slate-300">★</span>
+              ))}
+            </div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'scalerating':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Scale Rating'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500">1</span>
+              <div className="flex-1 h-2 bg-slate-200 rounded-full">
+                <div className="h-full w-0 bg-indigo-500 rounded-full"></div>
+              </div>
+              <span className="text-xs text-slate-500">10</span>
+            </div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'divider':
+        return (
+          <div className="py-4">
+            <div className="border-t-2 border-slate-300"></div>
+            {field.help_text && <p className="text-xs text-slate-400 mt-2 text-center">{field.help_text}</p>}
           </div>
         );
       default:
@@ -407,10 +616,10 @@ export default function FormBuilder() {
                 </div>
                 
                 {/* Category Tabs */}
-                <div className="flex gap-1 border-b border-slate-200">
+                <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
                   <button
                     onClick={() => setActiveCategory('basic')}
-                    className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
                       activeCategory === 'basic'
                         ? 'text-orange-600 border-b-2 border-orange-600'
                         : 'text-slate-600 hover:text-slate-900'
@@ -419,8 +628,28 @@ export default function FormBuilder() {
                     BASIC
                   </button>
                   <button
+                    onClick={() => setActiveCategory('survey')}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === 'survey'
+                        ? 'text-orange-600 border-b-2 border-orange-600'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    SURVEY
+                  </button>
+                  <button
+                    onClick={() => setActiveCategory('page')}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === 'page'
+                        ? 'text-orange-600 border-b-2 border-orange-600'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    PAGE
+                  </button>
+                  <button
                     onClick={() => setActiveCategory('advanced')}
-                    className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
                       activeCategory === 'advanced'
                         ? 'text-orange-600 border-b-2 border-orange-600'
                         : 'text-slate-600 hover:text-slate-900'
@@ -622,7 +851,7 @@ export default function FormBuilder() {
                                           onClick={(e) => e.stopPropagation()}
                                         />
                                       </div>
-                                      {(field.type === 'text' || field.type === 'number' || field.type === 'notes') && (
+                                      {(field.type === 'text' || field.type === 'number' || field.type === 'notes' || field.type === 'fullname' || field.type === 'email' || field.type === 'phone' || field.type === 'address' || field.type === 'longtext' || field.type === 'paragraph' || field.type === 'fillblank' || field.type === 'spinner') && (
                                         <div>
                                           <label className="block text-xs font-semibold text-slate-600 mb-1">
                                             Platzhalter
@@ -637,7 +866,7 @@ export default function FormBuilder() {
                                           />
                                         </div>
                                       )}
-                                      {field.type === 'dropdown' && (
+                                      {(field.type === 'dropdown' || field.type === 'radio' || field.type === 'checkbox') && (
                                         <div>
                                           <label className="block text-xs font-semibold text-slate-600 mb-1">
                                             Optionen (kommagetrennt)
