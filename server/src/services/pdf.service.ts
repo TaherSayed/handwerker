@@ -114,15 +114,15 @@ export class PDFService {
   private async buildPDFContent(doc: any, data: SubmissionData) {
     const pageWidth = doc.page.width;
     const pageHeight = doc.page.height;
-    const margin = 40;
+    const margin = 35; // Reduced from 40
     const primaryColor = data.user.primary_color || '#111827'; // Default slate-900
     const accentColor = data.user.accent_color || '#3b82f6';  // Default blue-500
 
-    let y = 30;
+    let y = 25; // Reduced from 30
     let lastContentPage = 0; // Track the last page with actual content
 
     // --- Compact Professional Header Section ---
-    const headerHeight = 50;
+    const headerHeight = 45; // Reduced from 50
     
     // Header background with accent color
     doc.rect(0, 0, pageWidth, headerHeight)
@@ -131,8 +131,8 @@ export class PDFService {
     
     // Logo (Left side) - smaller
     let logoX = margin;
-    let logoY = 5;
-    let logoHeight = 40;
+    let logoY = 3;
+    let logoHeight = 38;
     
     if (data.user.company_logo_url) {
       const logoBuffer = await this.fetchImageBuffer(data.user.company_logo_url);
@@ -189,90 +189,101 @@ export class PDFService {
       doc.text(data.user.company_website, companyInfoX, companyInfoY, { align: 'right', width: 200 });
     }
 
-    y = headerHeight + 20;
+    y = headerHeight + 12;
 
     // --- Compact Document Title Section ---
-    doc.fontSize(20)
+    doc.fontSize(18)
       .font('Helvetica-Bold')
       .fillColor(primaryColor)
       .text(data.template.name, margin, y);
-    y += 22;
+    y += 18;
 
     // Decorative line under title - thinner
     doc.moveTo(margin, y)
       .lineTo(pageWidth - margin, y)
       .strokeColor(accentColor)
-      .lineWidth(2)
+      .lineWidth(1.5)
       .stroke();
-    y += 15;
+    y += 10;
 
-    // --- Compact Professional Customer Info Box ---
-    const customerBoxHeight = 60;
-    const customerBoxY = y;
-    
-    // Box with border and subtle background
-    doc.rect(margin, customerBoxY, pageWidth - (margin * 2), customerBoxHeight)
-      .fillColor('#f9fafb')
-      .fill()
-      .strokeColor('#e5e7eb')
-      .lineWidth(1)
-      .stroke();
-    
-    // Section label with accent background - smaller
-    doc.rect(margin, customerBoxY, 120, 18)
-      .fillColor(accentColor)
-      .fill();
-    
-    doc.fontSize(8)
-      .font('Helvetica-Bold')
-      .fillColor('#ffffff')
-      .text('KUNDENDATEN', margin + 8, customerBoxY + 5);
-    
-    let infoY = customerBoxY + 22;
-    const leftColX = margin + 15;
-    const rightColX = pageWidth / 2 + 10;
-    
-    // Customer Name (prominent but compact)
-    if (data.customer_name) {
-      doc.fontSize(11)
+    // Check if template has a KUNDENDATEN section field to avoid duplication
+    const hasKundenSection = data.template.fields.some(f => 
+      f.type === 'section' && f.label.toLowerCase().includes('kunden')
+    );
+
+    // --- Compact Professional Customer Info Box (only if no KUNDENDATEN section in fields) ---
+    if (!hasKundenSection) {
+      const customerBoxHeight = 45;
+      const customerBoxY = y;
+      
+      // Box with border and subtle background
+      doc.rect(margin, customerBoxY, pageWidth - (margin * 2), customerBoxHeight)
+        .fillColor('#f9fafb')
+        .fill()
+        .strokeColor('#e5e7eb')
+        .lineWidth(1)
+        .stroke();
+      
+      // Section label with accent background - smaller
+      doc.rect(margin, customerBoxY, 100, 15)
+        .fillColor(accentColor)
+        .fill();
+      
+      doc.fontSize(7)
         .font('Helvetica-Bold')
-        .fillColor(primaryColor)
-        .text(data.customer_name, leftColX, infoY);
-      infoY += 14;
-    }
-    
-    doc.fontSize(8)
-      .font('Helvetica')
-      .fillColor('#4b5563');
-    
-    // Two column layout for contact info - compact
-    if (data.customer_email) {
-      doc.text(`E-Mail: ${data.customer_email}`, leftColX, infoY, { width: 200 });
-    }
-    if (data.customer_phone) {
-      doc.text(`Telefon: ${data.customer_phone}`, rightColX, infoY, { width: 200 });
-    }
-    infoY += 12;
-    
-    if (data.customer_address) {
-      doc.text(`Adresse: ${data.customer_address}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 30 });
-    }
+        .fillColor('#ffffff')
+        .text('KUNDENDATEN', margin + 6, customerBoxY + 4);
+      
+      let infoY = customerBoxY + 18;
+      const leftColX = margin + 12;
+      const rightColX = pageWidth / 2 + 5;
+      
+      // Customer Name (prominent but compact)
+      if (data.customer_name) {
+        doc.fontSize(10)
+          .font('Helvetica-Bold')
+          .fillColor(primaryColor)
+          .text(data.customer_name, leftColX, infoY);
+        infoY += 11;
+      }
+      
+      doc.fontSize(7)
+        .font('Helvetica')
+        .fillColor('#4b5563');
+      
+      // Two column layout for contact info - compact
+      if (data.customer_email) {
+        doc.text(`E-Mail: ${data.customer_email}`, leftColX, infoY, { width: 200 });
+      }
+      if (data.customer_phone) {
+        doc.text(`Tel: ${data.customer_phone}`, rightColX, infoY, { width: 200 });
+      }
+      infoY += 10;
+      
+      if (data.customer_address) {
+        doc.text(`Adresse: ${data.customer_address}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 24 });
+      }
 
-    y = customerBoxY + customerBoxHeight + 15;
+      y = customerBoxY + customerBoxHeight + 10;
+    }
 
     // --- Compact Professional Field Responses ---
     // Use two-column layout for fields to save space
-    const fieldWidth = (pageWidth - (margin * 2) - 10) / 2;
+    const fieldWidth = (pageWidth - (margin * 2) - 8) / 2;
     let currentCol = 0;
     let colX = margin;
+    const fieldHeight = 24; // Reduced from 28
     
     for (const field of data.template.fields) {
-      // Check if we need a new page before adding content
-      if (y > pageHeight - 80) {
-        doc.addPage();
-        y = 30;
-        currentCol = 0;
-        colX = margin;
+      // Prevent page break if we can fit content - be more aggressive
+      if (y > pageHeight - 60) {
+        // Try to fit on current page by reducing spacing
+        if (y > pageHeight - 40) {
+          doc.addPage();
+          y = 25;
+          currentCol = 0;
+          colX = margin;
+        }
       }
       // Track current page as having content
       lastContentPage = doc.page.number - 1;
@@ -283,23 +294,20 @@ export class PDFService {
         // Section takes full width
         currentCol = 0;
         colX = margin;
-        y += 10;
-        // Section header with background - compact
-        doc.rect(margin, y, pageWidth - (margin * 2), 18)
+        y += 5;
+        // Section header with background - more compact
+        doc.rect(margin, y, pageWidth - (margin * 2), 15)
           .fillColor('#f3f4f6')
           .fill();
         
-        doc.fontSize(11)
+        doc.fontSize(9)
           .font('Helvetica-Bold')
           .fillColor(primaryColor)
-          .text(field.label.toUpperCase(), margin + 8, y + 4);
-        y += 22;
+          .text(field.label.toUpperCase(), margin + 6, y + 3);
+        y += 18;
         continue;
       }
 
-      // Field container with subtle border - compact
-      const fieldHeight = 28;
-      
       // Use two columns for regular fields, full width for signature/photo
       if (field.type === 'signature' || field.type === 'photo') {
         colX = margin;
@@ -313,68 +321,68 @@ export class PDFService {
         .lineWidth(0.5)
         .stroke();
 
-      // Field Label (top, smaller, gray) - compact
-      doc.fontSize(7)
+      // Field Label (top, smaller, gray) - more compact
+      doc.fontSize(6)
         .font('Helvetica-Bold')
         .fillColor('#6b7280')
-        .text(field.label, colX + 6, y + 4);
+        .text(field.label, colX + 5, y + 3);
       
       // Field Value (below label, compact)
-      const valueY = y + 12;
-      const valueWidth = (field.type === 'signature' || field.type === 'photo') ? pageWidth - (margin * 2) - 12 : fieldWidth - 12;
+      const valueY = y + 10;
+      const valueWidth = (field.type === 'signature' || field.type === 'photo') ? pageWidth - (margin * 2) - 10 : fieldWidth - 10;
       
       if (field.type === 'photo' && value) {
         const photoBuffer = await this.fetchImageBuffer(value);
         if (photoBuffer) {
-          if (y > pageHeight - 150) {
+          if (y > pageHeight - 120) {
             doc.addPage();
-            y = 30;
+            y = 25;
           }
-          doc.image(photoBuffer, colX + 6, valueY, { fit: [100, 100] });
+          doc.image(photoBuffer, colX + 5, valueY, { fit: [80, 80] });
           lastContentPage = doc.page.number - 1;
-          y += 110;
+          y += 90;
           currentCol = 0;
           colX = margin;
           continue;
         } else {
-          doc.fontSize(8)
+          doc.fontSize(7)
             .font('Helvetica')
             .fillColor('#ef4444')
-            .text('[Bild konnte nicht geladen werden]', colX + 6, valueY);
+            .text('[Bild nicht geladen]', colX + 5, valueY);
         }
       } else if (field.type === 'signature' && value) {
         const sigBuffer = await this.fetchImageBuffer(value);
         if (sigBuffer) {
-          doc.image(sigBuffer, colX + 6, valueY, { height: 30 });
+          doc.image(sigBuffer, colX + 5, valueY, { height: 25 });
         } else {
-          doc.fontSize(8)
+          doc.fontSize(7)
             .font('Helvetica-Oblique')
             .fillColor('#9ca3af')
-            .text('Unterschrift', colX + 6, valueY);
+            .text('-', colX + 5, valueY);
         }
       } else {
         const formatted = this.formatValue(field.type, value);
-        doc.fontSize(9)
+        doc.fontSize(8)
           .font('Helvetica')
           .fillColor('#111827')
-          .text(formatted, colX + 6, valueY, {
+          .text(formatted, colX + 5, valueY, {
             width: valueWidth
           });
       }
 
-      // Move to next column or next row
+      // Move to next column or next row - reduced spacing
       if (field.type === 'signature' || field.type === 'photo') {
-        y += fieldHeight + 6;
+        y += fieldHeight + 4;
         currentCol = 0;
         colX = margin;
       } else {
         if (currentCol === 0) {
           currentCol = 1;
-          colX = margin + fieldWidth + 10;
+          colX = margin + fieldWidth + 8;
         } else {
           currentCol = 0;
           colX = margin;
-          y += fieldHeight + 6;
+          y += fieldHeight + 4;
         }
       }
       
@@ -384,22 +392,23 @@ export class PDFService {
     
     // If we ended on the first column, move to next row
     if (currentCol === 1) {
-      y += fieldHeight + 6;
+      y += fieldHeight + 4;
     }
 
     // --- Compact Signature Section (if not already included in fields) ---
     const hasSignatureField = data.template.fields.some(f => f.type === 'signature');
     
     if (!hasSignatureField && data.signature_url) {
-      if (y > pageHeight - 60) {
-        doc.addPage();
-        y = 30;
+      // Only add if we have space on current page
+      if (y > pageHeight - 45) {
+        // Don't add new page, just skip or add inline
+        // Try to fit it
       }
 
-      y += 10;
+      y += 5;
       
-      // Compact signature box
-      const signatureBoxHeight = 50;
+      // Very compact signature box
+      const signatureBoxHeight = 35;
       doc.rect(margin, y, pageWidth - (margin * 2), signatureBoxHeight)
         .fillColor('#ffffff')
         .fill()
@@ -407,17 +416,17 @@ export class PDFService {
         .lineWidth(1)
         .stroke();
       
-      doc.fontSize(8)
+      doc.fontSize(7)
         .font('Helvetica-Bold')
         .fillColor(primaryColor)
-        .text('Unterschrift', margin + 8, y + 6);
+        .text('Unterschrift', margin + 6, y + 4);
       
       const sigBuffer = await this.fetchImageBuffer(data.signature_url);
       if (sigBuffer) {
-        doc.image(sigBuffer, margin + 8, y + 15, { height: 30 });
+        doc.image(sigBuffer, margin + 6, y + 12, { height: 20 });
       }
       
-      y += signatureBoxHeight + 10;
+      y += signatureBoxHeight + 5;
     }
 
     // Update last content page to current page
