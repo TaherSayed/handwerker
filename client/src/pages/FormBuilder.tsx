@@ -6,7 +6,7 @@ import {
   Trash2, Save, X, 
   Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare, 
   ToggleLeft, List, Calendar, Clock, StickyNote, PenTool, Camera,
-  Heading
+  Heading, Plus
 } from 'lucide-react';
 
 // Categorized field types like Jotform
@@ -39,6 +39,25 @@ export default function FormBuilder() {
   const [activeCategory, setActiveCategory] = useState<'basic' | 'advanced'>('basic');
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showElementPalette, setShowElementPalette] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      // On desktop, always show palette; on mobile, hide by default
+      if (!mobile) {
+        setShowElementPalette(true);
+      } else {
+        setShowElementPalette(false);
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -122,6 +141,9 @@ export default function FormBuilder() {
       setFormData({ ...formData, fields: [...formData.fields, newField] });
       setSelectedFieldIndex(formData.fields.length);
     }
+    
+    // Close palette on mobile after adding field
+    setShowElementPalette(false);
   };
 
   const duplicateField = (index: number) => {
@@ -359,89 +381,130 @@ export default function FormBuilder() {
         </div>
       )}
 
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Left Sidebar - Form Elements */}
-        <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
-          <div className="p-4 border-b border-slate-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-slate-900">Form Elements</h2>
-            </div>
+      <div className="flex h-[calc(100vh-73px)] relative">
+        {/* Left Sidebar - Form Elements (Hidden on mobile, visible on desktop) */}
+        {(!isMobile || showElementPalette) && (
+          <>
+            {/* Mobile Overlay */}
+            {isMobile && (
+              <div 
+                className="fixed inset-0 bg-black/50 z-40"
+                onClick={() => setShowElementPalette(false)}
+              />
+            )}
             
-            {/* Category Tabs */}
-            <div className="flex gap-1 border-b border-slate-200">
-              <button
-                onClick={() => setActiveCategory('basic')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  activeCategory === 'basic'
-                    ? 'text-orange-600 border-b-2 border-orange-600'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                BASIC
-              </button>
-              <button
-                onClick={() => setActiveCategory('advanced')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  activeCategory === 'advanced'
-                    ? 'text-orange-600 border-b-2 border-orange-600'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                ADVANCED
-              </button>
-            </div>
-          </div>
-
-          {/* Field Types List */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-1">
-              {FIELD_CATEGORIES[activeCategory].map((type) => {
-                const Icon = type.icon;
-                return (
+            {/* Sidebar */}
+            <div className={`${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 w-80 bg-white border-r border-slate-200 flex flex-col z-50 ${isMobile ? 'transform transition-transform duration-300' : ''}`}>
+              <div className="p-4 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-900">Form Elements</h2>
                   <button
-                    key={type.value}
-                    onClick={() => addField(type.value)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors text-left group"
+                    onClick={() => setShowElementPalette(false)}
+                    className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
                   >
-                    <div 
-                      className="w-8 h-8 rounded flex items-center justify-center"
-                      style={{ backgroundColor: `${type.color}15` }}
-                    >
-                      <Icon className="w-4 h-4" style={{ color: type.color }} />
-                    </div>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                      {type.label}
-                    </span>
+                    <X className="w-5 h-5 text-slate-600" />
                   </button>
-                );
-              })}
+                </div>
+                
+                {/* Category Tabs */}
+                <div className="flex gap-1 border-b border-slate-200">
+                  <button
+                    onClick={() => setActiveCategory('basic')}
+                    className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === 'basic'
+                        ? 'text-orange-600 border-b-2 border-orange-600'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    BASIC
+                  </button>
+                  <button
+                    onClick={() => setActiveCategory('advanced')}
+                    className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === 'advanced'
+                        ? 'text-orange-600 border-b-2 border-orange-600'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    ADVANCED
+                  </button>
+                </div>
+              </div>
+
+              {/* Field Types List */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-1">
+                  {FIELD_CATEGORIES[activeCategory].map((type) => {
+                    const Icon = type.icon;
+                    return (
+                      <button
+                        key={type.value}
+                        onClick={() => addField(type.value)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors text-left group"
+                      >
+                        <div 
+                          className="w-8 h-8 rounded flex items-center justify-center"
+                          style={{ backgroundColor: `${type.color}15` }}
+                        >
+                          <Icon className="w-4 h-4" style={{ color: type.color }} />
+                        </div>
+                        <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                          {type.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Main Content Area - Form Preview */}
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-8">
+        <div className="flex-1 overflow-y-auto bg-slate-100 p-4 lg:p-8">
           <div className="max-w-3xl mx-auto">
+            {/* Mobile Add Button */}
+            <div className="lg:hidden mb-4">
+              <button
+                onClick={() => setShowElementPalette(true)}
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Element hinzufügen</span>
+              </button>
+            </div>
+
             {/* Form Title */}
             <div className="mb-6">
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="text-3xl font-bold text-slate-900 bg-transparent border-none outline-none w-full"
+                className="text-2xl lg:text-3xl font-bold text-slate-900 bg-transparent border-none outline-none w-full"
                 placeholder="Form"
               />
             </div>
 
             {/* Form Container */}
-            <div className="bg-white rounded-lg shadow-lg p-8 min-h-[400px]">
+            <div className="bg-white rounded-lg shadow-lg p-4 lg:p-8 min-h-[400px]">
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="fields">
                   {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4 lg:space-y-6">
                       {formData.fields.length === 0 ? (
-                        <div className="text-center py-16">
-                          <p className="text-slate-400 text-sm">Klicken Sie auf ein Element links, um es hinzuzufügen</p>
+                        <div className="text-center py-12 lg:py-16">
+                          <button
+                            onClick={() => setShowElementPalette(true)}
+                            className="mb-4 inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:bg-indigo-700 transition-all lg:hidden"
+                          >
+                            <Plus className="w-5 h-5" />
+                            <span>Element hinzufügen</span>
+                          </button>
+                          <p className="text-slate-400 text-sm">
+                            {!isMobile 
+                              ? 'Klicken Sie auf ein Element links, um es hinzuzufügen'
+                              : 'Klicken Sie auf "Element hinzufügen", um zu beginnen'}
+                          </p>
                         </div>
                       ) : (
                         formData.fields.map((field, index) => {
@@ -462,7 +525,11 @@ export default function FormBuilder() {
                                   onClick={() => setSelectedFieldIndex(index)}
                                 >
                                   {/* Field Controls */}
-                                  <div className="absolute -right-2 -top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className={`absolute -right-2 -top-2 flex gap-1 transition-opacity ${
+                                    isSelected 
+                                      ? 'opacity-100' 
+                                      : 'opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
+                                  }`}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -528,7 +595,7 @@ export default function FormBuilder() {
 
                                   {/* Field Editor (when selected) */}
                                   {isSelected && (
-                                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
+                                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-3 text-sm lg:text-base">
                                       <div>
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">
                                           Frage / Label
