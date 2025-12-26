@@ -14,8 +14,14 @@ Future<void> main() async {
 
   // Initialize Supabase
   await Supabase.initialize(
-    url: const String.fromEnvironment('SUPABASE_URL'),
-    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+    url: const String.fromEnvironment(
+      'SUPABASE_URL',
+      defaultValue: 'https://ckargfikgicnflsqbbld.supabase.co',
+    ),
+    anonKey: const String.fromEnvironment(
+      'SUPABASE_ANON_KEY',
+      defaultValue: 'sb_publishable_tQ1pbrvgVOwtc148R3oq9w_VkjXFyMU',
+    ),
   );
 
   runApp(const MyApp());
