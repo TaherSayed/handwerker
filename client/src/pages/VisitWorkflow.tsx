@@ -131,8 +131,14 @@ export default function VisitWorkflow() {
         for (const field of selectedTemplate.fields || []) {
             if (field.required) {
                 const value = fieldValues[field.id];
-                if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
-                    setError(`Field "${field.label}" is required`);
+                // Special handling for signature fields - check signature state
+                if (field.type === 'signature') {
+                    if (!signature && (!value || value === '')) {
+                        setError(`Feld "${field.label}" ist erforderlich`);
+                        return false;
+                    }
+                } else if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+                    setError(`Feld "${field.label}" ist erforderlich`);
                     return false;
                 }
             }
