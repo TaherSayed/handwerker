@@ -6,30 +6,42 @@
 :root {
   /* ===== COLOR SYSTEM ===== */
   
-  /* Primary Brand Color - Single source of truth */
-  --color-primary-50: #ecfeff;
-  --color-primary-100: #cffafe;
-  --color-primary-200: #a5f3fc;
-  --color-primary-300: #67e8f9;
-  --color-primary-400: #22d3ee;
-  --color-primary-500: #06b6d4; /* Main primary */
-  --color-primary-600: #0891b2;
-  --color-primary-700: #0e7490;
-  --color-primary-800: #155e75;
-  --color-primary-900: #164e63;
+  /* Primary Brand Color - OnSite Türkis (from Logo) */
+  --color-primary-50: #e6f7f9;
+  --color-primary-100: #b3e8ed;
+  --color-primary-200: #80d9e1;
+  --color-primary-300: #4dcad5;
+  --color-primary-400: #1ab9c9;
+  --color-primary-500: #0FB2C9; /* Main primary - Türkis Verlauf Mitte */
+  --color-primary-600: #0A8FA9; /* Dunkler Verlauf */
+  --color-primary-700: #066B7E; /* Buttons Hover / Outline */
+  --color-primary-800: #044755;
+  --color-primary-900: #02232b;
+  
+  /* Primary Gradient (for CTAs) */
+  --gradient-primary: linear-gradient(135deg, #0FB2C9 0%, #0A8FA9 100%);
 
-  /* Semantic Colors */
-  --color-success: #10b981;
-  --color-success-light: #34d399;
-  --color-success-dark: #059669;
+  /* Steel Colors - Industrial Look (for Icons, Headlines, Cards) */
+  --color-steel-100: #e5e5e5;
+  --color-steel-200: #cccccc;
+  --color-steel-300: #9E9E9E; /* Light steel */
+  --color-steel-400: #808080;
+  --color-steel-500: #6C6C6C; /* Medium steel */
+  --color-steel-600: #4d4d4d;
+  --color-steel-700: #2B2B2B; /* Dark steel - Headlines, Cards, Status */
   
-  --color-warning: #f59e0b;
-  --color-warning-light: #fbbf24;
-  --color-warning-dark: #d97706;
+  /* Semantic Colors - Harmonious, not bright */
+  --color-success: #0d9488; /* Teal-green blend */
+  --color-success-light: #14b8a6;
+  --color-success-dark: #0f766e;
   
-  --color-danger: #ef4444;
-  --color-danger-light: #f87171;
-  --color-danger-dark: #dc2626;
+  --color-warning: #ea8a00; /* Muted orange */
+  --color-warning-light: #f59e0b;
+  --color-warning-dark: #c9730a;
+  
+  --color-danger: #dc3545; /* Muted red */
+  --color-danger-light: #e63946;
+  --color-danger-dark: #b02a37;
 
   /* Neutral Colors - Light Mode */
   --color-neutral-50: #f8fafc;
@@ -60,24 +72,29 @@
   --color-text-disabled: #94a3b8;
   --color-text-inverse: #ffffff;
 
-  /* Dark Mode Colors */
+  /* Dark Mode Colors - Industrial Anthracite Style */
   .dark {
-    /* Surface Colors - Dark Mode */
-    --color-surface-base: #0f172a;
-    --color-surface-elevated: #1e293b;
-    --color-surface-subtle: #1e293b;
+    /* Surface Colors - Anthracite instead of black */
+    --color-surface-base: #1a1a1a; /* Anthracite base */
+    --color-surface-elevated: #252525; /* Elevated cards */
+    --color-surface-subtle: #2a2a2a; /* Subtle backgrounds */
     
-    /* Border Colors - Dark Mode */
-    --color-border-subtle: rgba(255, 255, 255, 0.06);
-    --color-border-default: rgba(255, 255, 255, 0.1);
-    --color-border-strong: rgba(255, 255, 255, 0.15);
+    /* Border Colors - Dark Mode with metallic feel */
+    --color-border-subtle: rgba(255, 255, 255, 0.08);
+    --color-border-default: rgba(255, 255, 255, 0.12);
+    --color-border-strong: rgba(255, 255, 255, 0.18);
 
     /* Text Colors - Dark Mode */
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #cbd5e1;
-    --color-text-tertiary: #94a3b8;
+    --color-text-primary: #f5f5f5;
+    --color-text-secondary: #d4d4d4;
+    --color-text-tertiary: #a3a3a3;
     --color-text-disabled: rgba(255, 255, 255, 0.4);
-    --color-text-inverse: #0f172a;
+    --color-text-inverse: #1a1a1a;
+    
+    /* Steel colors adjusted for dark mode */
+    --color-steel-300: #6C6C6C;
+    --color-steel-500: #9E9E9E;
+    --color-steel-700: #B8B8B8;
   }
 
   /* ===== SPACING SCALE ===== */
@@ -118,11 +135,11 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.625;
 
-  /* Letter Spacing */
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;
+  /* Letter Spacing - Compact & Precise (Technical Style) */
+  --letter-spacing-tight: -0.03em; /* Slightly tighter for technical feel */
+  --letter-spacing-normal: -0.01em; /* Slightly reduced */
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-wider: 0.04em;
 
   /* ===== BORDER RADIUS ===== */
   --radius-sm: 0.375rem;   /* 6px */
@@ -133,20 +150,32 @@
   --radius-full: 9999px;
 
   /* ===== SHADOWS ===== */
-  /* Light Mode Shadows */
+  /* Light Mode Shadows - Technical Depth */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Industrial Card Shadow - Metallic feel */
+  --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.08);
+  
+  /* Button Shadow - Depth */
+  --shadow-button: 0 2px 4px 0 rgba(15, 178, 201, 0.2), 0 1px 2px 0 rgba(15, 178, 201, 0.1);
+  --shadow-button-hover: 0 4px 8px 0 rgba(15, 178, 201, 0.3), 0 2px 4px 0 rgba(15, 178, 201, 0.15);
 
-  /* Dark Mode Shadows (subtle) */
+  /* Dark Mode Shadows - Depth without glow */
   .dark {
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.6);
+    --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.5), 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.6), 0 2px 6px 0 rgba(0, 0, 0, 0.5);
+    --shadow-button: 0 2px 4px 0 rgba(15, 178, 201, 0.3), 0 1px 2px 0 rgba(15, 178, 201, 0.2);
+    --shadow-button-hover: 0 4px 8px 0 rgba(15, 178, 201, 0.4), 0 2px 4px 0 rgba(15, 178, 201, 0.25);
   }
 
   /* ===== TRANSITIONS ===== */
@@ -154,6 +183,11 @@
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Mechanical Transitions - Gear-like movement */
+  --transition-mechanical: 250ms cubic-bezier(0.34, 1.56, 0.64, 1); /* Snap effect */
+  --transition-gear: 400ms cubic-bezier(0.4, 0, 0.2, 1); /* Gear rotation */
+  --transition-press: 100ms cubic-bezier(0.4, 0, 0.2, 1); /* Button press */
 
   /* ===== Z-INDEX SCALE ===== */
   --z-base: 0;

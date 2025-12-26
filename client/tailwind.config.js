@@ -8,49 +8,59 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary Brand Color - Single source of truth
+        // Primary Brand Color - OnSite Türkis (from Logo)
         primary: {
-          50: '#ecfeff',
-          100: '#cffafe',
-          200: '#a5f3fc',
-          300: '#67e8f9',
-          400: '#22d3ee',
-          500: '#06b6d4', // Main primary
-          600: '#0891b2',
-          700: '#0e7490',
-          800: '#155e75',
-          900: '#164e63',
+          50: '#e6f7f9',
+          100: '#b3e8ed',
+          200: '#80d9e1',
+          300: '#4dcad5',
+          400: '#1ab9c9',
+          500: '#0FB2C9', // Main primary - Türkis Verlauf Mitte
+          600: '#0A8FA9', // Dunkler Verlauf
+          700: '#066B7E', // Buttons Hover / Outline
+          800: '#044755',
+          900: '#02232b',
           // Legacy support
-          light: '#06b6d4',
-          dark: '#0891b2',
+          light: '#0FB2C9',
+          dark: '#0A8FA9',
         },
-        // Semantic Colors
+        // Steel Colors - Industrial Look
+        steel: {
+          100: '#e5e5e5',
+          200: '#cccccc',
+          300: '#9E9E9E',
+          400: '#808080',
+          500: '#6C6C6C',
+          600: '#4d4d4d',
+          700: '#2B2B2B', // Headlines, Cards, Status
+        },
+        // Semantic Colors - Harmonious, not bright
         success: {
-          DEFAULT: '#10b981',
-          light: '#34d399',
-          dark: '#059669',
+          DEFAULT: '#0d9488', // Teal-green blend
+          light: '#14b8a6',
+          dark: '#0f766e',
           50: '#ecfdf5',
           100: '#d1fae5',
-          500: '#10b981',
-          600: '#059669',
+          500: '#0d9488',
+          600: '#0f766e',
         },
         warning: {
-          DEFAULT: '#f59e0b',
-          light: '#fbbf24',
-          dark: '#d97706',
+          DEFAULT: '#ea8a00', // Muted orange
+          light: '#f59e0b',
+          dark: '#c9730a',
           50: '#fffbeb',
           100: '#fef3c7',
-          500: '#f59e0b',
-          600: '#d97706',
+          500: '#ea8a00',
+          600: '#c9730a',
         },
         danger: {
-          DEFAULT: '#ef4444',
-          light: '#f87171',
-          dark: '#dc2626',
+          DEFAULT: '#dc3545', // Muted red
+          light: '#e63946',
+          dark: '#b02a37',
           50: '#fef2f2',
           100: '#fee2e2',
-          500: '#ef4444',
-          600: '#dc2626',
+          500: '#dc3545',
+          600: '#b02a37',
         },
         error: {
           DEFAULT: '#ef4444',
@@ -81,7 +91,7 @@ export default {
         // Background Colors
         background: {
           light: '#F8FAFC',
-          dark: '#0F172A',
+          dark: '#1a1a1a', // Anthracite instead of black
         },
         // Border Colors
         border: {
@@ -99,16 +109,16 @@ export default {
           disabled: 'var(--color-text-disabled)',
           inverse: 'var(--color-text-inverse)',
         },
-        // Premium Dark Mode Palette
+        // Premium Dark Mode Palette - Industrial Anthracite
         dark: {
-          base: '#0F172A',
-          card: '#1E293B',
-          input: '#1E293B',
-          stroke: 'rgba(255,255,255,0.08)',
-          highlight: 'rgba(255,255,255,0.05)',
-          'text-head': '#FFFFFF',
-          'text-body': '#CBD5E1',
-          'text-muted': '#94A3B8',
+          base: '#1a1a1a', // Anthracite base
+          card: '#252525', // Elevated cards
+          input: '#2a2a2a', // Input backgrounds
+          stroke: 'rgba(255,255,255,0.12)', // Borders with metallic feel
+          highlight: 'rgba(255,255,255,0.08)',
+          'text-head': '#f5f5f5',
+          'text-body': '#d4d4d4',
+          'text-muted': '#a3a3a3',
         },
       },
       fontFamily: {

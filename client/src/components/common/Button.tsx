@@ -9,11 +9,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-    primary: 'bg-indigo-900 text-white hover:bg-indigo-800 shadow-lg shadow-indigo-900/20 active:scale-95 disabled:bg-indigo-300',
-    secondary: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95 disabled:opacity-50',
-    outline: 'bg-transparent border-2 border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 active:scale-95 disabled:opacity-50',
-    ghost: 'bg-transparent text-slate-500 hover:bg-slate-50 active:scale-95 disabled:opacity-50',
-    danger: 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white active:scale-95 disabled:opacity-50',
+    primary: 'btn-primary',
+    secondary: 'bg-white dark:bg-[#252525] text-steel-700 dark:text-[#d4d4d4] hover:bg-neutral-50 dark:hover:bg-[#2a2a2a] border border-neutral-300 dark:border-[rgba(255,255,255,0.12)] shadow-[0_2px_4px_0_rgba(0,0,0,0.08)] hover:shadow-[0_4px_8px_0_rgba(0,0,0,0.12)] active:scale-[0.97] disabled:opacity-50',
+    outline: 'bg-transparent border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 active:scale-[0.97] disabled:opacity-50',
+    ghost: 'bg-transparent text-steel-500 dark:text-[#a3a3a3] hover:bg-neutral-100 dark:hover:bg-[#2a2a2a] active:scale-[0.97] disabled:opacity-50',
+    danger: 'bg-danger-500 hover:bg-danger-600 text-white shadow-[0_2px_4px_0_rgba(220,53,69,0.2)] hover:shadow-[0_4px_8px_0_rgba(220,53,69,0.3)] active:scale-[0.97] disabled:opacity-50',
 };
 
 const sizes = {
@@ -37,16 +37,26 @@ export default function Button({
         <button
             disabled={disabled || loading}
             className={`
-        relative flex items-center justify-center gap-3 rounded-[1.5rem] font-black uppercase tracking-[0.2em] transition-all duration-200
+        relative flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200
+        min-h-[44px]
+        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
         ${variants[variant]}
         ${sizes[size]}
         ${className}
       `}
+            onMouseDown={(e) => {
+                if (!disabled && !loading) {
+                    e.currentTarget.classList.add('animate-mechanical-press');
+                    setTimeout(() => {
+                        e.currentTarget.classList.remove('animate-mechanical-press');
+                    }, 100);
+                }
+            }}
             {...props}
         >
             {loading ? (
                 <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-loading-circle" />
                     <span className="opacity-0">{children}</span>
                 </>
             ) : (

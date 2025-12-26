@@ -10,21 +10,26 @@
   }
 
   body {
-    @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-dark-text-body antialiased;
+    @apply bg-[#F8FAFC] dark:bg-[#1a1a1a] text-slate-900 dark:text-[#d4d4d4] antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
   }
 
   /* Global Mobile Typography Scale */
   /* Global Mobile Typography Scale */
   h1 {
-    @apply text-xl leading-tight font-bold text-slate-900 dark:text-dark-text-head;
+    @apply text-xl leading-tight font-bold text-slate-900 dark:text-[#f5f5f5] tracking-tight;
+    letter-spacing: -0.03em;
   }
 
   h2 {
-    @apply text-lg leading-snug font-bold text-slate-900 dark:text-dark-text-head;
+    @apply text-lg leading-snug font-bold text-slate-900 dark:text-[#f5f5f5] tracking-tight;
+    letter-spacing: -0.02em;
   }
 
   h3 {
-    @apply text-base leading-snug font-semibold text-slate-900 dark:text-dark-text-head;
+    @apply text-base leading-snug font-semibold text-slate-900 dark:text-[#f5f5f5] tracking-tight;
+    letter-spacing: -0.01em;
   }
 
   /* Inputs minimum 16px to prevent iOS zoom */
@@ -38,18 +43,39 @@
 @layer components {
   /* ===== BUTTON SYSTEM ===== */
   
-  /* Primary Button - Main CTA */
+  /* Primary Button - Main CTA with Türkis Gradient */
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 active:bg-primary-700 
-           text-white font-medium text-base 
+    background: linear-gradient(135deg, #0FB2C9 0%, #0A8FA9 100%);
+    @apply text-white font-semibold text-base 
            py-3 px-6 rounded-lg 
-           shadow-md hover:shadow-lg 
-           active:scale-[0.98] 
-           transition-all duration-200 
+           shadow-[0_2px_4px_0_rgba(15,178,201,0.2),0_1px_2px_0_rgba(15,178,201,0.1)]
+           hover:shadow-[0_4px_8px_0_rgba(15,178,201,0.3),0_2px_4px_0_rgba(15,178,201,0.15)]
+           active:scale-[0.97] 
+           transition-all duration-200
            min-h-[44px] 
            flex items-center justify-center gap-2
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+           relative overflow-hidden;
+  }
+  
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0A8FA9 0%, #066B7E 100%);
   }
 
   /* Secondary Button */
@@ -114,25 +140,31 @@
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
-  /* ===== CARD SYSTEM ===== */
+  /* ===== CARD SYSTEM - Industrial Metallic Style ===== */
   
   .card {
-    @apply bg-white dark:bg-dark-card
-           border border-neutral-200 dark:border-dark-stroke
+    @apply bg-white dark:bg-[#252525]
+           border border-[#e5e7eb] dark:border-[rgba(255,255,255,0.12)]
            rounded-lg
-           shadow-sm dark:shadow-dark-card
-           text-slate-900 dark:text-dark-text-body
+           shadow-[0_2px_8px_0_rgba(0,0,0,0.08),0_1px_3px_0_rgba(0,0,0,0.05)]
+           dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.5),0_1px_3px_0_rgba(0,0,0,0.4)]
+           text-slate-900 dark:text-[#f5f5f5]
            transition-all duration-200;
   }
 
   .card-hover {
-    @apply card hover:shadow-md dark:hover:shadow-lg
-           hover:border-neutral-300 dark:hover:border-dark-stroke
-           cursor-pointer;
+    @apply card 
+           hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.12),0_2px_6px_0_rgba(0,0,0,0.08)]
+           dark:hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.6),0_2px_6px_0_rgba(0,0,0,0.5)]
+           hover:border-[#cbd5e1] dark:hover:border-[rgba(255,255,255,0.18)]
+           cursor-pointer
+           transform hover:-translate-y-0.5;
   }
 
   .card-elevated {
-    @apply card shadow-md dark:shadow-dark-card;
+    @apply card 
+           shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]
+           dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.5),0_2px_4px_-1px_rgba(0,0,0,0.4)];
   }
 
   .card-compact {
@@ -251,21 +283,91 @@
   }
 }
 
-/* Animations */
+/* ===== ANIMATIONS - Mechanical & Industrial ===== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(4px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
+@keyframes gearRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mechanicalPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInMechanical {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes magneticSnap {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes loadingCircle {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-gear-rotate {
+  animation: gearRotate 2s linear infinite;
+}
+
+.animate-mechanical-press {
+  animation: mechanicalPress 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-in-mechanical {
+  animation: slideInMechanical 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-magnetic-snap {
+  animation: magneticSnap 0.2s ease-in-out;
+}
+
+.animate-loading-circle {
+  animation: loadingCircle 1s linear infinite;
 }
 
 /* Mobile Safe Area Utilities */
