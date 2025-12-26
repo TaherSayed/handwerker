@@ -119,6 +119,7 @@ export class PDFService {
     const accentColor = data.user.accent_color || '#3b82f6';  // Default blue-500
 
     let y = 50;
+    let lastContentPage = 0; // Track the last page with actual content
 
     // --- Professional Header Section ---
     const headerHeight = 100;
@@ -265,10 +266,13 @@ export class PDFService {
 
     // --- Professional Field Responses ---
     for (const field of data.template.fields) {
+      // Check if we need a new page before adding content
       if (y > pageHeight - 100) {
         doc.addPage();
         y = 50;
       }
+      // Track current page as having content
+      lastContentPage = doc.page.number - 1;
 
       const value = data.field_values[field.id];
 
@@ -314,6 +318,7 @@ export class PDFService {
             y = 50;
           }
           doc.image(photoBuffer, valueX, y + 5, { fit: [150, 150] });
+          lastContentPage = doc.page.number - 1; // Track page with photo content
           y += 160;
           continue;
         } else {
@@ -333,6 +338,8 @@ export class PDFService {
       }
 
       y += fieldHeight + 8;
+      // Track current page as having content
+      lastContentPage = doc.page.number - 1;
     }
 
     // --- Professional Signature Section ---
@@ -369,9 +376,16 @@ export class PDFService {
         .text('Elektronisch erfasst', margin + 10, y + 40);
     }
 
-    // --- Professional Footer on all pages ---
-    const range = doc.bufferedPageRange();
-    for (let i = range.start; i < range.start + range.count; i++) {
+    // Update last content page to current page (after signature section)
+    lastContentPage = doc.page.number - 1;
+
+    // --- Professional Footer on all pages with content only ---
+    // Use the tracked last content page to determine total pages
+    // This ensures we only add footers to pages that actually have content
+    const totalPages = lastContentPage + 1;
+    
+    // Only add footers to pages that have content (0-indexed)
+    for (let i = 0; i < totalPages; i++) {
       doc.switchToPage(i);
       
       // Footer background
@@ -391,8 +405,8 @@ export class PDFService {
         .fillColor('#6b7280')
         .text(footerText, margin, pageHeight - 25, { align: 'center' });
       
-      // Page number
-      doc.text(`Seite ${i + 1} von ${range.count}`, pageWidth - margin - 50, pageHeight - 25, { align: 'right' });
+      // Page number - use actual total pages with content
+      doc.text(`Seite ${i + 1} von ${totalPages}`, pageWidth - margin - 50, pageHeight - 25, { align: 'right' });
     }
   }
 
