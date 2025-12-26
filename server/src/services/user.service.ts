@@ -123,7 +123,7 @@ export class UserService {
                 // If creation fails, try to fetch existing profile with basic fields
                 const { data: existingBasic, error: basicError } = await adminClient
                     .from('user_profiles')
-                    .select('id, email, full_name, created_at, updated_at')
+                    .select('id, email, full_name, avatar_url, created_at, updated_at')
                     .eq('id', userId)
                     .single();
 
@@ -137,7 +137,7 @@ export class UserService {
                 // If upsert ignored the duplicate, fetch existing one with basic fields first
                 const { data: existingBasic, error: basicError } = await adminClient
                     .from('user_profiles')
-                    .select('id, email, full_name, created_at, updated_at')
+                    .select('id, email, full_name, avatar_url, created_at, updated_at')
                     .eq('id', userId)
                     .single();
 
