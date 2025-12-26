@@ -14,21 +14,58 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
 
     const userClient = supabase.getClientForUser(accessToken);
 
-    // Ensure user is provisioned safely
-    const { profile, workspace } = await userService.getOrCreateWorkspace(userId, userEmail!, userClient);
-
     // Get Google profile information from user metadata
     const userMetadata = req.user!.metadata || {};
+    const googleName = userMetadata.full_name || userMetadata.name;
+    const googleAvatar = userMetadata.avatar_url || userMetadata.picture;
+
+    // Ensure user is provisioned safely - pass Google info to sync it
+    const { profile, workspace } = await userService.getOrCreateWorkspace(
+      userId, 
+      userEmail!, 
+      userClient,
+      {
+        full_name: googleName,
+        avatar_url: googleAvatar,
+      }
+    );
+
+    // Sync Google information to database if available and profile doesn't have it
+    if ((googleName && !profile.full_name) || (googleAvatar && !profile.avatar_url)) {
+      const updates: any = {};
+      if (googleName && !profile.full_name) {
+        updates.full_name = googleName;
+      }
+      if (googleAvatar && !profile.avatar_url) {
+        updates.avatar_url = googleAvatar;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        try {
+          await userClient
+            .from('user_profiles')
+            .update(updates)
+            .eq('id', userId);
+          
+          // Update local profile object
+          Object.assign(profile, updates);
+        } catch (updateError) {
+          console.warn('Failed to sync Google info to profile:', updateError);
+        }
+      }
+    }
+
     const authMetadata = {
       ...userMetadata,
-      avatar_url: userMetadata.avatar_url || userMetadata.picture,
-      full_name: userMetadata.full_name || userMetadata.name,
+      avatar_url: googleAvatar,
+      full_name: googleName,
       email: req.user!.email,
     };
 
     const fullProfile = {
       ...profile,
       email: profile.email || req.user!.email, // Ensure email is included
+      avatar_url: profile.avatar_url || googleAvatar, // Include avatar_url from profile or Google
       workspaces: workspace ? [workspace] : [],
       auth_metadata: authMetadata,
     };

@@ -25,15 +25,21 @@ export class UserService {
     /**
      * Ensures a user profile exists and returns the user's default workspace.
      * If either is missing, they are created safely.
+     * @param googleInfo Optional Google profile information to sync
      */
-    async getOrCreateWorkspace(userId: string, email: string, userClient: SupabaseClient) {
+    async getOrCreateWorkspace(
+      userId: string, 
+      email: string, 
+      userClient: SupabaseClient,
+      googleInfo?: { full_name?: string; avatar_url?: string }
+    ) {
         // 1. Ensure profile exists (Use admin client to bypass RLS if needed for initial creation)
         const adminClient = supabase.adminClient || userClient;
 
         // First, try to get profile with basic fields only (always exist)
         let { data: profile, error: profileError } = await adminClient
             .from('user_profiles')
-            .select('id, email, full_name, created_at, updated_at')
+            .select('id, email, full_name, avatar_url, created_at, updated_at')
             .eq('id', userId)
             .single();
         
@@ -90,17 +96,27 @@ export class UserService {
 
         if (profileError || !typedProfile) {
             console.log(`[UserService] Creating missing profile for ${userId}`);
+            // Use Google info if available, otherwise fallback to email username
+            const defaultName = googleInfo?.full_name || email.split('@')[0] || 'User';
+            
             // Use upsert with ignoreDuplicates to avoid race conditions (duplicate key errors)
             // Only set fields that definitely exist
+            const profileData: any = {
+                id: userId,
+                email: email,
+                full_name: defaultName,
+                updated_at: new Date().toISOString(),
+            };
+            
+            // Add avatar_url if available (only if column exists)
+            if (googleInfo?.avatar_url) {
+                profileData.avatar_url = googleInfo.avatar_url;
+            }
+            
             const { data: newProfile, error: createProfileError } = await adminClient
                 .from('user_profiles')
-                .upsert({
-                    id: userId,
-                    email: email,
-                    full_name: email.split('@')[0] || 'User',
-                    updated_at: new Date().toISOString(),
-                }, { onConflict: 'id', ignoreDuplicates: true })
-                .select('id, email, full_name, created_at, updated_at')
+                .upsert(profileData, { onConflict: 'id', ignoreDuplicates: true })
+                .select('id, email, full_name, avatar_url, created_at, updated_at')
                 .maybeSingle();
 
             if (createProfileError) {
