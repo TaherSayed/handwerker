@@ -3,10 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { 
-  Plus, GripVertical, Trash2, Save, X, Edit, FileText, Sparkles, 
+  Trash2, Save, X, 
   Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare, 
   ToggleLeft, List, Calendar, Clock, StickyNote, PenTool, Camera,
-  Heading, User, Mail, MapPin, Phone
+  Heading
 } from 'lucide-react';
 
 // Categorized field types like Jotform
