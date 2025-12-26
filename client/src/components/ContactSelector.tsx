@@ -70,7 +70,7 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl bg-white sm:rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden animate-slide-up">
+      <div className="relative w-full max-w-2xl bg-white sm:rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden animate-slide-up" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
           <div className="flex items-center gap-4">
@@ -78,11 +78,18 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
               <Contact2 className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Kunden auswählen</h2>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 opacity-60">Aus Ihren Google Kontakten</p>
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">KUNDEN AUSWÄHLEN</h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 opacity-60">AUS IHREN GOOGLE KONTAKTEN</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-2xl transition-colors">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }} 
+            className="p-2 hover:bg-slate-100 rounded-2xl transition-colors"
+            type="button"
+          >
             <X className="w-6 h-6 text-slate-400" />
           </button>
         </div>

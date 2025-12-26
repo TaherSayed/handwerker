@@ -28,6 +28,7 @@ export default function VisitWorkflow() {
 
     const [currentStep, setCurrentStep] = useState<WorkflowStep>('customer');
     const [error, setError] = useState<string | null>(null);
+    const [showContactSelector, setShowContactSelector] = useState(false);
 
     // Workflow State
     const [customer, setCustomer] = useState<GoogleContact | null>(null);
@@ -95,6 +96,7 @@ export default function VisitWorkflow() {
     const handleContactSelect = (contact: GoogleContact) => {
         setCustomer(contact);
         setIsManualCustomer(false);
+        setShowContactSelector(false);
         setCurrentStep('template');
     };
 
@@ -432,7 +434,23 @@ export default function VisitWorkflow() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
-                            <ContactSelector onSelect={handleContactSelect} onClose={() => { }} initialContact={null} />
+                            {/* Google Contacts Button */}
+                            <button
+                                type="button"
+                                onClick={() => setShowContactSelector(true)}
+                                className="group flex items-center justify-between gap-4 p-6 bg-white dark:bg-dark-card rounded-2xl border-2 border-slate-200 dark:border-dark-stroke hover:border-indigo-300 dark:hover:border-indigo-500 transition-all shadow-sm hover:shadow-xl hover:shadow-indigo-500/5"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                                        <User className="w-6 h-6" />
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 className="font-bold text-slate-900 dark:text-white text-base">Aus Google Kontakten auswählen</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kunden aus Ihren Google Kontakten importieren</p>
+                                    </div>
+                                </div>
+                                <Zap className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                            </button>
 
                             <div className="relative py-4">
                                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
@@ -596,6 +614,15 @@ export default function VisitWorkflow() {
                         <Trash2 className="w-5 h-5" />
                     </button>
                 </div>
+            )}
+
+            {/* Contact Selector Modal */}
+            {showContactSelector && (
+                <ContactSelector
+                    onSelect={handleContactSelect}
+                    onClose={() => setShowContactSelector(false)}
+                    initialContact={customer}
+                />
             )}
         </div>
     );
