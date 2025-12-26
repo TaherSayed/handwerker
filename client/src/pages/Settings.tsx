@@ -197,11 +197,14 @@ export default function Settings() {
     { id: 'data', label: 'Daten', icon: Database },
   ];
 
-  // Get Google profile information from auth_metadata or user_metadata
+  // Get profile information - prioritize database, then Google auth metadata
+  const profileAvatar = profile?.avatar_url; // From database
   const googleAvatar = profile?.auth_metadata?.avatar_url || 
                        profile?.auth_metadata?.picture || 
                        user?.user_metadata?.avatar_url || 
                        user?.user_metadata?.picture;
+  
+  const avatarUrl = profileAvatar || googleAvatar; // Use database first, fallback to Google
   
   const googleName = profile?.auth_metadata?.full_name || 
                      profile?.auth_metadata?.name || 
@@ -348,8 +351,8 @@ export default function Settings() {
           <div className="space-y-10 animate-slide-up">
             <div className="flex items-center gap-6 p-6 bg-slate-50 dark:bg-dark-input rounded-3xl border border-border-light dark:border-dark-stroke">
               <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-sm overflow-hidden bg-white shrink-0">
-                {googleAvatar ? (
-                  <img src={googleAvatar} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-primary-500/10 dark:bg-primary-500/20 text-primary-500 dark:text-primary-400 font-black text-2xl">
                     {displayName[0]?.toUpperCase() || 'U'}
