@@ -15,15 +15,23 @@ OnSite verwendet Google OAuth für die Authentifizierung und benötigt Zugriff a
 1. Navigiere zu **APIs & Services** > **OAuth consent screen**
 2. User Type: **External** auswählen
 3. **App-Informationen:**
-   - App name: `OnSite`
+   - **App name: `OnSite Handwerker App`** ⚠️ WICHTIG: Dieser Name wird im Google Login-Dialog angezeigt statt der Supabase-URL
    - User support email: Deine Support-E-Mail
-   - App logo: (optional)
+   - App logo: (optional) - Empfohlen: Logo hochladen für professionelleres Aussehen
+   - App domain: `hw.sata26.cloud`
 4. **App domain:**
    - Application home page: `https://hw.sata26.cloud`
    - Application privacy policy: `https://hw.sata26.cloud/datenschutz`
    - Application terms of service: `https://hw.sata26.cloud/impressum`
 5. **Developer contact information:** Deine E-Mail
 6. Klicke **Save and Continue**
+
+**⚠️ WICHTIG für App-Name im Login-Dialog:**
+- Der **App name** wird im Google OAuth Dialog angezeigt
+- Stelle sicher, dass der Name klar und professionell ist: `OnSite Handwerker App`
+- Nach der Konfiguration kann es einige Minuten dauern, bis der Name im Dialog erscheint
+- Wenn die App noch im "Testing" Status ist, wird der Name möglicherweise nicht sofort angezeigt
+- Für Produktion: App zur Verifizierung einreichen, damit der Name korrekt angezeigt wird
 
 ### Schritt 3: Scopes hinzufügen
 1. Klicke **Add or Remove Scopes**
