@@ -18,7 +18,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     const { profile, workspace } = await userService.getOrCreateWorkspace(userId, userEmail!, userClient);
 
     // Get Google profile information from user metadata
-    const userMetadata = req.user!.user_metadata || {};
+    const userMetadata = req.user!.metadata || {};
     const authMetadata = {
       ...userMetadata,
       avatar_url: userMetadata.avatar_url || userMetadata.picture,
