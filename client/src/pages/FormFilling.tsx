@@ -160,6 +160,7 @@ export default function FormFilling() {
     const hasError = field.required && (value === undefined || value === null || value === '');
 
     switch (field.type) {
+      // === SECTION HEADER ===
       case 'section':
         return (
           <div className="pt-6 pb-2 border-b-2 border-gray-900 mb-2">
@@ -168,7 +169,10 @@ export default function FormFilling() {
           </div>
         );
 
+      // === TEXT FIELDS ===
       case 'text':
+      case 'fullname':
+      case 'fillblank':
         return (
           <input
             type="text"
@@ -179,7 +183,55 @@ export default function FormFilling() {
           />
         );
 
+      case 'email':
+        return (
+          <input
+            type="email"
+            value={value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            className={`input ${hasError ? 'border-red-500' : ''}`}
+            placeholder={field.placeholder || 'E-Mail-Adresse eingeben...'}
+          />
+        );
+
+      case 'phone':
+        return (
+          <input
+            type="tel"
+            value={value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            className={`input ${hasError ? 'border-red-500' : ''}`}
+            placeholder={field.placeholder || 'Telefonnummer eingeben...'}
+          />
+        );
+
+      case 'address':
+        return (
+          <textarea
+            value={value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            className={`input ${hasError ? 'border-red-500' : ''}`}
+            rows={2}
+            placeholder={field.placeholder || 'Adresse eingeben...'}
+          />
+        );
+
+      case 'longtext':
+      case 'paragraph':
+      case 'notes':
+        return (
+          <textarea
+            value={value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            className={`input ${hasError ? 'border-red-500' : ''}`}
+            rows={field.type === 'paragraph' ? 6 : 4}
+            placeholder={field.placeholder || `${field.label} eingeben...`}
+          />
+        );
+
+      // === NUMBER FIELDS ===
       case 'number':
+      case 'spinner':
         return (
           <input
             type="number"
@@ -190,7 +242,31 @@ export default function FormFilling() {
           />
         );
 
+      // === CHECKBOX (Multiple Choice) ===
       case 'checkbox':
+        if (field.options && field.options.length > 0) {
+          const selectedValues = Array.isArray(value) ? value : [];
+          return (
+            <div className="space-y-2">
+              {field.options.map((option: string) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.includes(option)}
+                    onChange={(e) => {
+                      const newValues = e.target.checked
+                        ? [...selectedValues, option]
+                        : selectedValues.filter((v: string) => v !== option);
+                      handleFieldChange(field.id, newValues);
+                    }}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700 dark:text-dark-text-body">{option}</span>
+                </label>
+              ))}
+            </div>
+          );
+        }
         return (
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -199,22 +275,41 @@ export default function FormFilling() {
               onChange={(e) => handleFieldChange(field.id, e.target.checked)}
               className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-gray-700">{field.label}</span>
+            <span className="text-gray-700 dark:text-dark-text-body">{field.label}</span>
           </label>
         );
 
+      // === RADIO (Single Choice) ===
+      case 'radio':
+        return (
+          <div className="space-y-2">
+            {field.options?.map((option: string) => (
+              <label key={option} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`radio_${field.id}`}
+                  checked={value === option}
+                  onChange={() => handleFieldChange(field.id, option)}
+                  className="w-5 h-5 border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-gray-700 dark:text-dark-text-body">{option}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      // === TOGGLE ===
       case 'toggle':
         return (
           <label className="flex items-center gap-3 cursor-pointer">
-            <div className={`relative w-14 h-7 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-gray-300'
-              }`}>
-              <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${value ? 'translate-x-7' : ''
-                }`} />
+            <div className={`relative w-14 h-7 rounded-full transition-colors ${value ? 'bg-blue-600' : 'bg-gray-300'}`}>
+              <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${value ? 'translate-x-7' : ''}`} />
             </div>
-            <span className="text-gray-700">{field.label}</span>
+            <span className="text-gray-700 dark:text-dark-text-body">{field.label}</span>
           </label>
         );
 
+      // === DROPDOWN ===
       case 'dropdown':
         return (
           <select
@@ -229,10 +324,21 @@ export default function FormFilling() {
           </select>
         );
 
+      // === DATE / TIME FIELDS ===
       case 'date':
         return (
           <input
             type="date"
+            value={value || ''}
+            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+            className={`input ${hasError ? 'border-red-500' : ''}`}
+          />
+        );
+
+      case 'time':
+        return (
+          <input
+            type="time"
             value={value || ''}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             className={`input ${hasError ? 'border-red-500' : ''}`}
@@ -249,17 +355,7 @@ export default function FormFilling() {
           />
         );
 
-      case 'notes':
-        return (
-          <textarea
-            value={value || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-            className={`input ${hasError ? 'border-red-500' : ''}`}
-            rows={4}
-            placeholder={field.placeholder || `${field.label} eingeben...`}
-          />
-        );
-
+      // === SIGNATURE ===
       case 'signature':
         return (
           <div className="space-y-3">
@@ -280,6 +376,7 @@ export default function FormFilling() {
           </div>
         );
 
+      // === PHOTO ===
       case 'photo':
         return (
           <div className="space-y-3">
@@ -327,6 +424,129 @@ export default function FormFilling() {
           </div>
         );
 
+      // === FILE UPLOAD ===
+      case 'fileupload':
+        return (
+          <div className="space-y-3">
+            <input
+              id={`file-${field.id}`}
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    handleFieldChange(field.id, {
+                      name: file.name,
+                      data: event.target?.result,
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="hidden"
+            />
+            <div className="flex flex-col gap-4">
+              {value ? (
+                <div className="relative group/file w-full max-w-md p-4 border-2 border-slate-200 rounded-[1.5rem] bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                      <ClipboardList className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <span className="text-sm font-medium text-slate-700 truncate">{value.name || 'Datei hochgeladen'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange(field.id, null)}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl shadow-lg opacity-0 group-hover/file:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full max-w-md border-dashed border-2 py-8 bg-slate-50/50 hover:bg-white"
+                  onClick={() => document.getElementById(`file-${field.id}`)?.click()}
+                  icon={<Plus className="w-5 h-5" />}
+                >
+                  Datei hochladen
+                </Button>
+              )}
+            </div>
+          </div>
+        );
+
+      // === SURVEY: STAR RATING ===
+      case 'starrating':
+        const starRating = typeof value === 'number' ? value : 0;
+        return (
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => handleFieldChange(field.id, star)}
+                className={`text-3xl transition-colors ${star <= starRating ? 'text-yellow-400' : 'text-slate-300 hover:text-yellow-200'}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+        );
+
+      // === SURVEY: SCALE RATING ===
+      case 'scalerating':
+        const scaleValue = typeof value === 'number' ? value : 5;
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-slate-500">1</span>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={scaleValue}
+                onChange={(e) => handleFieldChange(field.id, parseInt(e.target.value))}
+                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+              <span className="text-sm text-slate-500">10</span>
+            </div>
+            <div className="text-center text-lg font-bold text-indigo-600">{scaleValue}</div>
+          </div>
+        );
+
+      // === SURVEY: TABLE ===
+      case 'table':
+        return (
+          <div className="border border-slate-300 rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 border-r border-slate-300">Spalte 1</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Spalte 2</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-3 py-2 border-r border-t border-slate-300">
+                    <input type="text" placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 rounded text-sm" />
+                  </td>
+                  <td className="px-3 py-2 border-t border-slate-300">
+                    <input type="text" placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 rounded text-sm" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        );
+
+      // === PAGE: DIVIDER ===
+      case 'divider':
+        return <hr className="border-t-2 border-slate-300 my-4" />;
+
+      // === DEFAULT FALLBACK ===
       default:
         return (
           <input
