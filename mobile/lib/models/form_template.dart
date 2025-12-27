@@ -42,6 +42,9 @@ class FormField {
   final bool required;
   final List<String>? options;
   final dynamic defaultValue;
+  final String? placeholder;
+  final String? sublabel;
+  final String? help_text;
 
   FormField({
     required this.id,
@@ -50,6 +53,9 @@ class FormField {
     this.required = false,
     this.options,
     this.defaultValue,
+    this.placeholder,
+    this.sublabel,
+    this.help_text,
   });
 
   factory FormField.fromJson(Map<String, dynamic> json) {
@@ -62,6 +68,9 @@ class FormField {
           ? List<String>.from(json['options'])
           : null,
       defaultValue: json['default_value'],
+      placeholder: json['placeholder'],
+      sublabel: json['sublabel'],
+      help_text: json['help_text'],
     );
   }
 
@@ -73,6 +82,9 @@ class FormField {
       'required': required,
       'options': options,
       'default_value': defaultValue,
+      'placeholder': placeholder,
+      'sublabel': sublabel,
+      'help_text': help_text,
     };
   }
 }
