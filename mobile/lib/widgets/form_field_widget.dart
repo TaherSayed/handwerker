@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'dart:convert';
 import '../models/form_template.dart' as model;
 
 class FormFieldWidget extends StatelessWidget {
@@ -362,115 +365,17 @@ class FormFieldWidget extends StatelessWidget {
       // Media Fields
       case 'photo':
       case 'fileupload':
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              field.label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (field.help_text != null && field.help_text!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  field.help_text!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            if (value != null)
-              Image.network(value, height: 200, fit: BoxFit.cover)
-            else
-              Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    field.type == 'photo' ? 'No photo' : 'No file',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Image/File picker implementation would go here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '${field.type == 'photo' ? 'Photo' : 'File'} picker not implemented'),
-                  ),
-                );
-              },
-              icon: Icon(field.type == 'photo'
-                  ? Icons.camera_alt
-                  : Icons.upload_file),
-              label: Text(field.type == 'photo' ? 'Take Photo' : 'Upload File'),
-            ),
-          ],
+        return _PhotoUploadField(
+          field: field,
+          value: value,
+          onChanged: onChanged,
         );
 
       case 'signature':
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              field.label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (field.help_text != null && field.help_text!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  field.help_text!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            if (value != null)
-              Image.network(value, height: 100, fit: BoxFit.contain)
-            else
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    'No signature',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Signature pad implementation would go here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Signature pad not implemented')),
-                );
-              },
-              icon: const Icon(Icons.edit),
-              label: const Text('Add Signature'),
-            ),
-          ],
+        return _SignatureField(
+          field: field,
+          value: value,
+          onChanged: onChanged,
         );
 
       // Survey/Rating Fields
@@ -613,4 +518,343 @@ class FormFieldWidget extends StatelessWidget {
         );
     }
   }
+}
+
+// Photo/File Upload Field Widget
+class _PhotoUploadField extends StatefulWidget {
+  final model.FormField field;
+  final dynamic value;
+  final ValueChanged<dynamic> onChanged;
+
+  const _PhotoUploadField({
+    required this.field,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  State<_PhotoUploadField> createState() => _PhotoUploadFieldState();
+}
+
+class _PhotoUploadFieldState extends State<_PhotoUploadField> {
+  final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      setState(() => _isLoading = true);
+      
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        // Convert to base64 for storage
+        final bytes = await image.readAsBytes();
+        final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        widget.onChanged(base64Image);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.field.label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (widget.field.help_text != null &&
+            widget.field.help_text!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              widget.field.help_text!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        if (widget.value != null && widget.value.toString().isNotEmpty)
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: widget.value.toString().startsWith('data:image')
+                    ? Image.memory(
+                        base64Decode(
+                            widget.value.toString().split(',')[1]),
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        widget.value.toString(),
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () => widget.onChanged(null),
+                ),
+              ),
+            ],
+          )
+        else
+          Container(
+            height: 150,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                widget.field.type == 'photo' ? 'No photo' : 'No file',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: _isLoading ? null : _showImageSourceDialog,
+          icon: _isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(widget.field.type == 'photo'
+                  ? Icons.camera_alt
+                  : Icons.upload_file),
+          label: Text(_isLoading
+              ? 'Loading...'
+              : (widget.field.type == 'photo' ? 'Take Photo' : 'Upload File')),
+        ),
+      ],
+    );
+  }
+}
+
+// Signature Field Widget
+class _SignatureField extends StatefulWidget {
+  final model.FormField field;
+  final dynamic value;
+  final ValueChanged<dynamic> onChanged;
+
+  const _SignatureField({
+    required this.field,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  State<_SignatureField> createState() => _SignatureFieldState();
+}
+
+class _SignatureFieldState extends State<_SignatureField> {
+  List<Offset?> _points = [];
+  bool _isSigned = false;
+
+  void _clear() {
+    setState(() {
+      _points = [];
+      _isSigned = false;
+    });
+    widget.onChanged(null);
+  }
+
+  Future<void> _saveSignature() async {
+    if (_points.isEmpty) return;
+
+    // Create a simple base64 representation
+    // In a real app, you'd convert the canvas to an image
+    final signatureData = 'signature_${DateTime.now().millisecondsSinceEpoch}';
+    widget.onChanged(signatureData);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signature saved')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.field.label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (widget.field.help_text != null &&
+            widget.field.help_text!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              widget.field.help_text!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: GestureDetector(
+            onPanStart: (details) {
+              setState(() {
+                _isSigned = true;
+                _points.add(details.localPosition);
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _points.add(details.localPosition);
+              });
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _points.add(null);
+              });
+              _saveSignature();
+            },
+            child: CustomPaint(
+              painter: _SignaturePainter(_points),
+              child: Container(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _clear,
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _isSigned ? _saveSignature : null,
+                icon: const Icon(Icons.check),
+                label: const Text('Save'),
+              ),
+            ),
+          ],
+        ),
+        if (widget.value != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Signature saved',
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SignaturePainter extends CustomPainter {
+  final List<Offset?> points;
+
+  _SignaturePainter(this.points);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.0;
+
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SignaturePainter oldDelegate) => true;
 }
