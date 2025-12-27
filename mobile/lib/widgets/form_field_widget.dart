@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/form_template.dart' as model;
 
 class FormFieldWidget extends StatelessWidget {
@@ -155,19 +157,78 @@ class FormFieldWidget extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             if (value != null)
-              Image.network(value, height: 200, fit: BoxFit.cover)
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: value.toString().startsWith('http')
+                      ? Image.network(value, fit: BoxFit.cover)
+                      : Image.file(File(value), fit: BoxFit.cover),
+                ),
+              )
             else
-              const Text('No photo'),
-            const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Image picker implementation would go here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Photo picker not implemented')),
-                );
-              },
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Take Photo'),
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.photo, size: 48, color: Colors.grey),
+                      SizedBox(height: 8),
+                      Text('No photo selected',
+                          style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 80,
+                      );
+                      if (image != null) {
+                        onChanged(image.path);
+                      }
+                    },
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Camera'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(
+                        source: ImageSource.gallery,
+                        imageQuality: 80,
+                      );
+                      if (image != null) {
+                        onChanged(image.path);
+                      }
+                    },
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
+                  ),
+                ),
+              ],
             ),
           ],
         );

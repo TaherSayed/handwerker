@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/form_template.dart';
@@ -101,6 +102,31 @@ class ApiService {
     } else {
       throw Exception('Failed to get signed upload URL');
     }
+  }
+
+  Future<String> uploadFile(File file, String bucket) async {
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+    final signedUrlResponse = await getSignedUploadUrl(bucket, fileName);
+    
+    final signedUrl = signedUrlResponse['signed_url'];
+    final path = signedUrlResponse['path'];
+
+    if (signedUrl == null) throw Exception('Failed to get signed URL');
+
+    final response = await http.put(
+      Uri.parse(signedUrl),
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+      body: await file.readAsBytes(),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to upload file');
+    }
+
+    final publicUrl = _supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    return publicUrl;
   }
 }
 

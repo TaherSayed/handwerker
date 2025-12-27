@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import '../../services/api_service.dart';
 import '../../models/form_template.dart';
 import '../../models/submission.dart';
 import '../../providers/submissions_provider.dart';
@@ -63,8 +65,47 @@ class _FormFillingScreenState extends State<FormFillingScreen> {
     }
 
     try {
+      // Upload photos before submitting
+      final newFieldValues = Map<String, dynamic>.from(_submission.fieldValues);
+      final apiService = ApiService();
+
+      for (final field in widget.template.fields) {
+        if (field.type == 'photo') {
+          final value = newFieldValues[field.id];
+          if (value is String &&
+              !value.startsWith('http') &&
+              value.isNotEmpty) {
+            
+            // Show upload progress (optional, but good UX)
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Uploading photo...')),
+              );
+            }
+
+            try {
+              final publicUrl = await apiService.uploadFile(
+                File(value),
+                'submission-photos',
+              );
+              newFieldValues[field.id] = publicUrl;
+            } catch (e) {
+              debugPrint('Failed to upload photo: $e');
+              // Proceed or fail? Maybe fail is better.
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(content: Text('Failed to upload photo for ${field.label}: $e')),
+                );
+              }
+              return; 
+            }
+          }
+        }
+      }
+
       final submittedSubmission = _submission.copyWith(
         status: 'submitted',
+        fieldValues: newFieldValues,
       );
       await context.read<SubmissionsProvider>().submitSubmission(submittedSubmission);
       if (mounted) {
