@@ -21,14 +21,15 @@ class FormTemplate {
 
   factory FormTemplate.fromJson(Map<String, dynamic> json) {
     return FormTemplate(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      category: json['category'],
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      description: json['description']?.toString(),
+      category: json['category']?.toString(),
       tags: List<String>.from(json['tags'] ?? []),
-      fields: (json['fields'] as List)
+      fields: (json['fields'] is List ? (json['fields'] as List) : const [])
+          .whereType<Map<String, dynamic>>()
           .map((f) => FormField.fromJson(f))
-          .toList(),
+          .toList(growable: false),
       isArchived: json['is_archived'] ?? false,
       createdAt: DateTime.parse(json['created_at']),
     );
@@ -43,6 +44,11 @@ class FormField {
   final List<String>? options;
   final dynamic defaultValue;
 
+  static String _normalizeType(dynamic raw) {
+    final t = (raw ?? '').toString().trim().toLowerCase();
+    return t.isEmpty ? 'text' : t;
+  }
+
   FormField({
     required this.id,
     required this.type,
@@ -54,9 +60,9 @@ class FormField {
 
   factory FormField.fromJson(Map<String, dynamic> json) {
     return FormField(
-      id: json['id'],
-      type: json['type'],
-      label: json['label'],
+      id: (json['id'] ?? '').toString(),
+      type: _normalizeType(json['type']),
+      label: (json['label'] ?? '').toString(),
       required: json['required'] ?? false,
       options: json['options'] != null
           ? List<String>.from(json['options'])
