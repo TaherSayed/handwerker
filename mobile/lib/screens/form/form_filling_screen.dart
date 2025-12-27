@@ -150,24 +150,33 @@ class _FormFillingScreenState extends State<FormFillingScreen> {
             const SizedBox(height: 24),
 
             // Form Fields
-            const Text(
-              'Form Fields',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
+            if (widget.template.fields.isNotEmpty) ...[
+              const Text(
+                'Form Fields',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+            ],
             ...widget.template.fields.map((field) {
+              // Sections and dividers don't need values stored
+              final isVisualElement = field.type == 'section' || field.type == 'divider';
+              
               return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(
+                  bottom: isVisualElement ? 8 : 16,
+                ),
                 child: FormFieldWidget(
                   field: field,
-                  value: _submission.fieldValues[field.id],
-                  onChanged: (value) {
-                    setState(() {
-                      final newValues = Map<String, dynamic>.from(_submission.fieldValues);
-                      newValues[field.id] = value;
-                      _submission = _submission.copyWith(fieldValues: newValues);
-                    });
-                  },
+                  value: isVisualElement ? null : _submission.fieldValues[field.id],
+                  onChanged: isVisualElement
+                      ? (_) {} // No-op for visual elements
+                      : (value) {
+                          setState(() {
+                            final newValues = Map<String, dynamic>.from(_submission.fieldValues);
+                            newValues[field.id] = value;
+                            _submission = _submission.copyWith(fieldValues: newValues);
+                          });
+                        },
                 ),
               );
             }).toList(),

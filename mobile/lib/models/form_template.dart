@@ -54,9 +54,9 @@ class FormField {
 
   factory FormField.fromJson(Map<String, dynamic> json) {
     return FormField(
-      id: json['id'],
-      type: json['type'],
-      label: json['label'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? 'text', // Default to 'text' if type is missing
+      label: json['label'] ?? '',
       required: json['required'] ?? false,
       options: json['options'] != null
           ? List<String>.from(json['options'])
