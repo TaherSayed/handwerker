@@ -5,7 +5,7 @@ import { supabase } from '../services/supabase';
 import {
   User, Building, ShieldCheck, CheckCircle2, Loader2,
   Sun, Moon, Database, Palette, LogOut, ChevronRight, ArrowLeft,
-  Mail, Trash2, Sliders, ExternalLink, Shield
+  Mail, Trash2, Sliders, ExternalLink
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
