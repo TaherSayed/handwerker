@@ -4,19 +4,35 @@ import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
 import {
   User, Building, ShieldCheck, CheckCircle2, Loader2, Info,
-  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight
+  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight, ArrowLeft,
+  Mail, Phone, MapPin, Globe, Trash2, Sliders
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
 import { useNotificationStore } from '../store/notificationStore';
 
-type Tab = 'general' | 'profile' | 'company' | 'data' | 'info';
+type Tab = 'hub' | 'general' | 'profile' | 'company' | 'data';
 
 export default function Settings() {
   const { user, profile, refreshProfile, signOut } = useAuthStore();
   const { success, error: notifyError } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
-  const [activeTab, setActiveTab] = useState<Tab>('general');
+
+  // On desktop we start with 'general', on mobile we start with 'hub'
+  const [activeTab, setActiveTab] = useState<Tab>(window.innerWidth > 768 ? 'general' : 'hub');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile && activeTab === 'hub') {
+        setActiveTab('general');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeTab]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -52,7 +68,7 @@ export default function Settings() {
     }
   }, [profile]);
 
-  // Auto-Save
+  // Auto-Save logic
   useEffect(() => {
     if (!mountRef.current || !profile) return;
 
@@ -79,7 +95,7 @@ export default function Settings() {
       } finally {
         setIsSaving(false);
       }
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [formData, profile, refreshProfile, notifyError]);
@@ -95,14 +111,12 @@ export default function Settings() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // 1. Validate File Type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
       notifyError('Ungültiges Dateiformat', 'Erlaubt sind PNG, JPG oder SVG.');
       return;
     }
 
-    // 2. Validate File Size (Max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       notifyError('Datei zu groß', 'Die maximale Dateigröße beträgt 5 MB.');
       return;
@@ -113,11 +127,8 @@ export default function Settings() {
       const fileExt = file.name.split('.').pop();
       const fileName = `company-logo-${Date.now()}.${fileExt}`;
 
-      // 1. Get Signed URL from Backend (bypasses RLS issues)
-      // We don't need userId in filename here, backend handles the path
       const { path, token } = await apiService.getSignedUploadUrl('company-logos', fileName, file.type) as any;
 
-      // 2. Upload to Supabase Storage using the token
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
         .uploadToSignedUrl(path, token, file, {
@@ -127,35 +138,14 @@ export default function Settings() {
 
       if (uploadError) throw uploadError;
 
-      // 3. Get Public URL
       const { data: publicUrlData } = supabase.storage
         .from('company-logos')
         .getPublicUrl(path);
 
       const newLogoUrl = publicUrlData.publicUrl;
-
-      // Update local state immediately for preview
       setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
 
-      // Persist to backend immediately - explicitly saving ONLY the logo url first to ensure it sticks
-      // We essentially force a profile update here.
-      console.log('Saving new logo URL:', newLogoUrl);
-
-      const updatePayload = {
-        ...formData,
-        company_logo_url: newLogoUrl
-      };
-
-      await apiService.updateProfile(updatePayload);
-
-      // Verify persistence by refreshing
-      const freshProfile = await apiService.getMe() as any;
-      if (freshProfile?.company_logo_url !== newLogoUrl) {
-        console.warn('Logo persistence check failed - retrying update');
-        await apiService.updateProfile(updatePayload);
-      }
-
-      // Refresh global profile to sync across app
+      await apiService.updateProfile({ ...formData, company_logo_url: newLogoUrl });
       await refreshProfile();
 
       success('Logo gespeichert', 'Ihr Firmenlogo wurde erfolgreich aktualisiert.');
@@ -164,23 +154,16 @@ export default function Settings() {
       notifyError('Upload fehlgeschlagen', error.message || 'Bitte versuchen Sie es erneut.');
     } finally {
       setLogoLoading(false);
-      // Reset input
       event.target.value = '';
     }
   };
 
   const handleRemoveLogo = async () => {
     if (!confirm('Möchten Sie das Firmenlogo wirklich entfernen?')) return;
-
     try {
       setLogoLoading(true);
-
-      // Update local state
       setFormData(prev => ({ ...prev, company_logo_url: '' }));
-
-      // Persist to backend
-      await apiService.updateProfile({ ...formData, company_logo_url: null }); // Send null or empty string depending on backend
-
+      await apiService.updateProfile({ ...formData, company_logo_url: null });
       await refreshProfile();
       success('Logo entfernt', 'Das Firmenlogo wurde gelöscht.');
     } catch (error: any) {
@@ -190,405 +173,420 @@ export default function Settings() {
     }
   };
 
-  const tabs: { id: Tab; label: string; icon: any }[] = [
-    { id: 'general', label: 'Allgemein', icon: SettingsIcon },
-    { id: 'profile', label: 'Profil', icon: User },
-    { id: 'company', label: 'Firma', icon: Building },
-    { id: 'data', label: 'Daten', icon: Database },
+  const menuItems: { id: Tab; label: string; icon: any; color: string; description: string }[] = [
+    { id: 'profile', label: 'Mein Profil', icon: User, color: 'bg-blue-500', description: 'Persönliche Details & Avatar' },
+    { id: 'company', label: 'Firmendaten', icon: Building, color: 'bg-indigo-500', description: 'Name, Adresse und Logo' },
+    { id: 'general', label: 'Erscheinungsbild', icon: Palette, color: 'bg-purple-500', description: 'Design-Modus & Branding' },
+    { id: 'data', label: 'Datenverwaltung', icon: Database, color: 'bg-teal-500', description: 'Speicher & Vorlagen-Import' },
   ];
 
-  // Get profile information - prioritize database, then Google auth metadata
-  const profileAvatar = profile?.avatar_url; // From database
-  const googleAvatar = profile?.auth_metadata?.avatar_url || 
-                       profile?.auth_metadata?.picture || 
-                       user?.user_metadata?.avatar_url || 
-                       user?.user_metadata?.picture;
-  
-  const avatarUrl = profileAvatar || googleAvatar; // Use database first, fallback to Google
-  
-  const googleName = profile?.auth_metadata?.full_name || 
-                     profile?.auth_metadata?.name || 
-                     user?.user_metadata?.full_name || 
-                     user?.user_metadata?.name;
-  
-  const googleEmail = profile?.email || user?.email || '';
-  
-  const displayName = profile?.full_name || googleName || 'Handwerker';
+  const googleAvatar = profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture || user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const avatarUrl = profile?.avatar_url || googleAvatar;
+  const displayName = profile?.full_name || profile?.auth_metadata?.full_name || 'Benutzer';
+  const displayEmail = profile?.email || user?.email || '';
+
+  // Render sub-navigation/drill-down for mobile or side-tabs for desktop
+  const renderSidebar = () => (
+    <div className="w-full md:w-80 flex flex-col gap-2">
+      {menuItems.map((item) => {
+        const isActive = activeTab === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`group w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${isActive
+                ? 'bg-primary-500 text-white border-primary-600 shadow-md ring-2 ring-primary-500/20'
+                : 'bg-white dark:bg-dark-card text-slate-700 dark:text-dark-text-body border-slate-200 dark:border-dark-stroke hover:border-primary-400 hover:shadow-sm'
+              }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-colors ${isActive ? 'bg-white/20' : `${item.color} text-white`}`}>
+                <item.icon className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className={`block font-bold text-sm leading-tight ${isActive ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{item.label}</span>
+                <span className={`block text-[10px] uppercase tracking-wider font-semibold opacity-60`}>{isMobile ? '' : item.description}</span>
+              </div>
+            </div>
+            <ChevronRight className={`w-4 h-4 transition-transform group-hover:translate-x-0.5 ${isActive ? 'text-white' : 'text-slate-300'}`} />
+          </button>
+        );
+      })}
+
+      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-dark-stroke">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 p-4 rounded-2xl text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all border border-transparent hover:border-red-100"
+        >
+          <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+            <LogOut className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-sm">Abmelden</span>
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="animate-fade-in space-y-8 pb-32">
-      {/* Header with Save Status */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">Einstellungen</h1>
-          <p className="text-slate-500 dark:text-dark-text-muted font-medium text-[10px] uppercase tracking-widest mt-1">Verwalten Sie Ihre Präferenzen</p>
+    <div className="max-w-6xl mx-auto animate-fade-in pb-20 md:pb-8">
+      {/* Dynamic Header */}
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {activeTab !== 'hub' && isMobile && (
+            <button
+              onClick={() => setActiveTab('hub')}
+              className="p-2 -ml-2 bg-slate-100 dark:bg-dark-card rounded-full text-slate-600 dark:text-dark-text-muted hover:text-slate-900"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              {activeTab === 'hub' ? 'Einstellungen' : menuItems.find(m => m.id === activeTab)?.label}
+            </h1>
+            <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-dark-text-muted">
+              {activeTab === 'hub' ? 'Konfigurieren Sie Ihre App nach Ihren Wünschen' : 'Verwalten Sie Ihre Details und Präferenzen'}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-dark-card rounded-2xl border border-border-light dark:border-dark-stroke shadow-sm self-start md:self-auto transition-all">
+        {/* Status indicator */}
+        <div className="hidden sm:flex items-center gap-2 py-1.5 px-3 bg-white dark:bg-dark-card rounded-full border border-slate-100 dark:border-dark-stroke shadow-sm">
           {isSaving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin text-primary-light" />
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Wird gespeichert...</span>
-            </>
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-3 h-3 animate-spin text-primary-500" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Wird gesichert</span>
+            </div>
           ) : lastSaved ? (
-            <>
-              <CheckCircle2 className="w-4 h-4 text-success-light" />
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                Zuletzt gesichert um {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3 h-3 text-success-500" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gespeichert</span>
+            </div>
           ) : (
-            <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest px-2">Synchronisiert</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Aktuell</span>
           )}
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 gap-3">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl font-semibold text-sm whitespace-nowrap transition-all duration-300 border uppercase tracking-widest ${isActive
-                ? 'bg-primary-light text-white border-primary-light shadow-xl shadow-primary-light/30'
-                : 'bg-white dark:bg-dark-card text-slate-600 dark:text-dark-text-muted border-border-light dark:border-dark-stroke hover:border-primary-light'
-                }`}
-            >
-              <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* Navigation Sidebar (Desktop or Hub) */}
+        {(activeTab === 'hub' || !isMobile) && renderSidebar()}
 
-      {/* Content Area */}
-      <div className="bg-white dark:bg-dark-card rounded-[32px] border border-border-light dark:border-dark-stroke shadow-sm p-6 md:p-10 min-h-[440px] transition-all">
+        {/* Content Panel */}
+        {activeTab !== 'hub' && (
+          <div className={`flex-1 w-full bg-white dark:bg-dark-card rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-dark-stroke shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300 ${activeTab !== 'hub' && isMobile ? 'animate-slide-in-mechanical' : ''}`}>
+            <div className="p-8 md:p-12 space-y-12">
 
-        {/* GENERAL TAB */}
-        {activeTab === 'general' && (
-          <div className="space-y-10 animate-slide-up">
-            <section className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary-light/10 dark:bg-primary-dark/10 text-primary-light dark:text-primary-dark flex items-center justify-center border border-primary-light/10">
-                  <Palette className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Farbschema</h2>
-                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Wählen Sie Ihr bevorzugtes Design</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button
-                  onClick={() => theme !== 'light' && toggleTheme()}
-                  className={`p-5 rounded-3xl border-2 transition-all flex items-center justify-between text-left ${theme === 'light' ? 'border-primary-light bg-primary-light/5' : 'border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input hover:border-slate-300'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-amber-500">
-                      <Sun className="w-5 h-5" />
-                    </div>
-                    <span className="font-medium text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Helles Design</span>
-                  </div>
-                  {theme === 'light' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
-                </button>
-
-                <button
-                  onClick={() => theme !== 'dark' && toggleTheme()}
-                  className={`p-5 rounded-3xl border-2 transition-all flex items-center justify-between text-left ${theme === 'dark' ? 'border-primary-light bg-primary-light/5' : 'border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input hover:border-slate-300'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 shadow-sm flex items-center justify-center text-blue-400">
-                      <Moon className="w-5 h-5" />
-                    </div>
-                    <span className="font-medium text-slate-900 dark:text-white uppercase tracking-widest text-[11px]">Dunkles Design</span>
-                  </div>
-                  {theme === 'dark' && <CheckCircle2 className="w-5 h-5 text-primary-light" />}
-                </button>
-              </div>
-            </section>
-
-            <hr className="border-border-light dark:border-dark-stroke" />
-
-            <section className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-border-light dark:border-dark-stroke">
-                  <Info className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Über OnSite Forms</h2>
-                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Rechtliches & Version</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
-                  <span className="font-medium text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Impressum</span>
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
-                </a>
-                <a href="#" className="p-5 rounded-3xl border border-border-light dark:border-dark-stroke hover:border-primary-light transition-all flex items-center justify-between group bg-slate-50 dark:bg-dark-input">
-                  <span className="font-medium text-slate-700 dark:text-dark-text-body uppercase tracking-widest text-[11px]">Datenschutz</span>
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-light transition-all" />
-                </a>
-              </div>
-            </section>
-
-            <div className="pt-6">
-              <Button
-                variant="secondary"
-                className="w-full h-14 bg-red-50 text-error-light hover:bg-red-100 border-red-100 dark:bg-red-900/10 dark:border-red-900/20 rounded-2xl uppercase tracking-widest text-xs"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-5 h-5 mr-3" />
-                Abmelden
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* PROFILE TAB */}
-        {activeTab === 'profile' && (
-          <div className="space-y-10 animate-slide-up">
-            <div className="flex items-center gap-6 p-6 bg-slate-50 dark:bg-dark-input rounded-3xl border border-border-light dark:border-dark-stroke">
-              <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-sm overflow-hidden bg-white shrink-0">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary-500/10 dark:bg-primary-500/20 text-primary-500 dark:text-primary-400 font-black text-2xl">
-                    {displayName[0]?.toUpperCase() || 'U'}
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1 flex-1 min-w-0">
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white uppercase tracking-tight truncate">{displayName}</h3>
-                {googleEmail && (
-                  <p className="text-sm text-slate-600 dark:text-dark-text-body truncate">{googleEmail}</p>
-                )}
-                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-success-light shrink-0" />
-                  Privat-Konto (Google)
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Anzeigename</label>
-                <input
-                  type="text"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                  className="input h-14 font-medium"
-                  placeholder="Ihr Name"
-                />
-              </div>
-              <div className="space-y-3 opacity-80">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
-                  <span>E-Mail Adresse</span>
-                  <span className="text-[9px] bg-slate-100 dark:bg-dark-card px-2 py-0.5 rounded-full border dark:border-dark-stroke">Von Google</span>
-                </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={googleEmail}
-                  className="input h-14 bg-slate-50 dark:bg-dark-card border-dashed border-2 text-slate-400 font-medium cursor-not-allowed"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* COMPANY TAB */}
-        {activeTab === 'company' && (
-          <div className="space-y-10 animate-slide-up">
-            <div className="bg-primary-light/5 p-6 rounded-[28px] flex gap-5 items-start border border-primary-light/10">
-              <Info className="w-6 h-6 text-primary-light shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-primary-light text-sm uppercase tracking-wider mb-1">Berichts-Branding</h4>
-                <p className="text-xs text-slate-600 dark:text-dark-text-muted leading-relaxed">
-                  Ihr Logo und Ihre Firmendaten werden automatisch in alle generierten PDF-Berichte eingebettet.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenlogo</label>
-                <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-                  <div className="w-40 h-40 bg-white dark:bg-dark-input rounded-[32px] border-2 border-dashed border-border-light dark:border-dark-stroke flex items-center justify-center p-6 shadow-inner relative group overflow-hidden">
-                    {formData.company_logo_url ? (
-                      <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-3 text-slate-300">
-                        <Building className="w-10 h-10" />
-                        <span className="text-[9px] font-bold uppercase tracking-[0.15em]">Kein Logo</span>
-                      </div>
-                    )}
-                    {logoLoading && (
-                      <div className="absolute inset-0 bg-white/95 dark:bg-dark-card/95 flex items-center justify-center z-10 backdrop-blur-sm">
-                        <Loader2 className="w-10 h-10 animate-spin text-primary-light" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 space-y-5">
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => document.getElementById('logo-upload')?.click()}
-                        disabled={logoLoading}
-                        className="h-12 px-8 rounded-xl ring-offset-2 dark:ring-offset-dark-card"
-                      >
-                        {formData.company_logo_url ? 'Logo ändern' : 'Datei wählen'}
-                      </Button>
-
-                      {formData.company_logo_url && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleRemoveLogo}
-                          disabled={logoLoading}
-                          className="h-12 px-6 rounded-xl text-error-light hover:bg-error-light/10 font-bold uppercase tracking-widest text-[10px]"
-                        >
-                          Löschen
-                        </Button>
+              {/* PROFILE TAB */}
+              {activeTab === 'profile' && (
+                <div className="space-y-10">
+                  <div className="flex items-center gap-6 p-6 bg-slate-50/50 dark:bg-dark-input rounded-3xl border border-slate-100 dark:border-dark-stroke">
+                    <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-lg overflow-hidden shrink-0">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary-500 text-white font-black text-2xl uppercase">
+                          {displayName[0]}
+                        </div>
                       )}
                     </div>
+                    <div className="min-w-0">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white truncate uppercase tracking-tight">{displayName}</h2>
+                      <p className="text-sm text-slate-500 dark:text-dark-text-muted truncate">{displayEmail}</p>
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400 border border-success-100 dark:border-success-500/20 text-[9px] font-bold uppercase tracking-wider">
+                        <ShieldCheck className="w-3 h-3" />
+                        Verifiziert
+                      </div>
+                    </div>
+                  </div>
 
-                    <div className="space-y-1 px-1">
-                      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
-                        JPG, PNG oder SVG (Max. 5MB)
-                      </p>
-                      <p className="text-[10px] text-slate-300 dark:text-dark-text-muted">
-                        Idealerweise quadratisch für optimale Darstellung.
-                      </p>
+                  <div className="grid grid-cols-1 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Vollständiger Name</label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="text"
+                          value={formData.full_name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                          className="input h-14 pl-12 font-semibold"
+                          placeholder="Name eingeben"
+                        />
+                      </div>
                     </div>
 
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.svg"
-                      className="hidden"
-                      onChange={handleLogoUpload}
-                      disabled={logoLoading}
-                    />
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 flex justify-between">
+                        <span>E-Mail (Google)</span>
+                        <span className="text-[9px] font-bold text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-500/10 px-2 py-0.5 rounded-lg">Nur Lesen</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">
+                          <Mail className="w-5 h-5" />
+                        </div>
+                        <input
+                          type="text"
+                          value={displayEmail}
+                          readOnly
+                          className="input h-14 pl-12 bg-slate-50 dark:bg-dark-input/50 text-slate-400 font-medium cursor-not-allowed border-dashed"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenname</label>
-                  <input
-                    type="text"
-                    value={formData.company_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                    placeholder="Eigener Betrieb GmbH"
-                    className="input h-14 font-medium"
-                  />
+              {/* COMPANY TAB */}
+              {activeTab === 'company' && (
+                <div className="space-y-10">
+                  {/* Logo Upload Section */}
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenbranding</label>
+                    <div className="flex flex-col md:flex-row gap-8 items-start md:items-center p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-dark-stroke bg-slate-50/30">
+                      <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white dark:bg-dark-card rounded-[32px] shadow-inner overflow-hidden flex items-center justify-center p-4 border border-slate-100">
+                        {formData.company_logo_url ? (
+                          <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
+                        ) : (
+                          <Building className="w-12 h-12 text-slate-200" />
+                        )}
+                        {logoLoading && (
+                          <div className="absolute inset-0 bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-4">
+                        <div className="flex gap-3">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => document.getElementById('logo-upload')?.click()}
+                            disabled={logoLoading}
+                            className="bg-indigo-600 hover:bg-indigo-700 h-11 px-6 text-xs uppercase tracking-widest font-bold"
+                          >
+                            Hochladen
+                          </Button>
+                          {formData.company_logo_url && (
+                            <button
+                              onClick={handleRemoveLogo}
+                              className="px-4 h-11 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-medium leading-relaxed uppercase tracking-wider">
+                          Rechteckiges oder quadratisches Format<br />PNG, JPG bis 5MB
+                        </p>
+                        <input id="logo-upload" type="file" hidden accept="image/*" onChange={handleLogoUpload} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Betriebsname</label>
+                      <input
+                        type="text"
+                        value={formData.company_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                        className="input h-14 font-semibold"
+                        placeholder="Muster GmbH"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Telefon</label>
+                      <input
+                        type="text"
+                        value={formData.company_phone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
+                        className="input h-14 font-semibold"
+                        placeholder="+49 000 00000"
+                      />
+                    </div>
+                    <div className="space-y-3 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
+                      <input
+                        type="text"
+                        value={formData.company_address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
+                        className="input h-14 font-semibold"
+                        placeholder="Musterstr. 1, 12345 Stadt"
+                      />
+                    </div>
+                    <div className="space-y-3 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>
+                      <input
+                        type="url"
+                        value={formData.company_website}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
+                        className="input h-14 font-semibold"
+                        placeholder="https://www.ihre-firma.de"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Telefonnummer</label>
-                  <input
-                    type="text"
-                    value={formData.company_phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
-                    placeholder="+49 (0) 123 45678"
-                    className="input h-14 font-medium"
-                  />
+              )}
+
+              {/* GENERAL TAB */}
+              {activeTab === 'general' && (
+                <div className="space-y-12">
+                  <section className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Erscheinungsbild</h3>
+                      <div className="h-0.5 flex-1 mx-6 bg-slate-50 dark:bg-dark-stroke" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <button
+                        onClick={() => theme !== 'light' && toggleTheme()}
+                        className={`p-6 rounded-[32px] border-2 transition-all flex flex-col gap-6 items-start text-left ${theme === 'light'
+                            ? 'border-primary-500 bg-primary-50/50 shadow-lg'
+                            : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
+                          }`}
+                      >
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme === 'light' ? 'bg-primary-500 text-white' : 'bg-white dark:bg-dark-card text-amber-500 shadow-sm'}`}>
+                          <Sun className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <span className="block font-black text-slate-900 dark:text-white text-lg uppercase tracking-tight">Hell</span>
+                          <span className="text-[10px] uppercase font-bold text-slate-400">High Contrast Tech</span>
+                        </div>
+                        {theme === 'light' && <CheckCircle2 className="w-5 h-5 text-primary-500 absolute top-6 right-6" />}
+                      </button>
+
+                      <button
+                        onClick={() => theme !== 'dark' && toggleTheme()}
+                        className={`p-6 rounded-[32px] border-2 transition-all flex flex-col gap-6 items-start text-left ${theme === 'dark'
+                            ? 'border-primary-500 bg-primary-50/50 shadow-lg'
+                            : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
+                          }`}
+                      >
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme === 'dark' ? 'bg-primary-500 text-white' : 'bg-slate-800 text-blue-400 shadow-sm'}`}>
+                          <Moon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <span className="block font-black text-slate-900 dark:text-white text-lg uppercase tracking-tight">Dunkel</span>
+                          <span className="text-[10px] uppercase font-bold text-slate-400">Industrial Gray</span>
+                        </div>
+                        {theme === 'dark' && <CheckCircle2 className="w-5 h-5 text-primary-500 absolute top-6 right-6" />}
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Markenfarben</h3>
+                      <div className="h-0.5 flex-1 mx-6 bg-slate-50 dark:bg-dark-stroke" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Primärfarbe</label>
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-dark-input border border-slate-100 dark:border-dark-stroke">
+                          <input
+                            type="color"
+                            value={formData.primary_color}
+                            onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
+                            className="w-12 h-12 rounded-xl bg-transparent border-none cursor-pointer"
+                          />
+                          <span className="font-mono text-sm font-bold text-slate-600 dark:text-dark-text-body uppercase">{formData.primary_color}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Akzentfarbe</label>
+                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-dark-input border border-slate-100 dark:border-dark-stroke">
+                          <input
+                            type="color"
+                            value={formData.accent_color}
+                            onChange={(e) => setFormData(prev => ({ ...prev, accent_color: e.target.value }))}
+                            className="w-12 h-12 rounded-xl bg-transparent border-none cursor-pointer"
+                          />
+                          <span className="font-mono text-sm font-bold text-slate-600 dark:text-dark-text-body uppercase">{formData.accent_color}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
-                  <input
-                    type="text"
-                    value={formData.company_address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
-                    placeholder="Musterweg 12, 12345 Stadt"
-                    className="input h-14 font-medium"
-                  />
+              )}
+
+              {/* DATA TAB */}
+              {activeTab === 'data' && (
+                <div className="space-y-10">
+                  <div className="bg-primary-50/50 dark:bg-primary-500/5 p-6 rounded-3xl border border-primary-100 dark:border-primary-500/20 flex gap-5 items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-primary-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary-500/20">
+                      <Sliders className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-primary-600 dark:text-primary-400 text-sm uppercase tracking-wider mb-1">System-Assistent</h4>
+                      <p className="text-xs text-slate-600 dark:text-dark-text-muted leading-relaxed font-medium">
+                        Verwalten Sie Ihre lokalen Datenbestände und importieren Sie Standard-Konfigurationen für einen schnellen Start.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <button
+                      onClick={async () => {
+                        if (!confirm('20 professionelle Vorlagen werden importiert. Fortfahren?')) return;
+                        try {
+                          const { seedService } = await import('../services/seed.service');
+                          const count = await seedService.seedTemplates();
+                          success('Erfolg', `${count} Vorlagen importiert.`);
+                        } catch (e) {
+                          notifyError('Fehler', 'Import fehlgeschlagen.');
+                        }
+                      }}
+                      className="w-full flex items-center justify-between p-6 rounded-3xl bg-white dark:bg-dark-input border border-slate-200 dark:border-dark-stroke hover:border-primary-500 hover:shadow-lg transition-all text-left"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 rounded-2xl bg-success-50 dark:bg-success-500/10 text-success-600 flex items-center justify-center">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-900 dark:text-white uppercase tracking-tight">Standard-Vorlagen laden</span>
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Installiert Serviceberichte, Abnahmen, etc.</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-slate-300" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (confirm('Cache wirklich leeren? Die Seite wird neu geladen.')) {
+                          localStorage.clear();
+                          window.location.reload();
+                        }
+                      }}
+                      className="w-full flex items-center justify-between p-6 rounded-3xl bg-white dark:bg-dark-input border border-slate-200 dark:border-dark-stroke hover:border-amber-500 hover:shadow-lg transition-all text-left"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                          <Database className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-900 dark:text-white uppercase tracking-tight">Lokalen Cache leeren</span>
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Bereinigt temporäre Sitzungsdaten</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-slate-300" />
+                    </button>
+                  </div>
+
+                  <div className="pt-10 flex flex-col md:flex-row gap-4 items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 px-4">
+                    <span>OnSite Forms v1.2.0</span>
+                    <span>Industrial Software Solutions</span>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>
-                  <input
-                    type="url"
-                    value={formData.company_website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
-                    placeholder="https://www.firma.de"
-                    className="input h-14 font-medium"
-                  />
-                </div>
-              </div>
+              )}
+
             </div>
           </div>
         )}
-
-        {/* DATA TAB */}
-        {activeTab === 'data' && (
-          <div className="space-y-10 animate-slide-up">
-            <section className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-success-light/10 dark:bg-success-dark/10 text-success-light dark:text-success-dark flex items-center justify-center border border-success-light/10">
-                  <Database className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xl text-slate-900 dark:text-white">Daten & Speicher</h2>
-                  <p className="text-sm text-slate-500 dark:text-dark-text-muted">Importieren und Verwalten</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5">
-                <div className="p-6 rounded-3xl border border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary-light transition-colors">
-                  <div className="space-y-1">
-                    <h3 className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">Standard-Vorlagen</h3>
-                    <p className="text-xs text-slate-500 dark:text-dark-text-muted max-w-sm">
-                      Importieren Sie professionelle Vorlagen (Serviceberichte, Abnahmen, Bautagebücher).
-                    </p>
-                  </div>
-                  <Button
-                    onClick={async () => {
-                      if (!confirm('20 Standard-Vorlagen werden importiert. Fortfahren?')) return;
-                      try {
-                        const { seedService } = await import('../services/seed.service');
-                        const count = await seedService.seedTemplates();
-                        success('Vorlagen installiert', `${count} neue Vorlagen verfügbar.`);
-                      } catch (e) {
-                        notifyError('Fehler', 'Import fehlgeschlagen.');
-                      }
-                    }}
-                    size="sm"
-                    className="h-12 px-6 bg-success-light text-white rounded-xl uppercase tracking-widest text-[10px] shrink-0"
-                  >
-                    Installieren
-                  </Button>
-                </div>
-
-                <div className="p-6 rounded-3xl border border-border-light dark:border-dark-stroke bg-slate-50 dark:bg-dark-input flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary-light transition-colors">
-                  <div className="space-y-1">
-                    <h3 className="font-bold text-slate-900 dark:text-white uppercase tracking-tight">System-Bereinigung</h3>
-                    <p className="text-xs text-slate-500 dark:text-dark-text-muted max-w-sm">
-                      Leert den lokalen Cache und aktualisiert die Session. Keine Web-Daten gehen verloren.
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm('Cache wirklich leeren? Die Seite wird neu geladen.')) {
-                        localStorage.clear();
-                        window.location.reload();
-                      }
-                    }}
-                    size="sm"
-                    className="h-12 px-6 text-warning-light hover:bg-warning-light/10 font-bold uppercase tracking-widest text-[10px] shrink-0"
-                  >
-                    Speicher Leeren
-                  </Button>
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
-
       </div>
     </div>
   );
