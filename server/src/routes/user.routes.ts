@@ -21,8 +21,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
 
     // Ensure user is provisioned safely - pass Google info to sync it
     const { profile, workspace } = await userService.getOrCreateWorkspace(
-      userId, 
-      userEmail!, 
+      userId,
+      userEmail!,
       userClient,
       {
         full_name: googleName,
@@ -46,7 +46,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
             .from('user_profiles')
             .update(updates)
             .eq('id', userId);
-          
+
           // Update local profile object
           Object.assign(profile, updates);
         } catch (updateError) {
@@ -93,7 +93,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     if (company_address !== undefined) updates.company_address = company_address;
     if (company_phone !== undefined) updates.company_phone = company_phone;
     if (company_website !== undefined) updates.company_website = company_website;
-    
+
     // Only update branding fields if they exist in the schema
     // We'll try to update them, but handle errors gracefully
     if (primary_color !== undefined) updates.primary_color = primary_color;
@@ -102,15 +102,15 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     // Try to update, but handle schema cache errors gracefully
     let data: any = null;
     let error: any = null;
-    
+
     try {
       const result = await userClient
         .from('user_profiles')
         .update(updates)
         .eq('id', userId)
-        .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, created_at, updated_at')
+        .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color, created_at, updated_at')
         .single();
-      
+
       data = result.data;
       error = result.error;
     } catch (updateError: any) {
@@ -119,23 +119,26 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
 
     if (error) {
       // Check if error is about missing columns in schema cache
-      const isSchemaCacheError = error.message?.includes('schema cache') || 
-                                 error.message?.includes('column') ||
-                                 error.message?.includes('does not exist');
-      
+      const isSchemaCacheError = error.message?.includes('schema cache') ||
+        error.message?.includes('column') ||
+        error.message?.includes('does not exist');
+
       if (isSchemaCacheError) {
         console.warn(`[UserRoutes] Schema cache error for ${userId}, trying defensive update:`, error.message);
-        
+
         // Build safe updates by trying to update in stages
         const safeUpdates: any = {};
         const problematicFields: string[] = [];
-        
+
         // Core fields (always exist)
         if (full_name !== undefined) safeUpdates.full_name = full_name;
         if (company_name !== undefined) safeUpdates.company_name = company_name;
         if (company_logo_url !== undefined) safeUpdates.company_logo_url = company_logo_url;
         if (company_address !== undefined) safeUpdates.company_address = company_address;
-        
+
+        // Add default values for required fields if they are missing in the current profile but were sent
+        // This is a safety measure for schema-fallback mode
+
         // Company fields that might not exist in schema cache
         // Try to include them, but we'll handle errors
         if (company_phone !== undefined) {
@@ -152,7 +155,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
             problematicFields.push('company_website');
           }
         }
-        
+
         // Branding fields (might not exist)
         if (primary_color !== undefined) {
           try {
@@ -168,7 +171,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
             problematicFields.push('accent_color');
           }
         }
-        
+
         // Try update with safe fields only (don't include problematic fields in SELECT)
         const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, created_at, updated_at';
         const { data: safeData, error: safeError } = await userClient
@@ -177,42 +180,40 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           .eq('id', userId)
           .select(safeSelect)
           .single();
-        
+
         if (safeError) {
           // If still failing, try with even fewer fields
           const minimalSelect = 'id, email, full_name, created_at, updated_at';
-          const minimalUpdates: any = {};
-          if (full_name !== undefined) minimalUpdates.full_name = full_name;
-          if (company_name !== undefined) minimalUpdates.company_name = company_name;
-          
+          const minimalUpdates: any = { ...safeUpdates }; // USE ALL SAFE UPDATES
+
           const { data: minimalData, error: minimalError } = await userClient
             .from('user_profiles')
             .update(minimalUpdates)
             .eq('id', userId)
             .select(minimalSelect)
             .single();
-          
+
           if (minimalError) {
             console.error(`[UserRoutes] Even minimal update failed for ${userId}:`, minimalError.message);
-            return res.status(400).json({ 
-              error: `Could not update profile. Database schema may be out of sync. Please contact support.` 
+            return res.status(400).json({
+              error: `Could not update profile. Database schema may be out of sync. Please contact support.`
             });
           }
-          
-          // Return minimal data with requested values
+
+          // Build return data manually since DB might be in flux
           const minimalTyped = minimalData as any;
           return res.json({
             ...minimalData,
-            company_name: company_name !== undefined ? company_name : minimalTyped?.company_name,
-            company_logo_url: company_logo_url !== undefined ? company_logo_url : minimalTyped?.company_logo_url,
-            company_address: company_address !== undefined ? company_address : minimalTyped?.company_address,
-            company_phone: company_phone !== undefined ? company_phone : undefined,
-            company_website: company_website !== undefined ? company_website : undefined,
-            primary_color: primary_color !== undefined ? primary_color : '#2563eb',
-            accent_color: accent_color !== undefined ? accent_color : '#1e40af',
+            company_name: company_name !== undefined ? company_name : (minimalTyped?.company_name || ''),
+            company_logo_url: company_logo_url !== undefined ? company_logo_url : (minimalTyped?.company_logo_url || ''),
+            company_address: company_address !== undefined ? company_address : (minimalTyped?.company_address || ''),
+            company_phone: company_phone !== undefined ? company_phone : (minimalTyped?.company_phone || ''),
+            company_website: company_website !== undefined ? company_website : (minimalTyped?.company_website || ''),
+            primary_color: primary_color !== undefined ? primary_color : (minimalTyped?.primary_color || '#2563eb'),
+            accent_color: accent_color !== undefined ? accent_color : (minimalTyped?.accent_color || '#1e40af'),
           });
         }
-        
+
         // Return data with requested values (even if some weren't saved due to schema issues)
         const safeTyped = safeData as any;
         return res.json({
@@ -223,7 +224,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           accent_color: accent_color !== undefined ? accent_color : (safeTyped?.accent_color || '#1e40af'),
         });
       }
-      
+
       return res.status(400).json({ error: error.message });
     }
 

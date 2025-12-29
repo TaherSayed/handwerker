@@ -84,16 +84,17 @@ export default function Dashboard() {
 
       const query = searchQuery.toLowerCase();
       const matchesSearch =
-        sub.customer_name?.toLowerCase().includes(query) ||
-        sub.form_templates?.name?.toLowerCase().includes(query) ||
-        sub.user?.email?.toLowerCase().includes(query);
+        (sub.customer_name?.toLowerCase() ?? '').includes(query) ||
+        (sub.form_templates?.name?.toLowerCase() ?? '').includes(query) ||
+        (sub.user?.email?.toLowerCase() ?? '').includes(query);
 
       return matchesTab && matchesSearch;
     });
   }, [submissions, activeTab, searchQuery]);
 
-  const getInitials = (name: string) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || '?';
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || '?';
   };
 
   if (loading) {
