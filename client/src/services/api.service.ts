@@ -163,6 +163,10 @@ class ApiService {
     return this.request('/user/me');
   }
 
+  async checkSchema() {
+    return this.request('/user/debug-schema');
+  }
+
   async updateCompanyInfo(data: any) {
     return this.request('/auth/company', {
       method: 'PUT',
@@ -389,7 +393,7 @@ class ApiService {
   async downloadAndStorePDF(submissionId: string, pdfUrl: string | Blob): Promise<string> {
     try {
       let blob: Blob;
-      
+
       // If it's already a blob, use it directly
       if (pdfUrl instanceof Blob) {
         blob = pdfUrl;
@@ -423,11 +427,11 @@ class ApiService {
           blob = await response.blob();
         }
       }
-      
+
       // Store locally using secure storage
       const { secureStorage } = await import('./secure-storage.service');
       const fileId = `pdf_${submissionId}_${Date.now()}`;
-      
+
       await secureStorage.saveFile(fileId, blob, {
         submissionId,
         type: 'pdf',

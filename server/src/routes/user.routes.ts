@@ -113,6 +113,10 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
 
       data = result.data;
       error = result.error;
+
+      if (error) {
+        console.error(`[UserRoutes] PATCH /me primary update failed for ${userId}:`, error.message);
+      }
     } catch (updateError: any) {
       error = updateError;
     }
@@ -241,6 +245,82 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// GET /debug-schema - Check database schema for troubleshooting
+router.get('/debug-schema', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+    const adminAvailable = !!supabase.adminClient;
+    const testClient = supabase.adminClient || supabase.getClientForUser(req.accessToken!);
+
+    const results: any = {
+      admin_available: adminAvailable,
+      userId,
+      checks: {}
+    };
+
+    // 1. Check user_profiles table columns
+    try {
+      const { data, error } = await testClient
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .limit(1)
+        .single();
+
+      if (error) {
+        results.checks.user_profiles = { error: error.message, code: error.code };
+      } else {
+        results.checks.user_profiles = {
+          status: 'ok',
+          columns: Object.keys(data || {}),
+          has_logo_col: 'company_logo_url' in (data || {}),
+          has_address_col: 'company_address' in (data || {}),
+          has_colors_col: 'primary_color' in (data || {})
+        };
+      }
+    } catch (e: any) {
+      results.checks.user_profiles = { error: e.message };
+    }
+
+    // 2. Check submissions table
+    try {
+      const { data, error } = await testClient
+        .from('submissions')
+        .select('*')
+        .limit(1);
+
+      if (error && error.code !== 'PGRST116') { // Ignore "no rows" error
+        results.checks.submissions = { error: error.message };
+      } else {
+        const sample = data?.[0] || {};
+        results.checks.submissions = {
+          status: 'ok',
+          columns: Object.keys(sample),
+          has_company_col: 'customer_company' in sample,
+          has_notes_col: 'customer_notes' in sample
+        };
+      }
+    } catch (e: any) {
+      results.checks.submissions = { error: e.message };
+    }
+
+    // 3. Recommended SQL Fix
+    results.sql_fix = `
+-- Run this in Supabase SQL Editor:
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS company_logo_url TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS company_address TEXT;
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS primary_color TEXT DEFAULT '#2563eb';
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS accent_color TEXT DEFAULT '#1e40af';
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS customer_company TEXT;
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS customer_notes TEXT;
+    `.trim();
+
+    res.json(results);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
