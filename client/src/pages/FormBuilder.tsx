@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { 
-  Trash2, Save, X, 
-  Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare, 
+import {
+  Trash2, Save, X,
+  Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare,
   ToggleLeft, List, Calendar, Clock, StickyNote, PenTool, Camera,
   Heading, Plus, User, Mail, MapPin, Phone, FileText, Radio,
   Upload, Minus, Star, BarChart3, AlignLeft
@@ -39,6 +39,7 @@ const FIELD_CATEGORIES = {
   ],
   page: [
     { value: 'divider', label: 'Trennlinie', icon: Minus, color: '#64748b' },
+    { value: 'section', label: 'Abschnitt', icon: Plus, color: '#4f46e5' },
   ],
   advanced: [
     { value: 'signature', label: 'Unterschrift', icon: PenTool, color: '#ef4444' },
@@ -49,9 +50,9 @@ const FIELD_CATEGORIES = {
 };
 
 const ALL_FIELD_TYPES = [
-  ...FIELD_CATEGORIES.basic, 
-  ...FIELD_CATEGORIES.survey, 
-  ...FIELD_CATEGORIES.page, 
+  ...FIELD_CATEGORIES.basic,
+  ...FIELD_CATEGORIES.survey,
+  ...FIELD_CATEGORIES.page,
   ...FIELD_CATEGORIES.advanced
 ];
 
@@ -68,7 +69,7 @@ export default function FormBuilder() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
+    const updateMobileState = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       // On desktop, always show palette; on mobile, hide by default
@@ -78,10 +79,10 @@ export default function FormBuilder() {
         setShowElementPalette(false);
       }
     };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    updateMobileState();
+    window.addEventListener('resize', updateMobileState);
+    return () => window.removeEventListener('resize', updateMobileState);
   }, []);
 
   const [formData, setFormData] = useState({
@@ -97,6 +98,15 @@ export default function FormBuilder() {
       loadTemplate();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (showElementPalette && isMobile) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [showElementPalette, isMobile]);
 
   const loadTemplate = async () => {
     try {
@@ -156,7 +166,7 @@ export default function FormBuilder() {
       placeholder: '',
       help_text: '',
     };
-    
+
     if (insertIndex !== undefined) {
       const newFields = [...formData.fields];
       newFields.splice(insertIndex, 0, newField);
@@ -166,7 +176,7 @@ export default function FormBuilder() {
       setFormData({ ...formData, fields: [...formData.fields, newField] });
       setSelectedFieldIndex(formData.fields.length);
     }
-    
+
     // Close palette on mobile after adding field
     setShowElementPalette(false);
   };
@@ -205,7 +215,7 @@ export default function FormBuilder() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     setFormData({ ...formData, fields: items });
-    
+
     // Update selected index
     if (selectedFieldIndex === result.source.index) {
       setSelectedFieldIndex(result.destination.index);
@@ -618,6 +628,32 @@ export default function FormBuilder() {
             {field.help_text && <p className="text-xs text-slate-400 mt-2 text-center">{field.help_text}</p>}
           </div>
         );
+      case 'section':
+        return (
+          <div className="pt-6 pb-2 border-b-2 border-slate-900 mb-2">
+            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight">
+              {field.label || 'Abschnitt Name'}
+            </h3>
+            {field.help_text && <p className="text-sm text-slate-500 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'spinner':
+        return (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {field.label || 'Zahlenfeld'} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 flex justify-between items-center">
+                <span>0</span>
+                <div className="flex gap-2">
+                  <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold">-</span>
+                  <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold">+</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -685,12 +721,12 @@ export default function FormBuilder() {
           <>
             {/* Mobile Overlay */}
             {isMobile && (
-              <div 
+              <div
                 className="fixed inset-0 bg-black/50 z-40"
                 onClick={() => setShowElementPalette(false)}
               />
             )}
-            
+
             {/* Sidebar */}
             <div className={`${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 w-80 bg-white border-r border-slate-200 flex flex-col z-50 ${isMobile ? 'transform transition-transform duration-300' : ''}`}>
               <div className="p-4 border-b border-slate-200">
@@ -703,46 +739,42 @@ export default function FormBuilder() {
                     <X className="w-5 h-5 text-slate-600" />
                   </button>
                 </div>
-                
+
                 {/* Category Tabs */}
                 <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
                   <button
                     onClick={() => setActiveCategory('basic')}
-                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
-                      activeCategory === 'basic'
-                        ? 'text-orange-600 border-b-2 border-orange-600'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${activeCategory === 'basic'
+                      ? 'text-orange-600 border-b-2 border-orange-600'
+                      : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     BASIC
                   </button>
                   <button
                     onClick={() => setActiveCategory('survey')}
-                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
-                      activeCategory === 'survey'
-                        ? 'text-orange-600 border-b-2 border-orange-600'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${activeCategory === 'survey'
+                      ? 'text-orange-600 border-b-2 border-orange-600'
+                      : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     SURVEY
                   </button>
                   <button
                     onClick={() => setActiveCategory('page')}
-                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
-                      activeCategory === 'page'
-                        ? 'text-orange-600 border-b-2 border-orange-600'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${activeCategory === 'page'
+                      ? 'text-orange-600 border-b-2 border-orange-600'
+                      : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     PAGE
                   </button>
                   <button
                     onClick={() => setActiveCategory('advanced')}
-                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${
-                      activeCategory === 'advanced'
-                        ? 'text-orange-600 border-b-2 border-orange-600'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`flex-shrink-0 px-3 py-2 text-sm font-medium transition-colors ${activeCategory === 'advanced'
+                      ? 'text-orange-600 border-b-2 border-orange-600'
+                      : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     ADVANCED
                   </button>
@@ -760,7 +792,7 @@ export default function FormBuilder() {
                         onClick={() => addField(type.value)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors text-left group"
                       >
-                        <div 
+                        <div
                           className="w-8 h-8 rounded flex items-center justify-center"
                           style={{ backgroundColor: `${type.color}15` }}
                         >
@@ -819,7 +851,7 @@ export default function FormBuilder() {
                             <span>Element hinzufügen</span>
                           </button>
                           <p className="text-slate-400 text-sm">
-                            {!isMobile 
+                            {!isMobile
                               ? 'Klicken Sie auf ein Element links, um es hinzuzufügen'
                               : 'Klicken Sie auf "Element hinzufügen", um zu beginnen'}
                           </p>
@@ -833,21 +865,19 @@ export default function FormBuilder() {
                                 <div
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
-                                  className={`relative group border-2 rounded-lg p-4 transition-all ${
-                                    isSelected
-                                      ? 'border-blue-500 bg-blue-50'
-                                      : snapshot.isDragging
+                                  className={`relative group border-2 rounded-lg p-4 transition-all ${isSelected
+                                    ? 'border-blue-500 bg-blue-50'
+                                    : snapshot.isDragging
                                       ? 'border-indigo-500 shadow-xl'
                                       : 'border-transparent hover:border-slate-300'
-                                  }`}
+                                    }`}
                                   onClick={() => setSelectedFieldIndex(index)}
                                 >
                                   {/* Field Controls */}
-                                  <div className={`absolute -right-2 -top-2 flex gap-1 transition-opacity ${
-                                    isSelected 
-                                      ? 'opacity-100' 
-                                      : 'opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
-                                  }`}>
+                                  <div className={`absolute -right-2 -top-2 flex gap-1 transition-opacity ${isSelected
+                                    ? 'opacity-100'
+                                    : 'opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
+                                    }`}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1014,17 +1044,22 @@ export default function FormBuilder() {
               {/* Add New Page Section */}
               <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-300 text-center">
                 <button
-                  onClick={() => addField('text')}
-                  className="text-sm text-slate-500 hover:text-slate-700 font-medium"
+                  onClick={() => addField('section')}
+                  className="text-sm text-slate-500 hover:text-slate-700 font-medium flex items-center justify-center gap-2 mx-auto"
                 >
-                  + NEUE SEITE HINZUFÜGEN
+                  <Plus className="w-4 h-4" />
+                  NEUEN ABSCHNITT HINZUFÜGEN
                 </button>
               </div>
 
               {/* Submit Button */}
-              <div className="mt-8 flex justify-center">
-                <button className="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-sm hover:bg-green-700 transition-colors">
-                  Submit
+              <div className="mt-12 flex justify-center pb-20">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-10 py-4 bg-primary-500 text-white font-bold rounded-2xl shadow-xl shadow-primary-500/20 hover:bg-primary-600 transition-all flex items-center gap-3 disabled:opacity-50"
+                >
+                  {saving ? 'Speichert...' : 'Vorlage Speichern'}
                 </button>
               </div>
             </div>

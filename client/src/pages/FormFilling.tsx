@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
@@ -9,6 +9,8 @@ import { useNotificationStore } from '../store/notificationStore';
 
 export default function FormFilling() {
   const { templateId } = useParams<{ templateId: string }>();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
   const navigate = useNavigate();
   const [template, setTemplate] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,8 @@ export default function FormFilling() {
     email: '',
     phone: '',
     address: '',
+    company: '',
+    notes: '',
     contact_id: '',
   });
 
@@ -31,32 +35,50 @@ export default function FormFilling() {
 
   useEffect(() => {
     if (templateId) {
-      loadTemplate();
+      loadData();
     }
-  }, [templateId]);
+  }, [templateId, editId]);
 
-  const loadTemplate = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiService.getTemplate(templateId!) as any;
-      setTemplate(data);
 
-      // Initialize field values
-      const initialValues: Record<string, any> = {};
-      if (data.fields) {
-        data.fields.forEach((field: any) => {
-          if (field.default_value !== undefined) {
-            initialValues[field.id] = field.default_value;
-          } else if (field.type === 'checkbox' || field.type === 'toggle') {
-            initialValues[field.id] = false;
-          }
+      // Load template
+      const templateData = await apiService.getTemplate(templateId!) as any;
+      setTemplate(templateData);
+
+      // If editing, load submission
+      if (editId) {
+        const subData = await apiService.getSubmission(editId) as any;
+        setCustomerInfo({
+          name: subData.customer_name || '',
+          email: subData.customer_email || '',
+          phone: subData.customer_phone || '',
+          address: subData.customer_address || '',
+          company: subData.customer_company || '',
+          notes: subData.customer_notes || '',
+          contact_id: subData.customer_contact_id || '',
         });
+        setFieldValues(subData.field_values || {});
+        setSignature(subData.signature_url || null);
+      } else {
+        // Initialize fresh field values
+        const initialValues: Record<string, any> = {};
+        if (templateData.fields) {
+          templateData.fields.forEach((field: any) => {
+            if (field.default_value !== undefined) {
+              initialValues[field.id] = field.default_value;
+            } else if (field.type === 'checkbox' || field.type === 'toggle') {
+              initialValues[field.id] = false;
+            }
+          });
+        }
+        setFieldValues(initialValues);
       }
-      setFieldValues(initialValues);
     } catch (error: any) {
-      console.error('Load template error:', error);
-      setError(error.message || 'Laden der Vorlage fehlgeschlagen');
+      console.error('Load data error:', error);
+      setError(error.message || 'Laden der Daten fehlgeschlagen');
     } finally {
       setLoading(false);
     }
@@ -68,6 +90,8 @@ export default function FormFilling() {
       email: contact.email || '',
       phone: contact.phone || '',
       address: contact.address || '',
+      company: contact.company || '',
+      notes: contact.notes || '',
       contact_id: contact.id,
     });
   };
@@ -127,13 +151,20 @@ export default function FormFilling() {
         customer_email: customerInfo.email || null,
         customer_phone: customerInfo.phone || null,
         customer_address: customerInfo.address || null,
+        customer_company: customerInfo.company || null,
+        customer_notes: customerInfo.notes || null,
         customer_contact_id: customerInfo.contact_id || null,
         field_values: fieldValues,
         signature_url: signature || null,
         status,
       };
 
-      const result = await apiService.createSubmission(submissionData);
+      let result;
+      if (editId) {
+        result = await apiService.updateSubmission(editId, submissionData);
+      } else {
+        result = await apiService.createSubmission(submissionData);
+      }
 
       if (status === 'submitted') {
         if ((result as any).is_offline) {
@@ -188,6 +219,32 @@ export default function FormFilling() {
             className={`input ${hasError ? 'border-red-500' : ''}`}
             placeholder={field.placeholder || `${field.label} eingeben...`}
           />
+        );
+
+      case 'spinner':
+        return (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleFieldChange(field.id, Math.max(0, (parseFloat(value) || 0) - 1))}
+              className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-dark-highlight flex items-center justify-center text-xl font-bold text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={value || 0}
+              onChange={(e) => handleFieldChange(field.id, parseFloat(e.target.value) || 0)}
+              className={`input flex-1 text-center h-12 font-bold ${hasError ? 'border-red-500' : ''}`}
+            />
+            <button
+              type="button"
+              onClick={() => handleFieldChange(field.id, (parseFloat(value) || 0) + 1)}
+              className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-xl font-bold text-primary-600 dark:text-primary-400 active:scale-90 transition-transform"
+            >
+              +
+            </button>
+          </div>
         );
 
       case 'checkbox':
@@ -472,6 +529,27 @@ export default function FormFilling() {
                   onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
                   className="input h-14 font-bold"
                   placeholder="Beispielstraße 1, 12345 Stadt"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Firma / Unternehmen</label>
+                <input
+                  type="text"
+                  value={customerInfo.company}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, company: e.target.value })}
+                  className="input h-14 font-medium"
+                  placeholder="Beispiel GmbH"
+                />
+              </div>
+
+              <div className="space-y-3 md:col-span-2">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-dark-text-muted uppercase tracking-[0.2em] px-1">Notizen zum Kunden / Objekt</label>
+                <textarea
+                  value={customerInfo.notes}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
+                  className="input min-h-[100px] py-4 font-medium"
+                  placeholder="Zusätzliche Informationen..."
                 />
               </div>
             </div>

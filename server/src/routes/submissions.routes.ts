@@ -79,6 +79,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       customer_email,
       customer_phone,
       customer_address,
+      customer_company,
+      customer_notes,
       customer_contact_id,
       field_values,
       signature_url,
@@ -122,6 +124,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       customer_email,
       customer_phone,
       customer_address,
+      customer_company,
+      customer_notes,
       customer_contact_id,
       field_values: field_values || {},
       signature_url,
@@ -162,6 +166,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
       customer_email,
       customer_phone,
       customer_address,
+      customer_company,
+      customer_notes,
       customer_contact_id,
       field_values,
       signature_url,
@@ -175,6 +181,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
     if (customer_email !== undefined) updates.customer_email = customer_email;
     if (customer_phone !== undefined) updates.customer_phone = customer_phone;
     if (customer_address !== undefined) updates.customer_address = customer_address;
+    if (customer_company !== undefined) updates.customer_company = customer_company;
+    if (customer_notes !== undefined) updates.customer_notes = customer_notes;
     if (customer_contact_id !== undefined) updates.customer_contact_id = customer_contact_id;
     if (field_values !== undefined) updates.field_values = field_values;
     if (signature_url !== undefined) updates.signature_url = signature_url;
@@ -278,6 +286,8 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       customer_email: submission.customer_email,
       customer_phone: submission.customer_phone,
       customer_address: submission.customer_address,
+      customer_company: submission.customer_company,
+      customer_notes: submission.customer_notes,
       field_values: submission.field_values || {},
       signature_url: submission.signature_url,
       created_at: submission.created_at,
@@ -370,6 +380,8 @@ router.get('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
       customer_email: submission.customer_email,
       customer_phone: submission.customer_phone,
       customer_address: submission.customer_address,
+      customer_company: submission.customer_company,
+      customer_notes: submission.customer_notes,
       field_values: submission.field_values || {},
       signature_url: submission.signature_url,
       created_at: submission.created_at,

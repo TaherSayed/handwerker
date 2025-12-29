@@ -55,7 +55,7 @@ export default function SubmissionDetail() {
       // Try to fetch company profile for PDF (soft fail if offline)
       try {
         const profileData = await apiService.getMe() as any;
-        setCompanySettings(profileData.company_info || {});
+        setCompanySettings(profileData || {});
       } catch (err) {
         console.warn('[SubmissionDetail] Could not fetch company settings (likely offline)');
         // Keep existing or empty settings

@@ -24,7 +24,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     const response = await people.people.connections.list({
       resourceName: 'people/me',
       pageSize: 1000,
-      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata,organizations',
+      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata,organizations,biographies',
     });
 
     const connections = response.data.connections || [];
@@ -36,6 +36,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       const phone = person.phoneNumbers?.[0]?.value || '';
       const address = person.addresses?.[0]?.formattedValue || '';
       const organization = person.organizations?.[0]?.name || '';
+      const notes = person.biographies?.[0]?.value || '';
       const googleId = person.metadata?.sources?.[0]?.id || '';
 
       return {
@@ -46,6 +47,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
         phone,
         address,
         company: organization,
+        notes,
       };
     });
 

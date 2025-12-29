@@ -18,7 +18,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
-    
+
     // Only refetch if tab becomes visible AND data is stale (older than 5 minutes)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -30,7 +30,7 @@ export default function Dashboard() {
         }
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
@@ -38,7 +38,7 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Show UI immediately with cached data if available
       const { offlineService } = await import('../services/offline.service');
       const cached = offlineService.getCachedSubmissions();
@@ -62,7 +62,7 @@ export default function Dashboard() {
       });
 
       setSubmissions(subs);
-      
+
       // Store timestamp of last successful fetch
       sessionStorage.setItem('dashboard_last_fetch', Date.now().toString());
     } catch (error) {
@@ -232,9 +232,10 @@ export default function Dashboard() {
       {/* Floating Action Button for New Submission (Mobile Only) */}
       <button
         onClick={() => navigate('/visits/new')}
-        className="fixed right-4 bottom-20 w-14 h-14 btn-primary rounded-full shadow-lg z-sticky lg:hidden"
+        className="fixed right-6 bottom-24 w-16 h-16 btn-primary rounded-full shadow-2xl z-40 lg:hidden flex items-center justify-center"
+        style={{ minWidth: '64px', minHeight: '64px' }}
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-8 h-8" />
       </button>
 
     </div>

@@ -7,6 +7,8 @@ interface GoogleContact {
   email?: string;
   phone?: string;
   address?: string;
+  company?: string;
+  notes?: string;
 }
 
 class GoogleContactsService {

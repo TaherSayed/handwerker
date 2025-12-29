@@ -75,10 +75,6 @@ export default function GoogleSignInScreen() {
       {/* Main Content Card */}
       <div
         className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl animate-in zoom-in duration-500"
-        style={{
-          transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
-          transition: 'transform 0.2s ease-out'
-        }}
       >
         <div className="flex flex-col items-center text-center space-y-8">
 
@@ -88,7 +84,7 @@ export default function GoogleSignInScreen() {
             <img
               src="/logo-onsite.jpg"
               alt="OnSite Handwerker App"
-              className="relative w-48 h-auto object-contain transform transition-transform duration-500 group-hover:scale-105"
+              className="relative w-48 h-auto object-contain"
             />
           </div>
 

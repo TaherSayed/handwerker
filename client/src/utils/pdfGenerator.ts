@@ -5,11 +5,11 @@ import { de } from 'date-fns/locale';
 
 interface CompanySettings {
     company_name?: string;
-    logo_url?: string;
-    address?: string;
-    website?: string;
+    company_logo_url?: string;
+    company_address?: string;
+    company_website?: string;
     email?: string;
-    phone?: string;
+    company_phone?: string;
 }
 
 interface Submission {
@@ -19,6 +19,8 @@ interface Submission {
     customer_address?: string;
     customer_email?: string;
     customer_phone?: string;
+    customer_company?: string;
+    customer_notes?: string;
     form_templates: {
         name: string;
         fields: any[];
@@ -44,9 +46,9 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
 
     // Company Logo (Left)
     // Company Logo (Left)
-    if (companySettings?.logo_url) {
+    if (companySettings?.company_logo_url) {
         try {
-            let imgData = companySettings.logo_url;
+            let imgData = companySettings.company_logo_url;
 
             // If it's a remote URL, fetch it and convert to DataURI
             if (imgData.startsWith('http')) {
@@ -78,10 +80,10 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.setFontSize(8);
     doc.setTextColor(secondaryColor);
     doc.text(companySettings?.company_name || 'Mein Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
-    if (companySettings?.address) doc.text(companySettings.address, pageWidth - margin, currentY + 10, { align: 'right' });
-    if (companySettings?.phone) doc.text(`Tel: ${companySettings.phone}`, pageWidth - margin, currentY + 15, { align: 'right' });
+    if (companySettings?.company_address) doc.text(companySettings.company_address, pageWidth - margin, currentY + 10, { align: 'right' });
+    if (companySettings?.company_phone) doc.text(`Tel: ${companySettings.company_phone}`, pageWidth - margin, currentY + 15, { align: 'right' });
     if (companySettings?.email) doc.text(companySettings.email, pageWidth - margin, currentY + 20, { align: 'right' });
-    if (companySettings?.website) doc.text(companySettings.website, pageWidth - margin, currentY + 25, { align: 'right' });
+    if (companySettings?.company_website) doc.text(companySettings.company_website, pageWidth - margin, currentY + 25, { align: 'right' });
 
     // Title & Subject
     currentY += 40;
@@ -122,19 +124,30 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.setFontSize(11);
     doc.setTextColor('#334155');
     doc.setFont('helvetica', 'bold');
-    doc.text(submission.customer_name, margin + 5, currentY + 16);
+    let customerName = submission.customer_name;
+    if (submission.customer_company) customerName += ` (${submission.customer_company})`;
+    doc.text(customerName, margin + 5, currentY + 16);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    if (submission.customer_address) doc.text(submission.customer_address, margin + 5, currentY + 22);
+    let addressLine = submission.customer_address || '';
+    if (submission.customer_address) doc.text(addressLine, margin + 5, currentY + 22);
 
     let contactInfo = [];
     if (submission.customer_phone) contactInfo.push(submission.customer_phone);
     if (submission.customer_email) contactInfo.push(submission.customer_email);
     if (contactInfo.length > 0) doc.text(contactInfo.join('  •  '), margin + 5, currentY + 28);
 
+    // Notes if present
+    if (submission.customer_notes) {
+        doc.setFontSize(8);
+        doc.setTextColor(secondaryColor);
+        doc.text(`Notiz: ${submission.customer_notes}`, margin + 5, currentY + 33);
+    }
+
     // Date
     doc.setFontSize(10);
+    doc.setTextColor(secondaryColor);
     doc.text(`Datum: ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`, pageWidth - margin - 5, currentY + 16, { align: 'right' });
 
     currentY += 45;
