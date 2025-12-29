@@ -182,13 +182,22 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
           .single();
 
         if (safeError) {
-          // If still failing, try with even fewer fields
+          // If still failing, try with even fewer fields - ONLY standard columns
           const minimalSelect = 'id, email, full_name, created_at, updated_at';
-          const minimalUpdates: any = { ...safeUpdates }; // USE ALL SAFE UPDATES
+          const minimalUpdates: any = {};
+          if (full_name !== undefined) minimalUpdates.full_name = full_name;
 
-          const { data: minimalData, error: minimalError } = await userClient
-            .from('user_profiles')
-            .update(minimalUpdates)
+          // If no standard fields to update, just fetch
+          let minimalQuery: any = userClient.from('user_profiles');
+
+          if (Object.keys(minimalUpdates).length > 0) {
+            minimalQuery = minimalQuery.update(minimalUpdates);
+          } else {
+            // If nothing to update, just select
+            minimalQuery = minimalQuery.select(minimalSelect);
+          }
+
+          const { data: minimalData, error: minimalError } = await minimalQuery
             .eq('id', userId)
             .select(minimalSelect)
             .single();
