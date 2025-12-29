@@ -2,7 +2,6 @@ import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
-import SplashScreen from './pages/SplashScreen';
 import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
