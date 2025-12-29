@@ -3,14 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import {
   Search, CheckCircle2, FileText, Plus,
-  BarChart3, Clock, ChevronRight, LayoutGrid,
-  Settings2, Calendar, TrendingUp, History,
-  Filter, ArrowRightLeft, Database
+  Clock, ChevronRight, LayoutGrid,
+  Settings2, Calendar, Database
 } from 'lucide-react';
 import Skeleton from '../components/common/Skeleton';
 import { useNotificationStore } from '../store/notificationStore';
-import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -210,8 +207,8 @@ export default function Dashboard() {
                 >
                   {/* Initials Square */}
                   <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-black text-xs shrink-0 ${sub.status === 'submitted'
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                      : 'bg-amber-50 text-amber-600 border border-amber-100'
+                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                    : 'bg-amber-50 text-amber-600 border border-amber-100'
                     }`}>
                     {getInitials(sub.customer_name)}
                   </div>
@@ -278,8 +275,8 @@ function TabPill({ active, onClick, label }: { active: boolean, onClick: () => v
     <button
       onClick={onClick}
       className={`flex-1 h-11 rounded-[14px] text-[10px] font-black uppercase tracking-widest transition-all ${active
-          ? 'bg-white dark:bg-dark-card text-primary-600 shadow-sm'
-          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+        ? 'bg-white dark:bg-dark-card text-primary-600 shadow-sm'
+        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
         }`}
     >
       {label}
