@@ -4,7 +4,8 @@ import { apiService } from '../services/api.service';
 import {
   Search, CheckCircle2, FileText, Plus,
   BarChart3, Clock, ChevronRight, LayoutGrid,
-  Settings2, Calendar, TrendingUp, History
+  Settings2, Calendar, TrendingUp, History,
+  Filter, ArrowRightLeft, Database
 } from 'lucide-react';
 import Skeleton from '../components/common/Skeleton';
 import { useNotificationStore } from '../store/notificationStore';
@@ -100,167 +101,146 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8 p-1 md:p-4">
+      <div className="space-y-8 p-4">
+        <div className="flex justify-between items-center">
+          <Skeleton variant="text" width="150px" height="32px" />
+          <Skeleton variant="circular" width="40px" height="40px" />
+        </div>
+        <div className="flex gap-4 overflow-hidden">
+          {[1, 2, 3].map(i => <Skeleton key={i} variant="rectangular" height="100px" width="160px" className="rounded-3xl shrink-0" />)}
+        </div>
         <div className="space-y-4">
-          <Skeleton variant="text" width="200px" height="40px" />
-          <Skeleton variant="text" width="300px" />
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <Skeleton key={i} variant="rectangular" height="120px" className="rounded-[32px]" />)}
-        </div>
-        <div className="space-y-4 pt-8">
-          <Skeleton variant="rectangular" height="60px" className="rounded-2xl" />
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rectangular" height="100px" className="rounded-[24px]" />)}
+          <Skeleton variant="rectangular" height="56px" className="rounded-2xl" />
+          {[1, 2, 3].map(i => <Skeleton key={i} variant="rectangular" height="90px" className="rounded-3xl" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10 pb-28 md:pb-12 animate-fade-in max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] -mx-4 px-4 pt-6 pb-32 animate-fade-in">
+      <div className="max-w-xl mx-auto space-y-8">
 
-      {/* 🚀 Header & Main Action */}
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary-500 font-bold text-xs uppercase tracking-[0.2em]">
-            <TrendingUp className="w-4 h-4" />
-            Live Übersicht
+        {/* 🏷️ Minimal Header */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">System Ready</span>
+            </div>
+            {isRefreshing && <Settings2 className="w-4 h-4 text-primary-500 animate-spin" />}
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Dashboard
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-muted font-medium">
-            Verwalten Sie Ihre Berichte und Dokumentationen.
-          </p>
         </div>
+
+        {/* 📊 Horizontal KPI Scroller */}
+        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 mask-fade-right">
+          <StatCardSmall
+            label="Gesamt"
+            value={stats.total}
+            icon={Database}
+            color="indigo"
+          />
+          <StatCardSmall
+            label="Synced"
+            value={stats.sync}
+            icon={CheckCircle2}
+            color="emerald"
+          />
+          <StatCardSmall
+            label="Entwürfe"
+            value={stats.drafts}
+            icon={Clock}
+            color="amber"
+          />
+        </div>
+
+        {/* ⚡ Quick Action */}
         <button
           onClick={() => navigate('/visits/new')}
-          className="group relative flex items-center gap-3 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:shadow-2xl hover:shadow-primary-600/30 hover:-translate-y-1 active:scale-95 w-full md:w-auto overflow-hidden"
+          className="w-full h-16 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] transition-all rounded-[24px] flex items-center justify-center gap-3 text-white shadow-xl shadow-primary-500/20 group"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:animate-shimmer" />
-          <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-          <span>Neuer Einsatz</span>
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-90 transition-transform">
+            <Plus className="w-5 h-5 stroke-[3]" />
+          </div>
+          <span className="font-black uppercase tracking-widest text-sm text-white">Neuer Einsatz</span>
         </button>
-      </div>
 
-      {/* 📊 KPI Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <CardKPI
-          value={stats.total}
-          label="Gesamt"
-          icon={BarChart3}
-          color="blue"
-          trend="Alle Berichte"
-        />
-        <CardKPI
-          value={stats.sync}
-          label="Synchronisiert"
-          icon={CheckCircle2}
-          color="emerald"
-          trend="Upload vollständig"
-        />
-        <CardKPI
-          value={stats.drafts}
-          label="Entwürfe"
-          icon={Clock}
-          color="amber"
-          trend="Noch in Arbeit"
-        />
-      </div>
-
-      <div className="space-y-6">
-        {/* 🔍 Filter & Search Bar */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1 relative group">
-            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
-              <Search className="w-5 h-5" />
-            </div>
+        {/* 🔍 Unified Search & Filter */}
+        <div className="space-y-4">
+          <div className="relative group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primary-500 transition-colors" />
             <input
               type="text"
-              placeholder="Suchen nach Kunde oder Projekt..."
+              placeholder="Kunde oder Projekt suchen..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-16 pl-14 pr-6 bg-white dark:bg-dark-card border-2 border-slate-100 dark:border-dark-stroke rounded-[24px] font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none"
+              className="w-full h-14 pl-14 pr-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-[20px] text-sm font-semibold text-slate-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none"
             />
           </div>
-          <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-dark-input rounded-[22px] min-w-[320px]">
-            <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} label="Alle" />
-            <TabButton active={activeTab === 'draft'} onClick={() => setActiveTab('draft')} label="Entwürfe" />
-            <TabButton active={activeTab === 'submitted'} onClick={() => setActiveTab('submitted')} label="Eingereicht" />
+
+          <div className="flex p-1.5 bg-slate-200/50 dark:bg-dark-input rounded-[18px]">
+            <TabPill active={activeTab === 'all'} onClick={() => setActiveTab('all')} label="Alle" />
+            <TabPill active={activeTab === 'draft'} onClick={() => setActiveTab('draft')} label="Entwürfe" />
+            <TabPill active={activeTab === 'submitted'} onClick={() => setActiveTab('submitted')} label="Synced" />
           </div>
         </div>
 
         {/* 📋 Submissions List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-xs font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-[0.2em]">
-              Zuletzt bearbeitet
-            </h3>
-            {isRefreshing && (
-              <div className="flex items-center gap-2 text-primary-500">
-                <Settings2 className="w-3 h-3 animate-spin" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Wird aktualisiert</span>
-              </div>
-            )}
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Verlauf</span>
+            <span className="text-[10px] font-bold text-slate-400">{filteredSubmissions.length} Einträge</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-3">
             {filteredSubmissions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-4 bg-slate-50 dark:bg-dark-input/20 rounded-[40px] border-2 border-dashed border-slate-200 dark:border-dark-stroke text-center">
-                <div className="w-20 h-20 rounded-3xl bg-white dark:bg-dark-card shadow-sm flex items-center justify-center mb-6 text-slate-300">
-                  <LayoutGrid className="w-10 h-10" />
-                </div>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Keine Berichte gefunden</h4>
-                <p className="text-slate-500 dark:text-dark-text-muted text-sm max-w-xs mx-auto">
-                  Versuchen Sie einen anderen Suchbegriff oder erstellen Sie einen neuen Bericht.
-                </p>
+              <div className="py-16 text-center bg-white dark:bg-dark-card rounded-[32px] border-2 border-dashed border-slate-100 dark:border-dark-stroke">
+                <LayoutGrid className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-400 text-sm font-medium">Keine Berichte vorhanden</p>
               </div>
             ) : (
               filteredSubmissions.map((sub) => (
                 <div
                   key={sub.id}
-                  onClick={() => navigate(`/ submissions / ${sub.id} `)}
-                  className="group relative bg-white dark:bg-dark-card border-2 border-slate-100 dark:border-dark-stroke rounded-[32px] p-5 md:p-6 transition-all hover:border-primary-400 hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-none hover:-translate-y-1 cursor-pointer flex items-center gap-5"
+                  onClick={() => navigate(`/submissions/${sub.id}`)}
+                  className="group bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-stroke rounded-[28px] p-4 flex items-center gap-4 active:scale-[0.97] transition-all"
                 >
-                  {/* Status Visual */}
-                  <div className={`w - 14 h - 14 md: w - 16 md: h - 16 rounded - [24px] flex items - center justify - center shrink - 0 shadow - inner font - black text - lg md: text - xl transition - transform group - hover: scale - 110 ${sub.status === 'submitted'
-                      ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                      : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
-                    } `}>
+                  {/* Initials Square */}
+                  <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-black text-xs shrink-0 ${sub.status === 'submitted'
+                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                      : 'bg-amber-50 text-amber-600 border border-amber-100'
+                    }`}>
                     {getInitials(sub.customer_name)}
                   </div>
 
-                  {/* Info Content */}
+                  {/* Main Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h4 className="text-base md:text-lg font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
-                        {sub.customer_name || 'Unbekannter Kunde'}
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">
+                        {sub.customer_name || 'Unbenannt'}
                       </h4>
-                      <BadgeStatus status={sub.status} />
+                      {sub.status === 'submitted' ? (
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                      )}
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-dark-text-muted text-xs font-semibold">
-                        <FileText className="w-3.5 h-3.5 text-primary-500" />
-                        <span className="truncate max-w-[150px] md:max-w-none">{sub.form_templates?.name || 'Standard-Bericht'}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase truncate">
+                        <FileText className="w-3 h-3 text-primary-500" />
+                        <span className="truncate">{sub.form_templates?.name || 'Bericht'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-400 dark:text-dark-text-muted text-xs font-medium">
-                        <Calendar className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-1.5 text-slate-300 text-[10px] font-bold">
+                        <Calendar className="w-3 h-3" />
                         <span>{new Date(sub.created_at).toLocaleDateString('de-DE')}</span>
                       </div>
-                      <div className="hidden sm:flex items-center gap-2 text-slate-400 dark:text-dark-text-muted text-xs font-medium">
-                        <History className="w-3.5 h-3.5" />
-                        <span>{formatDistanceToNow(new Date(sub.created_at), { addSuffix: true, locale: de })}</span>
-                      </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full border border-slate-100 dark:border-dark-stroke hidden sm:flex items-center justify-center text-slate-300 group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:border-primary-100 transition-all">
-                      <ChevronRight className="w-5 h-5" />
-                    </div>
-                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-200 group-active:text-primary-500" />
                 </div>
               ))
             )}
@@ -268,66 +248,41 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 📱 Floating Mobile Button */}
-      <button
-        onClick={() => navigate('/visits/new')}
-        className="fixed right-6 bottom-24 w-16 h-16 bg-primary-600 text-white rounded-[24px] shadow-2xl shadow-primary-600/40 z-40 lg:hidden flex items-center justify-center animate-bounce-subtle active:scale-90 transition-transform"
-      >
-        <Plus className="w-8 h-8" />
-      </button>
+      {/* 📱 Mobile Navigation Safe Area spacer */}
+      <div className="h-20" />
     </div>
   );
 }
 
-// 🧩 Shared Sub-components
-function CardKPI({ value, label, icon: Icon, color, trend }: { value: number, label: string, icon: any, color: 'blue' | 'emerald' | 'amber', trend: string }) {
-  const colors = {
-    blue: 'from-blue-600 to-indigo-600 shadow-blue-500/20 text-blue-100',
-    emerald: 'from-emerald-600 to-teal-600 shadow-emerald-500/20 text-emerald-100',
-    amber: 'from-amber-500 to-orange-600 shadow-amber-500/20 text-amber-100'
+// 🧩 Helper Components
+function StatCardSmall({ label, value, icon: Icon, color }: { label: string, value: number, icon: any, color: string }) {
+  const themes: any = {
+    indigo: 'bg-indigo-600 border-indigo-500 text-white',
+    emerald: 'bg-emerald-600 border-emerald-500 text-white',
+    amber: 'bg-amber-500 border-amber-400 text-white'
   };
 
   return (
-    <div className={`relative overflow - hidden bg - gradient - to - br ${colors[color]} p - 6 rounded - [32px] shadow - 2xl transition - transform hover: -translate - y - 1 h - 36 flex flex - col justify - between group`}>
-      <Icon className="absolute -right-4 -top-4 w-24 h-24 opacity-10 group-hover:rotate-12 transition-transform duration-500" />
-      <div className="space-y-1">
-        <span className="text-[10px] font-black uppercase tracking-[0.25em] opacity-80">{label}</span>
-        <div className="text-4xl font-black text-white tracking-tight">{value}</div>
+    <div className={`min-w-[140px] p-5 rounded-[28px] border-b-4 shadow-lg ${themes[color]} flex flex-col gap-3 transition-transform active:scale-95`}>
+      <div className="flex items-center justify-between">
+        <Icon className="w-5 h-5 opacity-60" />
+        <span className="text-xl font-black">{value}</span>
       </div>
-      <div className="text-[10px] font-bold uppercase tracking-wider backdrop-blur-md bg-white/10 w-fit px-3 py-1 rounded-full border border-white/20">
-        {trend}
-      </div>
+      <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{label}</span>
     </div>
   );
 }
 
-function TabButton({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
+function TabPill({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
   return (
     <button
       onClick={onClick}
-      className={`flex - 1 h - 12 rounded - [18px] text - sm font - black uppercase tracking - widest transition - all ${active
-          ? 'bg-white dark:bg-dark-card text-primary-600 shadow-xl shadow-slate-200/50 dark:shadow-none'
-          : 'text-slate-500 dark:text-dark-text-muted hover:text-slate-700 dark:hover:text-white'
-        } `}
+      className={`flex-1 h-11 rounded-[14px] text-[10px] font-black uppercase tracking-widest transition-all ${active
+          ? 'bg-white dark:bg-dark-card text-primary-600 shadow-sm'
+          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+        }`}
     >
       {label}
     </button>
-  );
-}
-
-function BadgeStatus({ status }: { status: string }) {
-  if (status === 'submitted') {
-    return (
-      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
-        <CheckCircle2 className="w-3 h-3" />
-        Synced
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20 text-[10px] font-black uppercase tracking-widest">
-      <Clock className="w-3 h-3" />
-      Draft
-    </div>
   );
 }
