@@ -51,20 +51,26 @@ export default function Settings() {
   const [logoLoading, setLogoLoading] = useState(false);
   const mountRef = useRef(false);
 
-  // Initialize Data
+  // Sync Data on profile change or mount
   useEffect(() => {
-    if (profile && !mountRef.current) {
-      setFormData({
-        full_name: profile.full_name || '',
-        company_name: profile.company_name || '',
-        company_logo_url: profile.company_logo_url || '',
-        company_address: profile.company_address || '',
-        company_phone: profile.company_phone || '',
-        company_website: profile.company_website || '',
-        primary_color: profile.primary_color || '#2563eb',
-        accent_color: profile.accent_color || '#1e40af',
-      });
-      mountRef.current = true;
+    if (profile) {
+      // Only set fileds that are currently "empty" or if this is the first real load
+      // This prevents overwriting user input while they are typing, but ensures
+      // that when the server returns fresh data (e.g. after upload), we see it.
+      setFormData(prev => ({
+        full_name: prev.full_name || profile.full_name || '',
+        company_name: prev.company_name || profile.company_name || '',
+        company_logo_url: profile.company_logo_url || prev.company_logo_url || '', // Logo is special, always take server value if it exists
+        company_address: prev.company_address || profile.company_address || '',
+        company_phone: prev.company_phone || profile.company_phone || '',
+        company_website: prev.company_website || profile.company_website || '',
+        primary_color: prev.primary_color === '#2563eb' ? (profile.primary_color || '#2563eb') : prev.primary_color,
+        accent_color: prev.accent_color === '#1e40af' ? (profile.accent_color || '#1e40af') : prev.accent_color,
+      }));
+
+      if (!mountRef.current) {
+        mountRef.current = true;
+      }
     }
   }, [profile]);
 
@@ -143,9 +149,13 @@ export default function Settings() {
         .getPublicUrl(path);
 
       const newLogoUrl = publicUrlData.publicUrl;
-      setFormData(prev => ({ ...prev, company_logo_url: newLogoUrl }));
 
-      await apiService.updateProfile({ ...formData, company_logo_url: newLogoUrl });
+      // Update local state immediately with a safe copy of current formData
+      const updatedData = { ...formData, company_logo_url: newLogoUrl };
+      setFormData(updatedData);
+
+      // Persist to server
+      await apiService.updateProfile(updatedData);
       await refreshProfile();
 
       success('Logo gespeichert', 'Ihr Firmenlogo wurde erfolgreich aktualisiert.');

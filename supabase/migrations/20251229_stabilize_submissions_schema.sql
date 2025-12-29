@@ -21,6 +21,10 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'company_address') THEN
         ALTER TABLE public.user_profiles ADD COLUMN company_address TEXT;
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'company_logo_url') THEN
+        ALTER TABLE public.user_profiles ADD COLUMN company_logo_url TEXT;
+    END IF;
     
     -- Ensure primary and accent colors have defaults
     ALTER TABLE public.user_profiles ALTER COLUMN primary_color SET DEFAULT '#2563eb';
