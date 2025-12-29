@@ -733,16 +733,16 @@ export default function FormBuilder() {
             {/* Mobile Overlay */}
             {isMobile && (
               <div
-                className="fixed inset-0 bg-black/50 z-40"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000]"
                 onClick={() => setShowElementPalette(false)}
               />
             )}
 
             {/* Sidebar */}
-            <div className={`${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 w-80 bg-white border-r border-slate-200 flex flex-col z-50 ${isMobile ? 'transform transition-transform duration-300' : ''}`}>
-              <div className="p-4 border-b border-slate-200">
+            <div className={`${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 w-80 bg-white border-r border-slate-200 flex flex-col z-[2001] ${isMobile ? 'shadow-2xl' : ''}`}>
+              <div className={`p-4 border-b border-slate-200 ${isMobile ? 'pt-safe' : ''}`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-slate-900">Form Elements</h2>
+                  <h2 className="text-lg font-bold text-slate-900 truncate mr-2">Form Elements</h2>
                   <button
                     onClick={() => setShowElementPalette(false)}
                     className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"

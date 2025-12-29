@@ -107,11 +107,11 @@ export default function Layout() {
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
                     {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture ? (
-                      <img 
-                        src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover" 
-                        referrerPolicy="no-referrer" 
+                      <img
+                        src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
                       />
                     ) : (
                       <span>{profile?.full_name?.[0] || profile?.email?.[0]?.toUpperCase() || 'U'}</span>
@@ -146,15 +146,14 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0 relative">
         {/* Top Header */}
         <header
-          className={`sticky top-0 z-sticky flex items-center justify-between px-4 md:px-8 h-14 md:h-16 transition-all duration-200 ${
-            scrolled 
-              ? 'bg-surface-base/95 dark:bg-dark-card/95 backdrop-blur-sm border-b border-border-subtle dark:border-dark-stroke shadow-sm' 
+          className={`sticky top-0 z-sticky flex items-center justify-between px-4 md:px-8 h-14 md:h-16 transition-all duration-200 ${scrolled
+              ? 'bg-surface-base/95 dark:bg-dark-card/95 backdrop-blur-sm border-b border-border-subtle dark:border-dark-stroke shadow-sm'
               : 'bg-transparent'
-          }`}
+            }`}
         >
           {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-border-subtle overflow-hidden bg-surface-base">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-md border border-border-subtle overflow-hidden bg-surface-base">
               {profile?.company_logo_url ? (
                 <img src={profile.company_logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
@@ -193,11 +192,11 @@ export default function Layout() {
               className="lg:hidden btn-ghost w-10 h-10 p-0 overflow-hidden rounded-full"
             >
               {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture ? (
-                <img 
-                  src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover rounded-full" 
-                  referrerPolicy="no-referrer" 
+                <img
+                  src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
+                  referrerPolicy="no-referrer"
                 />
               ) : (
                 <UserIcon className="w-5 h-5" />
@@ -223,14 +222,13 @@ export default function Layout() {
                 if (isActive) return;
                 navigate(item.to);
               }}
-              className={`flex flex-col items-center justify-center gap-1 w-full py-2 min-h-[56px] transition-all duration-200 ${
-                isActive 
-                  ? 'text-primary-500 dark:text-primary-400' 
+              className={`flex flex-col items-center justify-center gap-1 w-full py-2 min-h-[56px] transition-all duration-200 ${isActive
+                  ? 'text-primary-500 dark:text-primary-400'
                   : 'text-text-tertiary dark:text-dark-text-muted hover:text-text-primary dark:hover:text-dark-text-body'
-              }`}
+                }`}
             >
               <div className={`relative ${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
-                <item.icon 
+                <item.icon
                   className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
                 />
                 {isActive && (
