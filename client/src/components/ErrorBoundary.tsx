@@ -42,7 +42,7 @@ class ErrorBoundary extends Component<Props, State> {
                             Ein unerwarteter Fehler ist aufgetreten. Keine Sorge, Ihre Daten sind sicher.
                         </p>
 
-                        {process.env.NODE_ENV === 'development' && (
+                        {import.meta.env.DEV && (
                             <div className="mb-8 p-4 bg-slate-50 rounded-xl text-left overflow-auto max-h-32">
                                 <p className="text-xs font-mono text-red-600 break-all">
                                     {this.state.error?.toString()}
