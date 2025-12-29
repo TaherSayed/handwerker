@@ -5,7 +5,7 @@ import { supabase } from '../services/supabase';
 import {
   User, Building, ShieldCheck, CheckCircle2, Loader2,
   Sun, Moon, Database, Palette, LogOut, ChevronRight, ArrowLeft,
-  Mail, Trash2, Sliders
+  Mail, Trash2, Sliders, ExternalLink, Shield
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
@@ -588,8 +588,29 @@ export default function Settings() {
                   </div>
 
                   <div className="pt-10 flex flex-col md:flex-row gap-4 items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 px-4">
-                    <span>OnSite Forms v1.2.0</span>
                     <span>Industrial Software Solutions</span>
+                  </div>
+
+                  {/* LEGAL LINKS */}
+                  <div className="mt-8 pt-8 border-t border-slate-100 dark:border-dark-stroke flex flex-wrap gap-6 justify-center md:justify-start">
+                    <a
+                      href="https://huko-it.de/impressum/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[11px] font-bold text-slate-400 hover:text-primary-500 uppercase tracking-widest transition-colors"
+                    >
+                      Impressum
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <a
+                      href="https://huko-it.de/datenschutzerklaerung/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[11px] font-bold text-slate-400 hover:text-primary-500 uppercase tracking-widest transition-colors"
+                    >
+                      Datenschutz
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               )}

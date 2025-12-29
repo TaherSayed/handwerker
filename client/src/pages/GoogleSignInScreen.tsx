@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import { useAuthStore } from '../store/authStore';
-import { Loader2, Hammer, Wrench, Ruler, Component, Paintbrush, HardHat } from 'lucide-react';
+import { Loader2, Hammer, Wrench, Ruler, Component, Paintbrush, HardHat, ExternalLink } from 'lucide-react';
 
 export default function GoogleSignInScreen() {
   const navigate = useNavigate();
@@ -118,11 +118,30 @@ export default function GoogleSignInScreen() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-6 left-0 right-0 text-center z-10">
+      <div className="absolute bottom-6 left-0 right-0 text-center z-10 space-y-4">
         <p className="text-white/40 text-[10px] font-medium uppercase tracking-widest">
           HuKo
         </p>
+        <div className="flex items-center justify-center gap-6">
+          <a
+            href="https://huko-it.de/impressum/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] font-bold text-white/30 hover:text-cyan-400 uppercase tracking-widest transition-colors"
+          >
+            Impressum
+            <ExternalLink className="w-2.5 h-2.5" />
+          </a>
+          <a
+            href="https://huko-it.de/datenschutzerklaerung/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] font-bold text-white/30 hover:text-cyan-400 uppercase tracking-widest transition-colors"
+          >
+            Datenschutz
+            <ExternalLink className="w-2.5 h-2.5" />
+          </a>
+        </div>
       </div>
 
       <style>{`
