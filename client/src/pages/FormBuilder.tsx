@@ -7,7 +7,7 @@ import {
   Settings, Copy, ChevronUp, ChevronDown, Type, Hash, CheckSquare,
   ToggleLeft, List, Calendar, Clock, StickyNote, PenTool, Camera,
   Heading, Plus, User, Mail, MapPin, Phone, FileText, Radio,
-  Upload, Minus, Star, BarChart3, AlignLeft
+  Upload, Minus, Star, BarChart3, AlignLeft, ListOrdered, FilePlus
 } from 'lucide-react';
 
 // Categorized field types like Jotform
