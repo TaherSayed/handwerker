@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
+import { useAuthStore } from '../store/authStore';
 import { Loader2, Hammer, Wrench, Ruler, Component, Paintbrush, HardHat } from 'lucide-react';
 
 export default function GoogleSignInScreen() {
+  const navigate = useNavigate();
+  const { user, initialized } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Safety redirect: If we are already logged in but landed here, move away
+  useEffect(() => {
+    if (initialized && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, initialized, navigate]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

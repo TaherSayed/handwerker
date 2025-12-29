@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import SplashScreen from './pages/SplashScreen';
-import { supabase } from './services/supabase';
 import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoadingScreen from './components/common/LoadingScreen';
+
 // Lazy load sync service to avoid blocking initial load
 let syncServiceLoaded = false;
 const loadSyncService = () => {
@@ -17,8 +18,6 @@ const loadSyncService = () => {
     syncServiceLoaded = true;
   }
 };
-
-import LoadingScreen from './components/common/LoadingScreen';
 
 // Lazy loading pages with min-h-screen to prevent layout shift
 const GoogleSignInScreen = lazy(() => import('./pages/GoogleSignInScreen'));
@@ -31,120 +30,85 @@ const SubmissionDetail = lazy(() => import('./pages/SubmissionDetail'));
 const Settings = lazy(() => import('./pages/Settings'));
 const VisitWorkflow = lazy(() => import('./pages/VisitWorkflow'));
 
-// OAuth callback handler
+// OAuth callback handler (now used just for processing and potential error display)
 function AuthCallback() {
-  const { initialize } = useAuthStore();
+  const { user, initialized } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Get the URL hash which contains the auth tokens
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const errorParam = hashParams.get('error');
+    // Check for errors in hash
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const errorParam = hashParams.get('error_description') || hashParams.get('error');
+    if (errorParam) {
+      setError(`Authentifizierungsfehler: ${decodeURIComponent(errorParam)}`);
+    }
 
-        if (errorParam) {
-          setError(`Authentifizierungsfehler: ${errorParam}`);
-          setTimeout(() => window.location.href = '/', 3000);
-          return;
-        }
-
-        // Wait a bit for Supabase to process the callback
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const { data, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error('Auth callback error:', sessionError);
-          setError(`Sitzungsfehler: ${sessionError.message}`);
-          setTimeout(() => window.location.href = '/', 3000);
-          return;
-        }
-
-        if (data.session) {
-          await initialize();
-          window.location.href = '/dashboard';
-        } else {
-          setError('Keine Sitzung gefunden. Weiterleitung...');
-          setTimeout(() => window.location.href = '/', 2000);
-        }
-      } catch (err: any) {
-        console.error('Callback handler error:', err);
-        setError(err.message || 'Authentifizierung fehlgeschlagen');
-        setTimeout(() => window.location.href = '/', 3000);
-      }
-    };
-    handleCallback();
-  }, [initialize]);
+    // If we have a user and were on the callback, redirect to dashboard
+    if (initialized && user) {
+      // Small delay to show "Authenticating..." status
+      const timer = setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, initialized]);
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="bg-white rounded-[2rem] shadow-2xl p-10 max-w-md border border-slate-100">
-          <h2 className="text-2xl font-black text-red-600 mb-4 uppercase tracking-tighter">Authentifizierungsfehler</h2>
-          <p className="text-slate-600 font-bold mb-6">{error}</p>
-          <div className="flex items-center gap-3 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-            <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
-            Weiterleitung zur Startseite...
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-dark-bg">
+        <div className="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl p-10 max-w-md border border-slate-100 dark:border-dark-stroke">
+          <h2 className="text-2xl font-black text-red-600 mb-4 uppercase tracking-tighter">Login fehlgeschlagen</h2>
+          <p className="text-slate-600 dark:text-dark-text-body font-bold mb-6">{error}</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest text-xs"
+          >
+            Zurück zum Login
+          </button>
         </div>
       </div>
     );
   }
 
-  return <LoadingScreen text="Authentifiziere..." />;
+  return <LoadingScreen text="Finalisiere Anmeldung..." />;
 }
 
 function App() {
   const { user, loading, initialized, initialize } = useAuthStore();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { warn, success: notifySuccess } = useNotificationStore();
-  const userRef = useRef(user);
-
-  // Keep user ref in sync to prevent unnecessary remounts
-  useEffect(() => {
-    userRef.current = user;
-  }, [user]);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Initialize auth immediately (only once)
-    if (!initialized) {
+    // Initialize auth only once
+    if (!initializedRef.current) {
       initialize();
+      initializedRef.current = true;
     }
-
-    // Load sync service after a short delay to not block initial render
-    const syncTimeout = setTimeout(() => {
-      loadSyncService();
-    }, 1000);
 
     const handleOnline = () => {
       setIsOnline(true);
       notifySuccess('Wieder online', 'Ihre Verbindung wurde wiederhergestellt.');
-      // Load sync service when coming online
       loadSyncService();
     };
+
     const handleOffline = () => {
       setIsOnline(false);
       warn('Offline-Modus', 'Sie sind nicht mit dem Internet verbunden. Änderungen werden lokal gespeichert.');
     };
 
-    // Prevent refetch on tab visibility change - only listen to actual network events
-    const handleVisibilityChange = () => {
-      // Don't do anything on visibility change - state is preserved
-      // Only sync service handles background sync
-    };
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Initial sync service load
+    const syncTimeout = setTimeout(() => loadSyncService(), 2000);
 
     return () => {
       clearTimeout(syncTimeout);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [initialize, warn, notifySuccess, initialized]);
+  }, [initialize, warn, notifySuccess]);
 
   // Theme support
   const { theme } = useThemeStore();
@@ -156,57 +120,50 @@ function App() {
     }
   }, [theme]);
 
-  if (!initialized || loading) {
+  if (!initialized || (loading && !user)) {
     return <LoadingScreen text="System wird gestartet..." />;
-  }
-
-  // Use ref to prevent flickering during auth state transitions
-  const currentUser = userRef.current || user;
-
-  if (!currentUser) {
-    return (
-      <ErrorBoundary>
-        <BrowserRouter>
-          <Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="*" element={<GoogleSignInScreen />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </ErrorBoundary>
-    );
   }
 
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        {/* Offline Indicator */}
-        {!isOnline && (
-          <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center z-[2000] flex items-center justify-center gap-2">
-            <WifiOff className="w-3 h-3" />
-            OFFLINE-MODUS AKTIV
-          </div>
-        )}
+        <div className="min-h-screen bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
+          {/* Offline Indicator */}
+          {!isOnline && (
+            <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center z-[2000] flex items-center justify-center gap-2">
+              <WifiOff className="w-3 h-3" />
+              OFFLINE-MODUS AKTIV
+            </div>
+          )}
 
-        <Suspense fallback={<SplashScreen />}>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="visits/new" element={<VisitWorkflow />} />
-              <Route path="templates" element={<FormTemplates />} />
-              <Route path="templates/new" element={<FormBuilder />} />
-              <Route path="templates/:id/edit" element={<FormBuilder />} />
-              <Route path="templates/:templateId/fill" element={<FormFilling />} />
-              <Route path="submissions" element={<Submissions />} />
-              <Route path="submissions/:id" element={<SubmissionDetail />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-            <Route path="/auth/callback" element={<AuthCallback />} />
-          </Routes>
-        </Suspense>
-        <Toaster />
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+
+              {!user ? (
+                // Unauthenticated routes
+                <Route path="*" element={<GoogleSignInScreen />} />
+              ) : (
+                // Authenticated routes
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="visits/new" element={<VisitWorkflow />} />
+                  <Route path="templates" element={<FormTemplates />} />
+                  <Route path="templates/new" element={<FormBuilder />} />
+                  <Route path="templates/:id/edit" element={<FormBuilder />} />
+                  <Route path="templates/:templateId/fill" element={<FormFilling />} />
+                  <Route path="submissions" element={<Submissions />} />
+                  <Route path="submissions/:id" element={<SubmissionDetail />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Route>
+              )}
+            </Routes>
+          </Suspense>
+          <Toaster />
+        </div>
       </BrowserRouter>
     </ErrorBoundary>
   );

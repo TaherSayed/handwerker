@@ -23,52 +23,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialized: false,
 
   initialize: async () => {
+    // Prevent double initialization
+    if (get().initialized) return;
+
     try {
-      // 1. Immediate Hydration from Cache (Super Fast - Unlock UI immediately)
-      const cachedProfile = localStorage.getItem(CACHE_KEY);
-      if (cachedProfile) {
-        try {
-          const profile = JSON.parse(cachedProfile);
-          set({ profile, loading: false, initialized: true }); // Unlock UI immediately
-        } catch (e) {
-          console.error('Failed to parse cached profile');
-          localStorage.removeItem(CACHE_KEY);
-        }
-      } else {
-        // If no cache, unblock UI immediately (user can sign in)
-        set({ loading: false, initialized: true });
+      // 1. Initial Session Check (Blocking to prevent loop)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Initial session check error:', sessionError);
       }
 
-      // 2. Race Session Check (Don't block - run in background)
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 1500));
+      if (session?.user) {
+        set({ user: session.user });
+        // Fetch profile but don't strictly block UI if we have a cache
+        const cachedProfile = localStorage.getItem(CACHE_KEY);
+        if (cachedProfile) {
+          set({ profile: JSON.parse(cachedProfile) });
+        }
+        // Refresh in background
+        get().refreshProfile().catch(() => { });
+      } else {
+        // No session found, clear cache to be safe
+        localStorage.removeItem(CACHE_KEY);
+        set({ user: null, profile: null });
+      }
 
-      Promise.race([sessionPromise, timeoutPromise])
-        .then((result: any) => {
-          const { data: { session } } = result || { data: { session: null } };
-          if (session?.user) {
-            set({ user: session.user });
-            // Background refresh ensures data consistency without blocking
-            get().refreshProfile().catch(() => {});
-          }
-        })
-        .catch((error) => {
-          console.warn('Auth check slow/failed, using cache if available:', error);
-        });
-
-      // 3. Setup Listeners (non-blocking)
+      // 2. Setup Real-time Listener
       supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        console.log('Auth state change:', event, session?.user?.email);
+
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
           set({ user: session.user });
-          get().refreshProfile().catch(() => {});
+          get().refreshProfile().catch(() => { });
         } else if (event === 'SIGNED_OUT') {
           set({ user: null, profile: null });
           localStorage.removeItem(CACHE_KEY);
         }
       });
+
     } catch (error) {
       console.error('Initialize critical failure:', error);
-      set({ loading: false, initialized: true });
+    } finally {
+      // Always mark as initialized and stop loading
+      set({ initialized: true, loading: false });
     }
   },
 
@@ -77,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          // Use absolute URL for callback if possible, or reliable origin
           redirectTo: `${window.location.origin}/auth/callback`,
           scopes: 'email profile https://www.googleapis.com/auth/contacts.readonly',
           queryParams: {
@@ -97,9 +96,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signOut: async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem(CACHE_KEY);
-    set({ user: null, profile: null });
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem(CACHE_KEY);
+      set({ user: null, profile: null });
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   },
 
   refreshProfile: async () => {
