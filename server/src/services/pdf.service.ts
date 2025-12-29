@@ -10,6 +10,8 @@ interface SubmissionData {
   customer_email?: string;
   customer_phone?: string;
   customer_address?: string;
+  customer_company?: string;
+  customer_notes?: string;
   field_values: Record<string, any>;
   signature_url?: string;
   created_at: string;
@@ -123,17 +125,17 @@ export class PDFService {
 
     // --- Compact Professional Header Section ---
     const headerHeight = 45; // Reduced from 50
-    
+
     // Header background with accent color
     doc.rect(0, 0, pageWidth, headerHeight)
       .fillColor(primaryColor)
       .fill();
-    
+
     // Logo (Left side) - smaller
     let logoX = margin;
     let logoY = 3;
     let logoHeight = 38;
-    
+
     if (data.user.company_logo_url) {
       const logoBuffer = await this.fetchImageBuffer(data.user.company_logo_url);
       if (logoBuffer) {
@@ -161,26 +163,26 @@ export class PDFService {
       .font('Helvetica-Bold')
       .fillColor('#ffffff')
       .text(data.user.company_name || 'OnSite', logoX, logoY + 8);
-    
+
     // Company Info (Right Aligned, white text) - compact
     const companyInfoX = pageWidth - margin;
     let companyInfoY = logoY + 3;
-    
+
     doc.fontSize(7)
       .font('Helvetica')
       .fillColor('#ffffff');
-    
+
     const companyAddress = [
       data.user.company_address,
       data.user.company_city && data.user.company_zip ? `${data.user.company_zip} ${data.user.company_city}` : (data.user.company_city || data.user.company_zip),
       data.user.company_country
     ].filter(Boolean).join(' • ');
-    
+
     if (companyAddress) {
       doc.text(companyAddress, companyInfoX, companyInfoY, { align: 'right', width: 200 });
       companyInfoY += 10;
     }
-    
+
     if (data.user.company_phone) {
       doc.text(data.user.company_phone, companyInfoX, companyInfoY, { align: 'right', width: 200 });
       companyInfoY += 10;
@@ -207,7 +209,7 @@ export class PDFService {
     y += 10;
 
     // Check if template has a KUNDENDATEN section field to avoid duplication
-    const hasKundenSection = data.template.fields.some(f => 
+    const hasKundenSection = data.template.fields.some(f =>
       f.type === 'section' && f.label.toLowerCase().includes('kunden')
     );
 
@@ -215,7 +217,7 @@ export class PDFService {
     if (!hasKundenSection) {
       const customerBoxHeight = 45;
       const customerBoxY = y;
-      
+
       // Box with border and subtle background
       doc.rect(margin, customerBoxY, pageWidth - (margin * 2), customerBoxHeight)
         .fillColor('#f9fafb')
@@ -223,34 +225,37 @@ export class PDFService {
         .strokeColor('#e5e7eb')
         .lineWidth(1)
         .stroke();
-      
+
       // Section label with accent background - smaller
       doc.rect(margin, customerBoxY, 100, 15)
         .fillColor(accentColor)
         .fill();
-      
+
       doc.fontSize(7)
         .font('Helvetica-Bold')
         .fillColor('#ffffff')
         .text('KUNDENDATEN', margin + 6, customerBoxY + 4);
-      
+
       let infoY = customerBoxY + 18;
       const leftColX = margin + 12;
       const rightColX = pageWidth / 2 + 5;
-      
+
       // Customer Name (prominent but compact)
       if (data.customer_name) {
+        let nameText = data.customer_name;
+        if (data.customer_company) nameText += ` (${data.customer_company})`;
+
         doc.fontSize(10)
           .font('Helvetica-Bold')
           .fillColor(primaryColor)
-          .text(data.customer_name, leftColX, infoY);
+          .text(nameText, leftColX, infoY);
         infoY += 11;
       }
-      
+
       doc.fontSize(7)
         .font('Helvetica')
         .fillColor('#4b5563');
-      
+
       // Two column layout for contact info - compact
       if (data.customer_email) {
         doc.text(`E-Mail: ${data.customer_email}`, leftColX, infoY, { width: 200 });
@@ -259,9 +264,14 @@ export class PDFService {
         doc.text(`Tel: ${data.customer_phone}`, rightColX, infoY, { width: 200 });
       }
       infoY += 10;
-      
+
       if (data.customer_address) {
         doc.text(`Adresse: ${data.customer_address}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 24 });
+        infoY += 10;
+      }
+
+      if (data.customer_notes) {
+        doc.fontSize(6).font('Helvetica-Oblique').text(`Notiz: ${data.customer_notes}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 24 });
       }
 
       y = customerBoxY + customerBoxHeight + 10;
@@ -273,7 +283,7 @@ export class PDFService {
     let currentCol = 0;
     let colX = margin;
     const fieldHeight = 24; // Reduced from 28
-    
+
     for (const field of data.template.fields) {
       // Prevent page break if we can fit content - be more aggressive
       if (y > pageHeight - 60) {
@@ -299,7 +309,7 @@ export class PDFService {
         doc.rect(margin, y, pageWidth - (margin * 2), 15)
           .fillColor('#f3f4f6')
           .fill();
-        
+
         doc.fontSize(9)
           .font('Helvetica-Bold')
           .fillColor(primaryColor)
@@ -313,7 +323,7 @@ export class PDFService {
         colX = margin;
         currentCol = 0;
       }
-      
+
       doc.rect(colX, y, field.type === 'signature' || field.type === 'photo' ? pageWidth - (margin * 2) : fieldWidth, fieldHeight)
         .fillColor('#ffffff')
         .fill()
@@ -326,11 +336,11 @@ export class PDFService {
         .font('Helvetica-Bold')
         .fillColor('#6b7280')
         .text(field.label, colX + 5, y + 3);
-      
+
       // Field Value (below label, compact)
       const valueY = y + 10;
       const valueWidth = (field.type === 'signature' || field.type === 'photo') ? pageWidth - (margin * 2) - 10 : fieldWidth - 10;
-      
+
       if (field.type === 'photo' && value) {
         const photoBuffer = await this.fetchImageBuffer(value);
         if (photoBuffer) {
@@ -385,11 +395,11 @@ export class PDFService {
           y += fieldHeight + 4;
         }
       }
-      
+
       // Track current page as having content
       lastContentPage = doc.page.number - 1;
     }
-    
+
     // If we ended on the first column, move to next row
     if (currentCol === 1) {
       y += fieldHeight + 4;
@@ -397,7 +407,7 @@ export class PDFService {
 
     // --- Compact Signature Section (if not already included in fields) ---
     const hasSignatureField = data.template.fields.some(f => f.type === 'signature');
-    
+
     if (!hasSignatureField && data.signature_url) {
       // Only add if we have space on current page
       if (y > pageHeight - 45) {
@@ -406,7 +416,7 @@ export class PDFService {
       }
 
       y += 5;
-      
+
       // Very compact signature box
       const signatureBoxHeight = 35;
       doc.rect(margin, y, pageWidth - (margin * 2), signatureBoxHeight)
@@ -415,17 +425,17 @@ export class PDFService {
         .strokeColor('#e5e7eb')
         .lineWidth(1)
         .stroke();
-      
+
       doc.fontSize(7)
         .font('Helvetica-Bold')
         .fillColor(primaryColor)
         .text('Unterschrift', margin + 6, y + 4);
-      
+
       const sigBuffer = await this.fetchImageBuffer(data.signature_url);
       if (sigBuffer) {
         doc.image(sigBuffer, margin + 6, y + 12, { height: 20 });
       }
-      
+
       y += signatureBoxHeight + 5;
     }
 
@@ -436,28 +446,28 @@ export class PDFService {
     // Use the tracked last content page to determine total pages
     // This ensures we only add footers to pages that actually have content
     const totalPages = lastContentPage + 1;
-    
+
     // Only add footers to pages that have content (0-indexed)
     for (let i = 0; i < totalPages; i++) {
       doc.switchToPage(i);
-      
+
       // Footer background
       doc.rect(0, pageHeight - 40, pageWidth, 40)
         .fillColor('#f9fafb')
         .fill();
-      
+
       // Footer text
-      const footerText = `Generiert durch ${data.user.company_name || 'OnSite'} - ${new Date(data.created_at).toLocaleDateString('de-DE', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
+      const footerText = `Generiert durch ${data.user.company_name || 'OnSite'} - ${new Date(data.created_at).toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
       })}`;
-      
+
       doc.fontSize(8)
         .font('Helvetica')
         .fillColor('#6b7280')
         .text(footerText, margin, pageHeight - 25, { align: 'center' });
-      
+
       // Page number - use actual total pages with content
       doc.text(`Seite ${i + 1} von ${totalPages}`, pageWidth - margin - 50, pageHeight - 25, { align: 'right' });
     }
