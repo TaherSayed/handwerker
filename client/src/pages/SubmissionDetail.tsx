@@ -138,9 +138,18 @@ export default function SubmissionDetail() {
   };
 
   const handleShare = async () => {
+    let formattedDate = '';
+    try {
+      if (submission?.created_at) {
+        formattedDate = format(new Date(submission.created_at), 'dd.MM.yyyy', { locale: de });
+      }
+    } catch (e) {
+      console.warn('Date formatting failed', e);
+    }
+
     const shareData = {
       title: `Einsatzbericht - ${submission?.customer_name || 'Bericht'}`,
-      text: `Einsatzbericht für ${submission?.customer_name} vom ${submission?.created_at ? format(new Date(submission.created_at), 'dd.MM.yyyy') : ''}`,
+      text: `Einsatzbericht für ${submission?.customer_name || 'Kunde'} ${formattedDate ? 'vom ' + formattedDate : ''}`,
       url: window.location.href,
     };
 
@@ -365,6 +374,23 @@ export default function SubmissionDetail() {
               <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-dark-highlight rounded-2xl">
                 <MapPin className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">{submission.customer_address}</p>
+              </div>
+            </div>
+          )}
+          {submission?.created_at && (
+            <div className="flex items-center gap-3 text-slate-500 dark:text-dark-text-muted">
+              <Clock className="w-5 h-5 text-indigo-500" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">Erstellt am</span>
+                <span className="font-bold text-sm">
+                  {(() => {
+                    try {
+                      return format(new Date(submission.created_at), 'PPPp', { locale: de });
+                    } catch (e) {
+                      return submission.created_at;
+                    }
+                  })()}
+                </span>
               </div>
             </div>
           )}

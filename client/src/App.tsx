@@ -8,6 +8,7 @@ import Toaster from './components/Toaster';
 import { useNotificationStore } from './store/notificationStore';
 import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
+import ErrorBoundary from './components/ErrorBoundary';
 // Lazy load sync service to avoid blocking initial load
 let syncServiceLoaded = false;
 const loadSyncService = () => {
@@ -161,49 +162,53 @@ function App() {
 
   // Use ref to prevent flickering during auth state transitions
   const currentUser = userRef.current || user;
-  
+
   if (!currentUser) {
     return (
-      <BrowserRouter>
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="*" element={<GoogleSignInScreen />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="*" element={<GoogleSignInScreen />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ErrorBoundary>
     );
   }
 
   return (
-    <BrowserRouter>
-      {/* Offline Indicator */}
-      {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center z-[2000] flex items-center justify-center gap-2">
-          <WifiOff className="w-3 h-3" />
-          OFFLINE-MODUS AKTIV
-        </div>
-      )}
+    <ErrorBoundary>
+      <BrowserRouter>
+        {/* Offline Indicator */}
+        {!isOnline && (
+          <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center z-[2000] flex items-center justify-center gap-2">
+            <WifiOff className="w-3 h-3" />
+            OFFLINE-MODUS AKTIV
+          </div>
+        )}
 
-      <Suspense fallback={<SplashScreen />}>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="visits/new" element={<VisitWorkflow />} />
-            <Route path="templates" element={<FormTemplates />} />
-            <Route path="templates/new" element={<FormBuilder />} />
-            <Route path="templates/:id/edit" element={<FormBuilder />} />
-            <Route path="templates/:templateId/fill" element={<FormFilling />} />
-            <Route path="submissions" element={<Submissions />} />
-            <Route path="submissions/:id" element={<SubmissionDetail />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Routes>
-      </Suspense>
-      <Toaster />
-    </BrowserRouter>
+        <Suspense fallback={<SplashScreen />}>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="visits/new" element={<VisitWorkflow />} />
+              <Route path="templates" element={<FormTemplates />} />
+              <Route path="templates/new" element={<FormBuilder />} />
+              <Route path="templates/:id/edit" element={<FormBuilder />} />
+              <Route path="templates/:templateId/fill" element={<FormFilling />} />
+              <Route path="submissions" element={<Submissions />} />
+              <Route path="submissions/:id" element={<SubmissionDetail />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Routes>
+        </Suspense>
+        <Toaster />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

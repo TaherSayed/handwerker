@@ -198,11 +198,113 @@ class FormFieldWidget extends StatelessWidget {
           ],
         );
 
+      case 'section':
+      case 'page':
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: field.type == 'page'
+                ? Colors.indigo.withOpacity(0.05)
+                : Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color: field.type == 'page'
+                    ? Colors.indigo[100]!
+                    : Colors.grey[300]!),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                field.label.toUpperCase(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: field.type == 'page' ? 16 : 14,
+                  color: field.type == 'page'
+                      ? Colors.indigo[900]
+                      : Colors.grey[800],
+                ),
+              ),
+              if (field.help_text != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  field.help_text!,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ],
+          ),
+        );
+
+      case 'divider':
+        return const Divider(height: 32, thickness: 1);
+
+      case 'starrating':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: List.generate(5, (index) {
+                return IconButton(
+                  icon: Icon(
+                    index < (value ?? 0) ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () => onChanged(index + 1),
+                );
+              }),
+            ),
+          ],
+        );
+
+      case 'scalerating':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Slider(
+              value: (value ?? 0).toDouble(),
+              min: 0,
+              max: 10,
+              divisions: 10,
+              label: value?.toString(),
+              onChanged: (val) => onChanged(val.toInt()),
+            ),
+          ],
+        );
+
+      case 'spinner':
+        return Row(
+          children: [
+            Expanded(
+                child: Text(field.label,
+                    style: const TextStyle(fontWeight: FontWeight.bold))),
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: () => onChanged((value ?? 0) - 1),
+            ),
+            Text((value ?? 0).toString(),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              onPressed: () => onChanged((value ?? 0) + 1),
+            ),
+          ],
+        );
+
       default:
         return TextFormField(
           decoration: InputDecoration(
             labelText: field.label,
             border: const OutlineInputBorder(),
+            helperText: field.help_text,
           ),
           initialValue: value?.toString(),
           onChanged: onChanged,

@@ -38,8 +38,9 @@ const FIELD_CATEGORIES = {
     { value: 'scalerating', label: 'Skalenbewertung', icon: BarChart3, color: '#14b8a6' },
   ],
   page: [
+    { value: 'section', label: 'Abschnitt', icon: ListOrdered, color: '#4f46e5' },
+    { value: 'page', label: 'Neue Seite', icon: FilePlus, color: '#4f46e5' },
     { value: 'divider', label: 'Trennlinie', icon: Minus, color: '#64748b' },
-    { value: 'section', label: 'Abschnitt', icon: Plus, color: '#4f46e5' },
   ],
   advanced: [
     { value: 'signature', label: 'Unterschrift', icon: PenTool, color: '#ef4444' },
@@ -635,6 +636,16 @@ export default function FormBuilder() {
               {field.label || 'Abschnitt Name'}
             </h3>
             {field.help_text && <p className="text-sm text-slate-500 mt-1">{field.help_text}</p>}
+          </div>
+        );
+      case 'page':
+        return (
+          <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-4 bg-primary-50/30 -mx-4 px-4">
+            <h2 className="text-xl font-black text-primary-700 uppercase tracking-tighter flex items-center gap-3">
+              <span className="bg-primary-500 text-white w-8 h-8 rounded-lg flex items-center justify-center text-sm">P</span>
+              {field.label || 'Neue Seite'}
+            </h2>
+            {field.help_text && <p className="text-sm text-slate-500 mt-2 font-medium">{field.help_text}</p>}
           </div>
         );
       case 'spinner':

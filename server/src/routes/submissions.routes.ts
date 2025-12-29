@@ -17,7 +17,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
 
     let query = userClient
       .from('submissions')
-      .select('*, form_templates(name), submission_photos(count)')
+      .select('*, form_templates(name)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -31,13 +31,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     const { data, error } = await query;
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('[Submissions] Index error:', error);
+      return res.status(400).json({ error: error.message, success: false });
     }
 
     res.json(data);
-  } catch (error) {
+  } catch (error: any) {
     console.error('List submissions error:', error);
-    res.status(500).json({ error: 'Failed to fetch submissions' });
+    res.status(500).json({ error: error.message || 'Failed to fetch submissions', success: false });
   }
 });
 
@@ -86,6 +87,15 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       signature_url,
       status,
     } = req.body;
+
+    // Basic validation
+    if (!template_id) {
+      return res.status(400).json({ error: 'Vorlagen-ID (template_id) ist erforderlich', success: false });
+    }
+
+    if (!customer_name && status === 'submitted') {
+      return res.status(400).json({ error: 'Kundenname ist für Einreichungen erforderlich', success: false });
+    }
 
     const userClient = supabase.getClientForUser(accessToken);
 
@@ -145,7 +155,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('[Submissions] Create error:', error);
+      return res.status(400).json({ error: error.message, success: false });
     }
 
     res.status(201).json(data);

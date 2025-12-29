@@ -300,21 +300,38 @@ export class PDFService {
 
       const value = data.field_values[field.id];
 
-      if (field.type === 'section') {
-        // Section takes full width
+      if (field.type === 'section' || field.type === 'page') {
+        // Section/Page takes full width
+        currentCol = 0;
+        colX = margin;
+
+        const isPage = field.type === 'page';
+        y += isPage ? 10 : 5;
+
+        // Header with background
+        doc.rect(margin, y, pageWidth - (margin * 2), isPage ? 20 : 15)
+          .fillColor(isPage ? primaryColor : '#f3f4f6')
+          .fill();
+
+        doc.fontSize(isPage ? 10 : 9)
+          .font('Helvetica-Bold')
+          .fillColor(isPage ? '#ffffff' : primaryColor)
+          .text(field.label.toUpperCase(), margin + 6, y + (isPage ? 5 : 3));
+
+        y += isPage ? 24 : 18;
+        continue;
+      }
+
+      if (field.type === 'divider') {
         currentCol = 0;
         colX = margin;
         y += 5;
-        // Section header with background - more compact
-        doc.rect(margin, y, pageWidth - (margin * 2), 15)
-          .fillColor('#f3f4f6')
-          .fill();
-
-        doc.fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor(primaryColor)
-          .text(field.label.toUpperCase(), margin + 6, y + 3);
-        y += 18;
+        doc.moveTo(margin, y)
+          .lineTo(pageWidth - margin, y)
+          .strokeColor('#e5e7eb')
+          .lineWidth(0.5)
+          .stroke();
+        y += 10;
         continue;
       }
 
@@ -475,8 +492,23 @@ export class PDFService {
 
   private formatValue(type: string, value: any): string {
     if (value === undefined || value === null || value === '') return '-';
-    if (type === 'checkbox' || type === 'toggle') return value ? 'Ja' : 'Nein';
-    if (type === 'date' || type === 'datetime') return new Date(value).toLocaleString('de-DE');
+
+    if (type === 'checkbox' || type === 'toggle') {
+      return value ? 'Ja' : 'Nein';
+    }
+
+    if (type === 'starrating') {
+      return `${value} / 5 ★`;
+    }
+
+    if (type === 'scalerating') {
+      return `${value} / 10`;
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
     return String(value);
   }
 }

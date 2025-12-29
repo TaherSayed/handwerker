@@ -1,0 +1,13 @@
+
+> onsite-forms-api@1.0.0 build
+> tsc
+
+Der Befehl "tsc" ist entweder falsch geschrieben oder
+konnte nicht gefunden werden.
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path C:\Users\taher.sayed.INNOFINO\OneDrive - HBS Software & Automatisierung GmbH\Desktop\SATA Projekt\Handwerker Final\handwerker\server
+npm error workspace onsite-forms-api@1.0.0
+npm error location C:\Users\taher.sayed.INNOFINO\OneDrive - HBS Software & Automatisierung GmbH\Desktop\SATA Projekt\Handwerker Final\handwerker\server
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc

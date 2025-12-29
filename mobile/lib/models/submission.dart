@@ -5,6 +5,8 @@ class Submission {
   final String? customerEmail;
   final String? customerPhone;
   final String? customerAddress;
+  final String? customerCompany;
+  final String? customerNotes;
   final String? customerContactId;
   final Map<String, dynamic> fieldValues;
   final String? signatureUrl;
@@ -21,6 +23,8 @@ class Submission {
     this.customerEmail,
     this.customerPhone,
     this.customerAddress,
+    this.customerCompany,
+    this.customerNotes,
     this.customerContactId,
     required this.fieldValues,
     this.signatureUrl,
@@ -39,6 +43,8 @@ class Submission {
       customerEmail: json['customer_email'],
       customerPhone: json['customer_phone'],
       customerAddress: json['customer_address'],
+      customerCompany: json['customer_company'],
+      customerNotes: json['customer_notes'],
       customerContactId: json['customer_contact_id'],
       fieldValues: Map<String, dynamic>.from(json['field_values'] ?? {}),
       signatureUrl: json['signature_url'],
@@ -60,6 +66,8 @@ class Submission {
       'customer_email': customerEmail,
       'customer_phone': customerPhone,
       'customer_address': customerAddress,
+      'customer_company': customerCompany,
+      'customer_notes': customerNotes,
       'customer_contact_id': customerContactId,
       'field_values': fieldValues,
       'signature_url': signatureUrl,
@@ -76,6 +84,8 @@ class Submission {
     String? customerEmail,
     String? customerPhone,
     String? customerAddress,
+    String? customerCompany,
+    String? customerNotes,
     Map<String, dynamic>? fieldValues,
     String? signatureUrl,
     String? status,
@@ -87,6 +97,8 @@ class Submission {
       customerEmail: customerEmail ?? this.customerEmail,
       customerPhone: customerPhone ?? this.customerPhone,
       customerAddress: customerAddress ?? this.customerAddress,
+      customerCompany: customerCompany ?? this.customerCompany,
+      customerNotes: customerNotes ?? this.customerNotes,
       customerContactId: customerContactId,
       fieldValues: fieldValues ?? this.fieldValues,
       signatureUrl: signatureUrl ?? this.signatureUrl,
@@ -98,4 +110,3 @@ class Submission {
     );
   }
 }
-

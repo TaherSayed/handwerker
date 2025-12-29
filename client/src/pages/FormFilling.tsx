@@ -193,9 +193,28 @@ export default function FormFilling() {
     switch (field.type) {
       case 'section':
         return (
-          <div className="pt-6 pb-2 border-b-2 border-gray-900 mb-2">
-            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">{field.label}</h3>
-            {field.help_text && <p className="text-sm text-gray-500 mt-1">{field.help_text}</p>}
+          <div className="pt-6 pb-2 border-b-2 border-slate-900 dark:border-dark-stroke mb-2">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">{field.label}</h3>
+            {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
+          </div>
+        );
+
+      case 'page':
+        return (
+          <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-6 bg-primary-50/10 dark:bg-primary-500/5 -mx-8 px-8 rounded-t-3xl">
+            <h2 className="text-2xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter flex items-center gap-3">
+              <span className="bg-primary-500 text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-lg shadow-primary-500/20">P</span>
+              {field.label}
+            </h2>
+            {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted mt-2 font-medium">{field.help_text}</p>}
+          </div>
+        );
+
+      case 'divider':
+        return (
+          <div className="py-6">
+            <div className="border-t-2 border-slate-100 dark:border-dark-stroke"></div>
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-2 text-center uppercase tracking-widest">{field.help_text}</p>}
           </div>
         );
 
@@ -284,6 +303,49 @@ export default function FormFilling() {
               <option key={option} value={option}>{option}</option>
             ))}
           </select>
+        );
+
+      case 'starrating':
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => handleFieldChange(field.id, star)}
+                  className={`text-3xl transition-all duration-200 ${(parseFloat(value) || 0) >= star ? 'text-warning-light scale-110' : 'text-slate-200 dark:text-dark-highlight hover:text-warning-light/50'
+                    }`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'scalerating':
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-widest">
+              <span>{field.options?.[0] || 'Garnicht'}</span>
+              <span>{field.options?.[1] || 'Sehr'}</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              step="1"
+              value={value || 5}
+              onChange={(e) => handleFieldChange(field.id, parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-100 dark:bg-dark-highlight rounded-lg appearance-none cursor-pointer accent-primary-500"
+            />
+            <div className="flex justify-between px-1">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                <span key={n} className={`text-[10px] font-bold ${parseInt(value) === n ? 'text-primary-500' : 'text-slate-300'}`}>{n}</span>
+              ))}
+            </div>
+          </div>
         );
 
       case 'date':
