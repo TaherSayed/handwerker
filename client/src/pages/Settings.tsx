@@ -3,9 +3,9 @@ import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
 import { supabase } from '../services/supabase';
 import {
-  User, Building, ShieldCheck, CheckCircle2, Loader2, Info,
-  Settings as SettingsIcon, Sun, Moon, Database, Palette, LogOut, ChevronRight, ArrowLeft,
-  Mail, Phone, MapPin, Globe, Trash2, Sliders
+  User, Building, ShieldCheck, CheckCircle2, Loader2,
+  Sun, Moon, Database, Palette, LogOut, ChevronRight, ArrowLeft,
+  Mail, Trash2, Sliders
 } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import Button from '../components/common/Button';
@@ -195,8 +195,8 @@ export default function Settings() {
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             className={`group w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${isActive
-                ? 'bg-primary-500 text-white border-primary-600 shadow-md ring-2 ring-primary-500/20'
-                : 'bg-white dark:bg-dark-card text-slate-700 dark:text-dark-text-body border-slate-200 dark:border-dark-stroke hover:border-primary-400 hover:shadow-sm'
+              ? 'bg-primary-500 text-white border-primary-600 shadow-md ring-2 ring-primary-500/20'
+              : 'bg-white dark:bg-dark-card text-slate-700 dark:text-dark-text-body border-slate-200 dark:border-dark-stroke hover:border-primary-400 hover:shadow-sm'
               }`}
           >
             <div className="flex items-center gap-4">
@@ -274,7 +274,7 @@ export default function Settings() {
 
         {/* Content Panel */}
         {activeTab !== 'hub' && (
-          <div className={`flex-1 w-full bg-white dark:bg-dark-card rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-dark-stroke shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300 ${activeTab !== 'hub' && isMobile ? 'animate-slide-in-mechanical' : ''}`}>
+          <div className={`flex-1 w-full bg-white dark:bg-dark-card rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-dark-stroke shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300 ${isMobile ? 'animate-slide-in-mechanical' : ''}`}>
             <div className="p-8 md:p-12 space-y-12">
 
               {/* PROFILE TAB */}
@@ -444,8 +444,8 @@ export default function Settings() {
                       <button
                         onClick={() => theme !== 'light' && toggleTheme()}
                         className={`p-6 rounded-[32px] border-2 transition-all flex flex-col gap-6 items-start text-left ${theme === 'light'
-                            ? 'border-primary-500 bg-primary-50/50 shadow-lg'
-                            : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
+                          ? 'border-primary-500 bg-primary-50/50 shadow-lg'
+                          : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
                           }`}
                       >
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme === 'light' ? 'bg-primary-500 text-white' : 'bg-white dark:bg-dark-card text-amber-500 shadow-sm'}`}>
@@ -461,8 +461,8 @@ export default function Settings() {
                       <button
                         onClick={() => theme !== 'dark' && toggleTheme()}
                         className={`p-6 rounded-[32px] border-2 transition-all flex flex-col gap-6 items-start text-left ${theme === 'dark'
-                            ? 'border-primary-500 bg-primary-50/50 shadow-lg'
-                            : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
+                          ? 'border-primary-500 bg-primary-50/50 shadow-lg'
+                          : 'border-slate-100 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-input hover:border-slate-300 shadow-sm'
                           }`}
                       >
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme === 'dark' ? 'bg-primary-500 text-white' : 'bg-slate-800 text-blue-400 shadow-sm'}`}>
