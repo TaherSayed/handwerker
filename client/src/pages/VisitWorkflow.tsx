@@ -53,7 +53,7 @@ export default function VisitWorkflow() {
     // Load templates and initial template on mount
     useEffect(() => {
         let isMounted = true;
-        
+
         const loadData = async () => {
             if (initialTemplateId) {
                 try {
@@ -65,7 +65,7 @@ export default function VisitWorkflow() {
                     console.error('Failed to load initial template:', err);
                 }
             }
-            
+
             setIsLoadingTemplates(true);
             try {
                 const timeoutPromise = new Promise((_, reject) =>
@@ -84,9 +84,9 @@ export default function VisitWorkflow() {
                 }
             }
         };
-        
+
         loadData();
-        
+
         return () => {
             isMounted = false;
         };
@@ -114,12 +114,42 @@ export default function VisitWorkflow() {
         setSelectedTemplate(template);
         // Initialize fields
         const initialValues: Record<string, any> = {};
+
+        // Auto-populate from customer/contact data
+        const customerData = isManualCustomer ? manualCustomer : customer;
+
         template.fields?.forEach((f: any) => {
-            if (f.default_value !== undefined) initialValues[f.id] = f.default_value;
-            else if (f.type === 'checkbox' || f.type === 'toggle') initialValues[f.id] = false;
+            const label = f.label?.toLowerCase() || '';
+
+            // Mapping rules: Fill if empty (default_value is undefined here)
+            if (customerData) {
+                if (label.includes('name') || label.includes('kunde')) {
+                    initialValues[f.id] = customerData.name || '';
+                } else if (label.includes('email') || label.includes('e-mail')) {
+                    initialValues[f.id] = customerData.email || '';
+                } else if (label.includes('tel') || label.includes('phone') || label.includes('mobil')) {
+                    initialValues[f.id] = customerData.phone || '';
+                } else if (label.includes('adresse') || label.includes('anschrift') || label.includes('ort')) {
+                    initialValues[f.id] = customerData.address || '';
+                } else if (label.includes('firma') || label.includes('betrieb') || label.includes('company')) {
+                    // GoogleContact vs manualCustomer field naming
+                    initialValues[f.id] = (customerData as any).company || '';
+                }
+            }
+
+            // Fallback to default values if not mapped
+            if (initialValues[f.id] === undefined) {
+                if (f.default_value !== undefined) initialValues[f.id] = f.default_value;
+                else if (f.type === 'checkbox' || f.type === 'toggle') initialValues[f.id] = false;
+            }
         });
+
         setFieldValues(initialValues);
         setCurrentStep('form');
+
+        if (customerData) {
+            useNotificationStore.getState().success('Daten übernommen', 'Kundendaten wurden automatisch in das Formular eingefügt.');
+        }
     };
 
     const handleFieldChange = (fieldId: string, value: any) => {
@@ -175,7 +205,7 @@ export default function VisitWorkflow() {
                 try {
                     const pdfResult = await apiService.generatePDF(result.id) as any;
                     const pdfUrl = pdfResult.pdf_url;
-                    
+
                     // Download and store PDF locally
                     let localPdfId = pdfUrl;
                     try {
@@ -184,7 +214,7 @@ export default function VisitWorkflow() {
                         console.warn('Failed to store PDF locally:', storeErr);
                         // Continue with remote URL if local storage fails
                     }
-                    
+
                     setSubmissionResult({ ...result, pdf_url: localPdfId, remote_pdf_url: pdfUrl });
                 } catch (err) {
                     console.warn('PDF generation failed, but submission succeeded:', err);
@@ -210,9 +240,9 @@ export default function VisitWorkflow() {
         switch (field.type) {
             case 'section':
                 return (
-                    <div className="pt-8 pb-2 border-b-2 border-slate-900 mb-4 first:pt-0">
-                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{field.label}</h3>
-                        {field.help_text && <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">{field.help_text}</p>}
+                    <div className="pt-8 pb-2 border-b-2 border-slate-900 dark:border-white mb-4 first:pt-0">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{field.label}</h3>
+                        {field.help_text && <p className="text-xs text-slate-500 dark:text-dark-text-muted font-bold mt-1 uppercase tracking-widest">{field.help_text}</p>}
                     </div>
                 );
 
@@ -231,14 +261,14 @@ export default function VisitWorkflow() {
             case 'checkbox':
             case 'toggle':
                 return (
-                    <label className="flex items-center gap-4 cursor-pointer p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                    <label className="flex items-center gap-4 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-xl transition-colors">
                         <input
                             type="checkbox"
                             checked={value || false}
                             onChange={(e) => handleFieldChange(field.id, e.target.checked)}
-                            className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            className="w-6 h-6 rounded-lg border-slate-300 dark:border-dark-stroke bg-white dark:bg-dark-input text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="font-bold text-slate-700 text-sm uppercase tracking-tight">{field.label}</span>
+                        <span className="font-bold text-slate-700 dark:text-dark-text-body text-sm uppercase tracking-tight">{field.label}</span>
                     </label>
                 );
 
@@ -286,8 +316,8 @@ export default function VisitWorkflow() {
                 return (
                     <div className="space-y-3">
                         {signature ? (
-                            <div className="relative overflow-hidden rounded-[2rem] border-2 border-slate-100 bg-white shadow-inner">
-                                <img src={signature} alt="Signature" className="w-full h-40 object-contain p-4" />
+                            <div className="relative overflow-hidden rounded-[2rem] border-2 border-slate-100 dark:border-dark-stroke bg-white dark:bg-dark-input shadow-inner">
+                                <img src={signature} alt="Signature" className="w-full h-40 object-contain p-4 dark:brightness-90 dark:invert" />
                                 <button
                                     type="button"
                                     onClick={() => setSignature(null)}
@@ -307,7 +337,7 @@ export default function VisitWorkflow() {
             case 'photo':
                 return (
                     <div className="space-y-4">
-                        <div className={`relative h-48 rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center transition-all ${value ? 'border-indigo-100 bg-indigo-50/30' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                        <div className={`relative h-48 rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center transition-all ${value ? 'border-indigo-100 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20' : 'border-slate-200 dark:border-dark-stroke bg-slate-50 dark:bg-dark-input hover:bg-slate-100 dark:hover:bg-dark-highlight'
                             }`}>
                             {value ? (
                                 <>
@@ -322,7 +352,7 @@ export default function VisitWorkflow() {
                                 </>
                             ) : (
                                 <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center gap-3">
-                                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400">
+                                    <div className="w-12 h-12 bg-white dark:bg-dark-card rounded-2xl shadow-sm flex items-center justify-center text-slate-400 dark:text-dark-text-muted">
                                         <Camera className="w-6 h-6" />
                                     </div>
                                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Capture Photo</p>
@@ -452,20 +482,20 @@ export default function VisitWorkflow() {
                                     </div>
                                     <div className="text-left">
                                         <h3 className="font-bold text-slate-900 dark:text-white text-base">Aus Google Kontakten auswählen</h3>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kunden aus Ihren Google Kontakten importieren</p>
+                                        <p className="text-xs text-slate-500 dark:text-dark-text-muted mt-0.5">Kunden aus Ihren Google Kontakten importieren</p>
                                     </div>
                                 </div>
                                 <Zap className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                             </button>
 
                             <div className="relative py-4">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300"><span className="bg-slate-50 px-6 tracking-[0.2em]">ODER MANUELL</span></div>
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-dark-stroke" /></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-black text-slate-300 dark:text-dark-text-muted"><span className="bg-slate-50 dark:bg-dark-base px-6 tracking-[0.2em]">ODER MANUELL</span></div>
                             </div>
 
                             <form onSubmit={handleManualCustomerSubmit} className="card bg-white dark:bg-dark-card p-8 space-y-6 border-slate-100 dark:border-dark-stroke shadow-2xl shadow-indigo-500/5">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kunde / Projektname</label>
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-widest ml-1">Kunde / Projektname</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -475,7 +505,7 @@ export default function VisitWorkflow() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Standort / Adresse</label>
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-muted uppercase tracking-widest ml-1">Standort / Adresse</label>
                                     <input
                                         type="text"
                                         className="input"
@@ -521,12 +551,12 @@ export default function VisitWorkflow() {
                                     >
                                         {/* Subtle gradient overlay on hover */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/0 via-indigo-50/0 to-indigo-50/0 group-hover:from-indigo-50/30 group-hover:via-indigo-50/20 group-hover:to-transparent dark:group-hover:from-indigo-950/20 dark:group-hover:via-indigo-950/10 dark:group-hover:to-transparent transition-all duration-300 pointer-events-none" />
-                                        
+
                                         {/* Icon Container */}
                                         <div className="relative w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-700/50 dark:to-slate-800/50 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center shrink-0 group-hover:from-indigo-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:scale-105">
                                             <FileText className="w-7 h-7 md:w-8 md:h-8" strokeWidth={2} />
                                         </div>
-                                        
+
                                         {/* Content */}
                                         <div className="flex-1 min-w-0 relative z-10">
                                             <h4 className="text-base md:text-lg font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 leading-snug mb-1.5 line-clamp-1">
@@ -536,7 +566,7 @@ export default function VisitWorkflow() {
                                                 {t.description || 'Service record template'}
                                             </p>
                                         </div>
-                                        
+
                                         {/* Arrow Indicator */}
                                         <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-lg bg-slate-100/80 dark:bg-slate-700/50 flex items-center justify-center group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all duration-300 shrink-0 group-hover:translate-x-1">
                                             <ArrowRight className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
@@ -558,7 +588,7 @@ export default function VisitWorkflow() {
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-white dark:bg-dark-card rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 dark:border-dark-stroke shadow-xl shadow-indigo-500/5">
                             <div className="pb-6 border-b border-slate-100 dark:border-dark-stroke flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.2em]">
+                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black text-[9px] uppercase tracking-[0.2em]">
                                     <User className="w-3.5 h-3.5" />
                                     <span className="truncate">{isManualCustomer ? manualCustomer.name : customer?.name}</span>
                                 </div>
@@ -569,7 +599,7 @@ export default function VisitWorkflow() {
                                 {selectedTemplate.fields?.map((field: any) => (
                                     <div key={field.id} className="space-y-1.5">
                                         {field.type !== 'section' && (
-                                            <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.1em] ml-1 block">
+                                            <label className="text-[10px] font-black text-slate-800 dark:text-dark-text-body uppercase tracking-[0.1em] ml-1 block">
                                                 {field.label}
                                                 {field.required && <span className="text-red-500 ml-1">*</span>}
                                             </label>
@@ -601,7 +631,7 @@ export default function VisitWorkflow() {
                 )}
 
                 {currentStep === 'finish' && submissionResult && (
-                    <FinishStep 
+                    <FinishStep
                         submissionResult={submissionResult}
                         onBack={() => navigate('/dashboard')}
                     />
@@ -689,29 +719,29 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                     const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://hw.sata26.cloud/api';
                     const { supabase } = await import('../services/supabase');
                     const { data: { session } } = await supabase.auth.getSession();
-                    
+
                     if (!session?.access_token) {
                         throw new Error('Nicht authentifiziert');
                     }
-                    
+
                     const directUrl = `${apiBaseUrl}/submissions/${submissionResult.id}/pdf`;
                     const directResponse = await fetch(directUrl, {
                         headers: {
                             'Authorization': `Bearer ${session.access_token}`,
                         },
                     });
-                    
+
                     if (directResponse.ok) {
                         const blob = await directResponse.blob();
                         await handlePDFBlob(blob, submissionResult.id);
                         return;
                     }
-                    
+
                     // If direct download fails, try generating PDF
                     if (directResponse.status === 404 || directResponse.status === 400) {
                         console.log('Direct download failed, trying to generate PDF...');
                         const pdfResult = await apiService.generatePDF(submissionResult.id) as any;
-                        
+
                         // If result is base64 data URL, handle it
                         if (pdfResult.pdf_url && pdfResult.pdf_url.startsWith('data:application/pdf;base64,')) {
                             const base64Data = pdfResult.pdf_url.split(',')[1];
@@ -724,7 +754,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                             await handlePDFBlob(blob, submissionResult.id);
                             return;
                         }
-                        
+
                         // If result is HTTP URL, try fetching it
                         if (pdfResult.pdf_url && pdfResult.pdf_url.startsWith('http')) {
                             const urlResponse = await fetch(pdfResult.pdf_url);
@@ -734,7 +764,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                                 return;
                             }
                         }
-                        
+
                         // If generation returned a URL, try direct download again
                         if (pdfResult.pdf_url) {
                             const retryResponse = await fetch(`${apiBaseUrl}/submissions/${submissionResult.id}/pdf`, {
@@ -749,7 +779,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                             }
                         }
                     }
-                    
+
                     throw new Error(`PDF konnte nicht geladen werden (${directResponse.status})`);
                 } catch (directError: any) {
                     console.error('Direct PDF download failed:', directError);
@@ -759,7 +789,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
 
             // Fallback: Try remote URL if available
             let remoteUrl = (submissionResult as any).remote_pdf_url || submissionResult.pdf_url;
-            
+
             if (remoteUrl && typeof remoteUrl === 'string') {
                 // Handle base64 data URLs
                 if (remoteUrl.startsWith('data:application/pdf;base64,')) {
@@ -780,7 +810,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                         return;
                     }
                 }
-                
+
                 // Handle HTTP URLs
                 if (remoteUrl.startsWith('http')) {
                     try {
@@ -795,7 +825,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                     }
                 }
             }
-            
+
             // If all methods failed, show error
             setPdfError('PDF konnte nicht geladen werden. Bitte versuchen Sie es später erneut.');
             setLoadingPdf(false);
@@ -809,10 +839,10 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
     const handlePDFBlob = async (blob: Blob, submissionId: string) => {
         // Create blob URL for viewing
         const blobUrl = URL.createObjectURL(blob);
-        
+
         // Open in new tab
         window.open(blobUrl, '_blank', 'noopener,noreferrer');
-        
+
         // Also trigger download
         const link = document.createElement('a');
         link.href = blobUrl;
@@ -820,7 +850,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Store locally for future use
         try {
             const fileId = await apiService.downloadAndStorePDF(submissionId, blobUrl);
@@ -831,7 +861,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
         } catch (storeError) {
             console.warn('Failed to store PDF locally:', storeError);
         }
-        
+
         setLoadingPdf(false);
     };
 
@@ -845,10 +875,10 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
             </div>
 
             <div className="space-y-4">
-                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Auftrag erledigt!</h2>
-                <p className="text-slate-500 font-medium text-lg max-w-sm mx-auto">
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Auftrag erledigt!</h2>
+                <p className="text-slate-500 dark:text-dark-text-muted font-medium text-lg max-w-sm mx-auto">
                     Besuchsdokumentation erfolgreich erstellt und gespeichert.
-                    {localPdfUrl && <span className="block mt-2 text-xs text-green-600">✓ Lokal gespeichert</span>}
+                    {localPdfUrl && <span className="block mt-2 text-xs text-green-600 dark:text-green-400">✓ Lokal gespeichert</span>}
                 </p>
             </div>
 
@@ -866,12 +896,12 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                         )}
                     </div>
                 )}
-                
+
                 {(submissionResult.pdf_url || localPdfUrl || submissionResult.id) && !pdfError && (
                     <button
                         onClick={handleViewPDF}
                         disabled={loadingPdf}
-                        className="group flex items-center justify-center gap-3 bg-slate-900 text-white w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-70"
+                        className="group flex items-center justify-center gap-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-black dark:hover:bg-slate-100 transition-all shadow-xl disabled:opacity-70"
                     >
                         {loadingPdf ? (
                             <Loader className="w-5 h-5 animate-spin" />
@@ -885,7 +915,7 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
                 )}
                 <button
                     onClick={onBack}
-                    className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
+                    className="w-full py-4 text-slate-400 dark:text-dark-text-muted font-black text-[10px] uppercase tracking-widest hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                     Zurück zur Übersicht
                 </button>
@@ -965,7 +995,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
     };
 
     return (
-        <div className="w-full h-48 relative bg-white dark:bg-white rounded-[2rem] overflow-hidden">
+        <div className="w-full h-48 relative bg-white rounded-[2rem] overflow-hidden">
             <canvas
                 ref={canvasRef}
                 className="w-full h-full cursor-crosshair touch-none"

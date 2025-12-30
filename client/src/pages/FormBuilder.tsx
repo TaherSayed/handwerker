@@ -233,166 +233,156 @@ export default function FormBuilder() {
     switch (field.type) {
       case 'section':
         return (
-          <div className="pt-4 pb-2 border-b-2 border-slate-300">
-            <h3 className="text-lg font-bold text-slate-900">{field.label || 'Abschnittsüberschrift'}</h3>
-            {field.sublabel && <p className="text-sm text-slate-500 mt-1">{field.sublabel}</p>}
+          <div className="pt-4 pb-2 border-b-2 border-slate-300 dark:border-dark-stroke">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{field.label || 'Abschnittsüberschrift'}</h3>
+            {field.sublabel && <p className="text-sm text-slate-500 dark:text-dark-text-muted mt-1">{field.sublabel}</p>}
           </div>
         );
       case 'text':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Kurzer Text'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="text"
-              disabled
               placeholder={field.placeholder || 'Text eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'fullname':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Vollständiger Name'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="text"
-              disabled
               placeholder={field.placeholder || 'Vor- und Nachname eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'email':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'E-Mail'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="email"
-              disabled
               placeholder={field.placeholder || 'E-Mail-Adresse eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'phone':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Telefon'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="tel"
-              disabled
               placeholder={field.placeholder || 'Telefonnummer eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'fillblank':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Lückentext'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="text"
-              disabled
               placeholder={field.placeholder || 'Text eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'spinner':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Zahlenfeld'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="number"
-              disabled
               placeholder={field.placeholder || 'Zahl eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'number':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Zahl'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="number"
-              disabled
               placeholder={field.placeholder || 'Zahl eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'address':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Adresse'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <textarea
-              disabled
               placeholder={field.placeholder || 'Adresse eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[80px]"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white min-h-[80px]"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'longtext':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Langer Text'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <textarea
-              disabled
               placeholder={field.placeholder || 'Text eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[100px]"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white min-h-[100px]"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'paragraph':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Absatz'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <textarea
-              disabled
               placeholder={field.placeholder || 'Text eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[100px]"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input text-slate-700 dark:text-white min-h-[100px]"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'checkbox':
@@ -405,12 +395,12 @@ export default function FormBuilder() {
             <div className="space-y-2">
               {field.options?.map((opt: string, i: number) => (
                 <label key={i} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" disabled className="w-4 h-4" />
+                  <input type="checkbox" className="w-4 h-4" />
                   <span className="text-sm text-slate-600">{opt}</span>
                 </label>
               ))}
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'radio':
@@ -423,7 +413,7 @@ export default function FormBuilder() {
             <div className="space-y-2">
               {field.options?.map((opt: string, i: number) => (
                 <label key={i} className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" disabled name={`radio_${field.id}`} className="w-4 h-4" />
+                  <input type="radio" name={`radio_${field.id}`} className="w-4 h-4" />
                   <span className="text-sm text-slate-600">{opt}</span>
                 </label>
               ))}
@@ -434,232 +424,228 @@ export default function FormBuilder() {
       case 'toggle':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Ja/Nein'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" disabled className="w-4 h-4" />
-              <span className="text-sm text-slate-600">Ein/Aus</span>
+              <input type="checkbox" className="w-4 h-4 rounded border-slate-300 dark:border-dark-stroke bg-white dark:bg-dark-input" />
+              <span className="text-sm text-slate-600 dark:text-dark-text-body">Ein/Aus</span>
             </label>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'dropdown':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Auswahlliste'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <select disabled className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500">
-              <option>Auswählen...</option>
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
+            <select className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white">
+              <option className="dark:bg-dark-card">Auswählen...</option>
               {field.options?.map((opt: string, i: number) => (
-                <option key={i}>{opt}</option>
+                <option key={i} className="dark:bg-dark-card">{opt}</option>
               ))}
             </select>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'date':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Datumsauswahl'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="date"
-              disabled
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'time':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Uhrzeit'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="time"
-              disabled
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'datetime':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Termin'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <input
               type="datetime-local"
-              disabled
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'notes':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Notizen'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <textarea
-              disabled
               placeholder={field.placeholder || 'Notizen eingeben...'}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 min-h-[80px]"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white min-h-[80px]"
             />
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'signature':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Unterschrift'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <div className="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center">
-              <span className="text-sm text-slate-400">Unterschrift hier</span>
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
+            <div className="w-full h-32 border-2 border-dashed border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input flex items-center justify-center">
+              <span className="text-sm text-slate-400 dark:text-dark-text-muted">Unterschrift hier</span>
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'photo':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Bild'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <div className="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center">
-              <span className="text-sm text-slate-400">Bild hier</span>
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
+            <div className="w-full h-32 border-2 border-dashed border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input flex items-center justify-center">
+              <span className="text-sm text-slate-400 dark:text-dark-text-muted">Bild hier</span>
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'fileupload':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Datei-Upload'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <div className="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center">
-              <span className="text-sm text-slate-400">Datei hier hochladen</span>
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
+            <div className="w-full h-32 border-2 border-dashed border-slate-300 dark:border-dark-stroke rounded-lg bg-slate-50 dark:bg-dark-input flex items-center justify-center">
+              <span className="text-sm text-slate-400 dark:text-dark-text-muted">Datei hier hochladen</span>
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'table':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Eingabetabelle'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
-            <div className="border border-slate-300 rounded-lg overflow-hidden">
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
+            <div className="border border-slate-300 dark:border-dark-stroke rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-slate-100">
+                <thead className="bg-slate-100 dark:bg-dark-highlight">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 border-r border-slate-300">Spalte 1</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Spalte 2</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-white border-r border-slate-300 dark:border-dark-stroke">Spalte 1</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-white">Spalte 2</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="px-3 py-2 border-r border-t border-slate-300">
-                      <input type="text" disabled placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 rounded bg-slate-50 text-slate-500 text-xs" />
+                    <td className="px-3 py-2 border-r border-t border-slate-300 dark:border-dark-stroke">
+                      <input type="text" placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 dark:border-dark-stroke rounded bg-white dark:bg-dark-input text-slate-900 dark:text-white text-xs" />
                     </td>
-                    <td className="px-3 py-2 border-t border-slate-300">
-                      <input type="text" disabled placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 rounded bg-slate-50 text-slate-500 text-xs" />
+                    <td className="px-3 py-2 border-t border-slate-300 dark:border-dark-stroke">
+                      <input type="text" placeholder="Eingabe..." className="w-full px-2 py-1 border border-slate-300 dark:border-dark-stroke rounded bg-white dark:bg-dark-input text-slate-900 dark:text-white text-xs" />
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'starrating':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Sternebewertung'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
-                <span key={star} className="text-2xl text-slate-300">★</span>
+                <span key={star} className="text-2xl text-slate-300 dark:text-dark-stroke cursor-pointer hover:text-yellow-400 transition-colors">★</span>
               ))}
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'scalerating':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Skalenbewertung'} {field.required && <span className="text-red-500">*</span>}
             </label>
-            {field.sublabel && <p className="text-xs text-slate-500 mb-2">{field.sublabel}</p>}
+            {field.sublabel && <p className="text-xs text-slate-500 dark:text-dark-text-muted mb-2">{field.sublabel}</p>}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">1</span>
-              <div className="flex-1 h-2 bg-slate-200 rounded-full">
+              <span className="text-xs text-slate-500 dark:text-dark-text-muted">1</span>
+              <div className="flex-1 h-2 bg-slate-200 dark:bg-dark-highlight rounded-full">
                 <div className="h-full w-0 bg-indigo-500 rounded-full"></div>
               </div>
-              <span className="text-xs text-slate-500">10</span>
+              <span className="text-xs text-slate-500 dark:text-dark-text-muted">10</span>
             </div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'divider':
         return (
           <div className="py-4">
-            <div className="border-t-2 border-slate-300"></div>
-            {field.help_text && <p className="text-xs text-slate-400 mt-2 text-center">{field.help_text}</p>}
+            <div className="border-t-2 border-slate-300 dark:border-dark-stroke"></div>
+            {field.help_text && <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-2 text-center">{field.help_text}</p>}
           </div>
         );
       case 'section':
         return (
-          <div className="pt-6 pb-2 border-b-2 border-slate-900 mb-2">
-            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight">
+          <div className="pt-6 pb-2 border-b-2 border-slate-900 dark:border-white mb-2">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">
               {field.label || 'Abschnitt Name'}
             </h3>
-            {field.help_text && <p className="text-sm text-slate-500 mt-1">{field.help_text}</p>}
+            {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted mt-1">{field.help_text}</p>}
           </div>
         );
       case 'page':
         return (
-          <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-4 bg-primary-50/30 -mx-4 px-4">
-            <h2 className="text-xl font-black text-primary-700 uppercase tracking-tighter flex items-center gap-3">
+          <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-4 bg-primary-50/30 dark:bg-primary-900/10 -mx-4 px-4">
+            <h2 className="text-xl font-black text-primary-700 dark:text-primary-400 uppercase tracking-tighter flex items-center gap-3">
               <span className="bg-primary-500 text-white w-8 h-8 rounded-lg flex items-center justify-center text-sm">P</span>
               {field.label || 'Neue Seite'}
             </h2>
-            {field.help_text && <p className="text-sm text-slate-500 mt-2 font-medium">{field.help_text}</p>}
+            {field.help_text && <p className="text-sm text-slate-500 dark:text-dark-text-muted mt-2 font-medium">{field.help_text}</p>}
           </div>
         );
       case 'spinner':
         return (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-dark-text-body mb-1">
               {field.label || 'Zahlenfeld'} {field.required && <span className="text-red-500">*</span>}
             </label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 flex justify-between items-center">
+              <div className="flex-1 px-3 py-2 border border-slate-300 dark:border-dark-stroke rounded-lg bg-white dark:bg-dark-input text-slate-900 dark:text-white flex justify-between items-center">
                 <span>0</span>
                 <div className="flex gap-2">
-                  <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold">-</span>
-                  <span className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center font-bold">+</span>
+                  <button className="w-6 h-6 rounded bg-slate-100 dark:bg-dark-highlight hover:bg-slate-200 dark:hover:bg-dark-stroke flex items-center justify-center font-bold transition-colors text-slate-700 dark:text-white">-</button>
+                  <button className="w-6 h-6 rounded bg-slate-100 dark:bg-dark-highlight hover:bg-slate-200 dark:hover:bg-dark-stroke flex items-center justify-center font-bold transition-colors text-slate-700 dark:text-white">+</button>
                 </div>
               </div>
             </div>
@@ -682,9 +668,9 @@ export default function FormBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-dark-bg">
       {/* Top Header Bar */}
-      <div className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+      <div className="sticky top-0 z-40 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-stroke shadow-sm">
         <div className="max-w-[1920px] mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -696,7 +682,7 @@ export default function FormBuilder() {
                 <X className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-lg font-bold text-slate-900">
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white">
                   {id ? 'Vorlage bearbeiten' : 'Neue Vorlage erstellen'}
                 </h1>
               </div>

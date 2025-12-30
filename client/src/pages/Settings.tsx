@@ -233,7 +233,7 @@ const Settings: React.FC = () => {
 
   const renderProfileTab = () => (
     <div className="space-y-10 animate-fade-in">
-      <div className="flex items-center gap-6 p-6 bg-slate-50/50 dark:bg-dark-input rounded-3xl border border-slate-100 dark:border-dark-stroke">
+      <div className="flex items-center gap-6 p-6 bg-slate-50/50 dark:bg-dark-highlight rounded-3xl border border-slate-100 dark:border-dark-stroke">
         <div className="w-20 h-20 rounded-2xl border-4 border-white dark:border-dark-card shadow-lg overflow-hidden shrink-0">
           {avatarUrl ? (
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -295,8 +295,8 @@ const Settings: React.FC = () => {
     <div className="space-y-10 animate-fade-in">
       <div className="space-y-4">
         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Firmenbranding</label>
-        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-dark-stroke bg-slate-50/30">
-          <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white dark:bg-dark-card rounded-[32px] shadow-inner overflow-hidden flex items-center justify-center p-4 border border-slate-100">
+        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-dark-stroke bg-slate-50/30 dark:bg-dark-highlight">
+          <div className="relative w-32 h-32 md:w-40 md:h-40 bg-white dark:bg-dark-input rounded-[32px] shadow-inner overflow-hidden flex items-center justify-center p-4 border border-slate-100 dark:border-dark-stroke">
             {formData.company_logo_url ? (
               <img src={formData.company_logo_url} alt="Logo" className="w-full h-full object-contain" />
             ) : (
@@ -431,7 +431,7 @@ const Settings: React.FC = () => {
 
   const renderDataTab = () => (
     <div className="space-y-12 animate-fade-in">
-      <div className="p-8 bg-slate-50/50 dark:bg-dark-input rounded-3xl border border-slate-100 dark:border-dark-stroke flex flex-col items-center text-center">
+      <div className="p-8 bg-slate-50/50 dark:bg-dark-highlight rounded-3xl border border-slate-100 dark:border-dark-stroke flex flex-col items-center text-center">
         <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/20 rounded-2xl flex items-center justify-center text-teal-600 mb-4">
           <Database className="w-8 h-8" />
         </div>
@@ -458,7 +458,10 @@ const Settings: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className={`p-4 rounded-xl border ${schemaStatus.admin_available ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
+              <div className={`p-4 rounded-xl border ${schemaStatus.admin_available
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400'
+                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-800 dark:text-amber-400'
+                }`}>
                 <div className="flex items-center gap-3">
                   {schemaStatus.admin_available ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -478,10 +481,10 @@ const Settings: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {schemaStatus.checks && Object.entries(schemaStatus.checks).map(([key, check]: [string, any]) => (
-                  <div key={key} className="p-4 rounded-xl border border-slate-200 dark:border-dark-stroke bg-slate-50 dark:bg-dark-bg/50">
+                  <div key={key} className="p-4 rounded-xl border border-slate-200 dark:border-dark-stroke bg-slate-50 dark:bg-dark-highlight">
                     <p className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-3">{key}</p>
                     {check.error ? (
-                      <p className="text-[10px] text-rose-500 font-mono bg-rose-50 p-2 rounded">{check.error}</p>
+                      <p className="text-[10px] text-rose-500 dark:text-rose-400 font-mono bg-rose-50 dark:bg-rose-500/10 p-2 rounded border border-rose-100 dark:border-rose-500/20">{check.error}</p>
                     ) : (
                       <ul className="space-y-2">
                         {Object.entries(check).filter(([k]) => k.startsWith('has_')).map(([k, v]) => (

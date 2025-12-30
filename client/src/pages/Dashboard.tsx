@@ -16,7 +16,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     total: 0,
     sync: 0,
-    drafts: 0
+    drafts: 0,
+    today: 0
   });
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,10 +68,12 @@ export default function Dashboard() {
   };
 
   const updateStates = (subs: any[]) => {
+    const today = new Date().toLocaleDateString('de-DE');
     setStats({
       total: subs.length,
       sync: subs.filter((s: any) => s.status === 'submitted').length,
-      drafts: subs.filter((s: any) => s.status === 'draft').length
+      drafts: subs.filter((s: any) => s.status === 'draft').length,
+      today: subs.filter((s: any) => new Date(s.created_at).toLocaleDateString('de-DE') === today).length
     });
     setSubmissions(subs);
   };
@@ -116,7 +119,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] -mx-4 px-4 pt-6 pb-32 animate-fade-in">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-base -mx-4 px-4 pt-6 pb-32 pb-safe animate-fade-in">
       <div className="max-w-xl mx-auto space-y-8">
 
         {/* 🏷️ Minimal Header */}
@@ -133,17 +136,17 @@ export default function Dashboard() {
           </h1>
         </div>
 
-        {/* 📊 Horizontal KPI Scroller */}
-        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 mask-fade-right">
+        {/* 📊 KPI Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <StatCardSmall
-            label="Gesamt"
+            label="Einsätze"
             value={stats.total}
             icon={Database}
             color="indigo"
           />
           <StatCardSmall
-            label="Synced"
-            value={stats.sync}
+            label="Heute"
+            value={stats.today}
             icon={CheckCircle2}
             color="emerald"
           />
@@ -188,8 +191,8 @@ export default function Dashboard() {
 
         {/* 📋 Submissions List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Verlauf</span>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Übersicht</h2>
             <span className="text-[10px] font-bold text-slate-400">{filteredSubmissions.length} Einträge</span>
           </div>
 
@@ -208,8 +211,8 @@ export default function Dashboard() {
                 >
                   {/* Initials Square */}
                   <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-black text-xs shrink-0 ${sub.status === 'submitted'
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                    : 'bg-amber-50 text-amber-600 border border-amber-100'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20'
+                    : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20'
                     }`}>
                     {getInitials(sub.customer_name)}
                   </div>
@@ -217,24 +220,16 @@ export default function Dashboard() {
                   {/* Main Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">
-                        {sub.customer_name || 'Unbenannt'}
-                      </h4>
                       {sub.status === 'submitted' ? (
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       ) : (
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                        <Clock className="w-4 h-4 text-amber-500" />
                       )}
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate uppercase tracking-tight">{sub.customer_name}</h4>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase truncate">
-                        <FileText className="w-3 h-3 text-primary-500" />
-                        <span className="truncate">{sub.form_templates?.name || 'Bericht'}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-slate-300 text-[10px] font-bold">
-                        <Calendar className="w-3 h-3" />
-                        <span>{new Date(sub.created_at).toLocaleDateString('de-DE')}</span>
-                      </div>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-widest">
+                      <Calendar className="w-3 h-3" />
+                      <span>{new Date(sub.created_at).toLocaleDateString('de-DE')}</span>
                     </div>
                   </div>
 

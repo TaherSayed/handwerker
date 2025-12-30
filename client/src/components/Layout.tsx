@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNotificationStore } from '../store/notificationStore';
+import { useNotificationStatusStore } from '../store/notification-status.store';
 import SyncStatus from './SyncStatus';
 
 export default function Layout() {
+  const { hasUnread, markAsRead } = useNotificationStatusStore();
   const { profile, signOut } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +49,7 @@ export default function Layout() {
           }`}
       >
         {/* Sidebar Logo */}
-        <div className="h-16 flex items-center px-5 mb-2 border-b border-slate-50">
+        <div className="h-16 flex items-center px-5 mb-2 border-b border-slate-50 dark:border-dark-stroke/50">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-9 h-9 rounded flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden bg-white">
               {profile?.company_logo_url ? (
@@ -58,10 +60,10 @@ export default function Layout() {
             </div>
             {sidebarOpen && (
               <div className="flex flex-col leading-none min-w-0">
-                <span className="font-bold text-slate-900 tracking-tight text-base truncate">
+                <span className="font-bold text-slate-900 dark:text-white tracking-tight text-base truncate">
                   {profile?.company_name || 'OnSite'}
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider truncate">
+                <span className="text-[10px] text-slate-500 dark:text-dark-text-muted font-medium uppercase tracking-wider truncate">
                   {profile?.company_name ? 'Business' : 'Professional'}
                 </span>
               </div>
@@ -77,21 +79,21 @@ export default function Layout() {
               to={item.to}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 group relative font-medium ${isActive
-                  ? 'text-blue-700 bg-blue-50 border border-blue-100 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-200 border border-transparent'
+                  ? 'text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-500/10 border border-primary-100 dark:border-primary-500/20 shadow-sm'
+                  : 'text-slate-600 dark:text-dark-text-muted hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-highlight hover:border-slate-200 dark:hover:border-dark-stroke border border-transparent'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                  <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 group-hover:text-slate-600 dark:text-dark-text-muted dark:group-hover:text-white'}`} />
                   {sidebarOpen && (
                     <span className="text-sm truncate">
                       {item.label}
                     </span>
                   )}
                   {isActive && sidebarOpen && (
-                    <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
                   )}
                 </>
               )}
@@ -100,12 +102,12 @@ export default function Layout() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-3 mt-auto bg-slate-50/50 border-t border-slate-100">
-          <div className={`rounded-xl border border-slate-200 bg-white p-1 shadow-sm ${!sidebarOpen && 'flex justify-center'}`}>
+        <div className="p-3 mt-auto bg-slate-50/50 dark:bg-dark-bg/50 border-t border-slate-100 dark:border-dark-stroke">
+          <div className={`rounded-xl border border-slate-200 dark:border-dark-stroke bg-white dark:bg-dark-input p-1 shadow-sm ${!sidebarOpen && 'flex justify-center'}`}>
             {sidebarOpen ? (
               <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-600 text-xs font-bold shrink-0 border border-slate-200 overflow-hidden">
+                  <div className="w-8 h-8 bg-slate-100 dark:bg-dark-bg rounded flex items-center justify-center text-slate-600 dark:text-dark-text-muted text-xs font-bold shrink-0 border border-slate-200 dark:border-dark-stroke overflow-hidden">
                     {profile?.auth_metadata?.avatar_url || profile?.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture || profile?.avatar_url ? (
                       <img
                         src={profile.auth_metadata?.avatar_url || profile.auth_metadata?.picture || profile?.user?.user_metadata?.avatar_url || profile?.user?.user_metadata?.picture || profile?.avatar_url}
@@ -118,12 +120,12 @@ export default function Layout() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{profile?.full_name || 'Benutzer'}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{profile?.full_name || 'Benutzer'}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="text-slate-400 hover:text-red-600 transition-colors p-1.5 hover:bg-red-50 rounded-lg"
+                  className="text-slate-400 hover:text-red-600 transition-colors p-1.5 hover:bg-neutral-100 dark:hover:bg-dark-highlight rounded-lg"
                   title="Abmelden"
                 >
                   <LogOut className="w-4 h-4" />
@@ -132,7 +134,7 @@ export default function Layout() {
             ) : (
               <button
                 onClick={handleSignOut}
-                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors hover:bg-neutral-100 dark:hover:bg-dark-highlight rounded-lg"
                 title="Abmelden"
               >
                 <LogOut className="w-4 h-4" />
@@ -160,7 +162,7 @@ export default function Layout() {
                 <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain p-1" />
               )}
             </div>
-            <span className="heading-sm text-text-primary">OnSite</span>
+            <span className="heading-sm text-slate-900 dark:text-white">OnSite</span>
           </div>
 
           <div className="hidden lg:block">
@@ -180,11 +182,19 @@ export default function Layout() {
             </div>
 
             <button
-              onClick={() => useNotificationStore.getState().info('Mitteilungen', 'Keine neuen Benachrichtigungen')}
-              className="btn-ghost relative p-2"
+              onClick={() => {
+                if (hasUnread) {
+                  markAsRead();
+                  useNotificationStore.getState().success('Mitteilungen', 'Alle Benachrichtigungen wurden als gelesen markiert.');
+                } else {
+                  useNotificationStore.getState().info('Mitteilungen', 'Keine neuen Benachrichtigungen');
+                }
+              }}
+              className="btn-ghost relative p-2 transition-transform active:scale-95"
             >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-danger-500 rounded-full border-2 border-surface-base dark:border-dark-card" />
+              <Bell className={`w-5 h-5 transition-colors ${hasUnread ? 'text-primary-500' : 'text-slate-400'}`} />
+              <span className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-surface-base dark:border-dark-card transition-all duration-300 ${hasUnread ? 'bg-danger-500 scale-100' : 'bg-success-500 scale-100 opacity-50'
+                }`} />
             </button>
 
             <button

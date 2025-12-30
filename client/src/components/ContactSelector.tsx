@@ -70,23 +70,23 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl bg-white sm:rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden animate-slide-up" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-2xl bg-white dark:bg-dark-card sm:rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden animate-slide-up" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div className="p-6 border-b border-slate-100 dark:border-dark-stroke flex items-center justify-between bg-white dark:bg-dark-card sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-inner">
               <Contact2 className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">KUNDEN AUSWÄHLEN</h2>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 opacity-60">AUS IHREN GOOGLE KONTAKTEN</p>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">KUNDEN AUSWÄHLEN</h2>
+              <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-widest mt-0.5 opacity-60">AUS IHREN GOOGLE KONTAKTEN</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onClose();
-            }} 
+            }}
             className="p-2 hover:bg-slate-100 rounded-2xl transition-colors"
             type="button"
           >
@@ -95,7 +95,7 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
         </div>
 
         {/* Search Bar */}
-        <div className="p-4 bg-slate-50/50 border-b border-slate-100">
+        <div className="p-4 bg-slate-50/50 dark:bg-dark-highlight border-b border-slate-100 dark:border-dark-stroke">
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
             <input
@@ -137,13 +137,13 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
             </div>
           ) : filteredContacts.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-dark-highlight rounded-[2rem] flex items-center justify-center mb-6 text-slate-200 dark:text-dark-bg">
                 <User className="w-10 h-10" />
               </div>
-              <h3 className="text-lg font-black text-slate-900 mb-1 uppercase tracking-tight">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">
                 {searchQuery ? 'Keine Treffer' : 'Keine Kontakte'}
               </h3>
-              <p className="text-slate-400 text-sm font-bold uppercase tracking-tight opacity-70">
+              <p className="text-slate-400 dark:text-dark-text-muted text-sm font-bold uppercase tracking-tight opacity-70">
                 {searchQuery ? 'Versuchen Sie einen anderen Suchbegriff' : 'Fügen Sie Kontakte zu Ihrem Google-Konto hinzu'}
               </p>
             </div>
@@ -153,28 +153,28 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
                 <button
                   key={contact.id}
                   onClick={() => handleSelect(contact)}
-                  className="group flex items-start gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all text-left"
+                  className="group flex items-start gap-4 p-4 bg-white dark:bg-dark-card rounded-2xl border border-slate-100 dark:border-dark-stroke hover:border-indigo-200 dark:hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/5 transition-all text-left"
                 >
-                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 font-black text-lg">
+                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 font-black text-lg">
                     {contact.name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">{contact.name}</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{contact.name}</h4>
                     <div className="space-y-1 mt-1">
                       {contact.email && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium truncate">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-dark-text-muted font-medium truncate">
                           <Mail className="w-3.5 h-3.5 shrink-0" />
                           {contact.email}
                         </div>
                       )}
                       {contact.phone && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-dark-text-muted font-medium">
                           <Phone className="w-3.5 h-3.5 shrink-0" />
                           {contact.phone}
                         </div>
                       )}
                       {contact.address && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium truncate">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-dark-text-muted font-medium truncate">
                           <MapPin className="w-3.5 h-3.5 shrink-0" />
                           {contact.address}
                         </div>
@@ -189,8 +189,8 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-center">
-          <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] flex items-center gap-3">
+        <div className="p-6 bg-slate-50 dark:bg-dark-highlight border-t border-slate-100 dark:border-dark-stroke flex items-center justify-center">
+          <p className="text-[9px] text-slate-400 dark:text-dark-text-muted font-black uppercase tracking-[0.3em] flex items-center gap-3">
             <ShieldCheck className="w-3 h-3 text-indigo-400" />
             Sichere Synchronisierung via Google People API
           </p>
