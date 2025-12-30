@@ -4,6 +4,7 @@ import { apiService } from '../services/api.service';
 import ContactSelector from '../components/ContactSelector';
 import { GoogleContact } from '../services/google-contacts.service';
 import { secureStorage } from '../services/secure-storage.service';
+import { useNotificationStore } from '../store/notificationStore';
 import {
     ArrowLeft,
     ArrowRight,

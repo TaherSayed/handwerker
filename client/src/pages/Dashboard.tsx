@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import {
-  Search, CheckCircle2, FileText, Plus,
+  Search, CheckCircle2, Plus,
   Clock, ChevronRight, LayoutGrid,
   Settings2, Calendar, Database
 } from 'lucide-react';
