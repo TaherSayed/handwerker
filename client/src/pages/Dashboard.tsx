@@ -119,7 +119,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-dark-base -mx-4 px-4 pt-6 pb-32 pb-safe animate-fade-in">
+    <div className="min-h-screen bg-neutral-50 dark:bg-dark-base pt-6 pb-32 pb-safe animate-fade-in">
       <div className="max-w-xl mx-auto space-y-8">
 
         {/* 🏷️ Minimal Header */}
@@ -158,15 +158,13 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* ⚡ Quick Action */}
+        {/* ⚡ Floating Action Button (FAB) */}
         <button
           onClick={() => navigate('/visits/new')}
-          className="w-full h-16 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] transition-all rounded-[24px] flex items-center justify-center gap-3 text-white shadow-xl shadow-primary-500/20 group"
+          className="fixed bottom-24 lg:bottom-10 left-1/2 -translate-x-1/2 z-50 h-16 px-8 bg-primary-600 hover:bg-primary-700 active:scale-[0.95] transition-all rounded-full flex items-center justify-center gap-3 text-white shadow-2xl shadow-primary-600/40 group border-4 border-white dark:border-dark-base"
         >
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-90 transition-transform">
-            <Plus className="w-5 h-5 stroke-[3]" />
-          </div>
-          <span className="font-black uppercase tracking-widest text-sm text-white">Neuer Einsatz</span>
+          <Plus className="w-6 h-6 stroke-[3] group-hover:rotate-90 transition-transform" />
+          <span className="font-black uppercase tracking-widest text-sm text-white whitespace-nowrap">Neuer Einsatz</span>
         </button>
 
         {/* 🔍 Unified Search & Filter */}
