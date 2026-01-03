@@ -24,6 +24,14 @@ export default {
           light: '#0FB2C9',
           dark: '#0A8FA9',
         },
+        secondary: {
+          DEFAULT: '#3b82f6', // Standard Blue
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+        },
         // Steel Colors - Industrial Look
         steel: {
           100: '#e5e5e5',

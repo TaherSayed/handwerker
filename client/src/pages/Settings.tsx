@@ -24,6 +24,9 @@ const Settings: React.FC = () => {
     company_name: '',
     company_logo_url: '',
     company_address: '',
+    company_city: '',
+    company_zip: '',
+    company_country: '',
     company_phone: '',
     company_website: '',
     primary_color: '#2563eb',
@@ -44,6 +47,9 @@ const Settings: React.FC = () => {
         company_name: profile.company_name || '',
         company_logo_url: profile.company_logo_url || '',
         company_address: profile.company_address || '',
+        company_city: profile.company_city || '',
+        company_zip: profile.company_zip || '',
+        company_country: profile.company_country || '',
         company_phone: profile.company_phone || '',
         company_website: profile.company_website || '',
         primary_color: profile.primary_color || '#2563eb',
@@ -359,14 +365,37 @@ const Settings: React.FC = () => {
           />
         </div>
         <div className="space-y-3 md:col-span-2">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Adresse</label>
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Straße & Hausnummer</label>
           <input
             type="text"
             value={formData.company_address}
             onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
             className="input h-14 font-semibold"
-            placeholder="Musterstr. 1, 12345 Stadt"
+            placeholder="Musterstraße 1"
           />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 md:col-span-2">
+            <div className="space-y-3">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">PLZ</label>
+                <input
+                    type="text"
+                    value={formData.company_zip}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_zip: e.target.value }))}
+                    className="input h-14 font-semibold"
+                    placeholder="12345"
+                />
+            </div>
+            <div className="space-y-3">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Stadt</label>
+                <input
+                    type="text"
+                    value={formData.company_city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_city: e.target.value }))}
+                    className="input h-14 font-semibold"
+                    placeholder="Berlin"
+                />
+            </div>
         </div>
         <div className="space-y-3 md:col-span-2">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Webseite</label>

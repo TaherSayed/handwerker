@@ -82,7 +82,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const accessToken = req.accessToken!;
-    const { full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color } = req.body;
+    const { full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color } = req.body;
 
     const userClient = supabase.getClientForUser(accessToken);
 
@@ -91,6 +91,9 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     if (company_name !== undefined) updates.company_name = company_name;
     if (company_logo_url !== undefined) updates.company_logo_url = company_logo_url;
     if (company_address !== undefined) updates.company_address = company_address;
+    if (company_city !== undefined) updates.company_city = company_city;
+    if (company_zip !== undefined) updates.company_zip = company_zip;
+    if (company_country !== undefined) updates.company_country = company_country;
     if (company_phone !== undefined) updates.company_phone = company_phone;
     if (company_website !== undefined) updates.company_website = company_website;
 
@@ -108,7 +111,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
         .from('user_profiles')
         .update(updates)
         .eq('id', userId)
-        .select('id, email, full_name, company_name, company_logo_url, company_address, company_phone, company_website, primary_color, accent_color, created_at, updated_at')
+        .select('id, email, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color, created_at, updated_at')
         .single();
 
       data = result.data;
@@ -139,6 +142,9 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
         if (company_name !== undefined) safeUpdates.company_name = company_name;
         if (company_logo_url !== undefined) safeUpdates.company_logo_url = company_logo_url;
         if (company_address !== undefined) safeUpdates.company_address = company_address;
+        if (company_city !== undefined) safeUpdates.company_city = company_city;
+        if (company_zip !== undefined) safeUpdates.company_zip = company_zip;
+        if (company_country !== undefined) safeUpdates.company_country = company_country;
 
         // Add default values for required fields if they are missing in the current profile but were sent
         // This is a safety measure for schema-fallback mode
@@ -177,7 +183,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
         }
 
         // Try update with safe fields only (don't include problematic fields in SELECT)
-        const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, created_at, updated_at';
+        const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, created_at, updated_at';
         const { data: safeData, error: safeError } = await userClient
           .from('user_profiles')
           .update(safeUpdates)
@@ -220,6 +226,9 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
             company_name: company_name !== undefined ? company_name : (minimalTyped?.company_name || ''),
             company_logo_url: company_logo_url !== undefined ? company_logo_url : (minimalTyped?.company_logo_url || ''),
             company_address: company_address !== undefined ? company_address : (minimalTyped?.company_address || ''),
+            company_city: company_city !== undefined ? company_city : (minimalTyped?.company_city || ''),
+            company_zip: company_zip !== undefined ? company_zip : (minimalTyped?.company_zip || ''),
+            company_country: company_country !== undefined ? company_country : (minimalTyped?.company_country || ''),
             company_phone: company_phone !== undefined ? company_phone : (minimalTyped?.company_phone || ''),
             company_website: company_website !== undefined ? company_website : (minimalTyped?.company_website || ''),
             primary_color: primary_color !== undefined ? primary_color : (minimalTyped?.primary_color || '#2563eb'),
