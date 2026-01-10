@@ -79,39 +79,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
         }
     }
 
-    // Company Info (Right)
-    doc.setFontSize(8);
-    doc.setTextColor(secondaryColor);
-    doc.text(companySettings?.company_name || 'Mein Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
-    
-    let headerY = currentY + 10;
-    
-    if (companySettings?.company_address) {
-        doc.text(companySettings.company_address, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-    
-    if (companySettings?.company_zip || companySettings?.company_city) {
-         const zip = companySettings?.company_zip || '';
-         const city = companySettings?.company_city || '';
-         doc.text(`${zip} ${city}`.trim(), pageWidth - margin, headerY, { align: 'right' });
-         headerY += 5;
-    }
-
-    if (companySettings?.company_phone) {
-        doc.text(`Tel: ${companySettings.company_phone}`, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-    
-    if (companySettings?.email) {
-        doc.text(companySettings.email, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-    
-    if (companySettings?.company_website) {
-        doc.text(companySettings.company_website, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
+    // Company Info removed as per user request (Only logo)
 
     // Title & Subject
     currentY += 40;
