@@ -116,377 +116,252 @@ export class PDFService {
   private async buildPDFContent(doc: any, data: SubmissionData) {
     const pageWidth = doc.page.width;
     const pageHeight = doc.page.height;
-    const margin = 35; // Reduced from 40
-    const primaryColor = data.user.primary_color || '#111827'; // Default slate-900
-    const accentColor = data.user.accent_color || '#3b82f6';  // Default blue-500
+    const margin = 50;
+    const primaryColor = data.user.primary_color || '#111827';
+    const accentColor = data.user.accent_color || '#0FB2C9';
 
-    let y = 25; // Reduced from 30
-    let lastContentPage = 0; // Track the last page with actual content
+    let y = 35;
 
-    // --- Compact Professional Header Section ---
-    const headerHeight = 45; // Reduced from 50
+    // --- Premium Header Section ---
+    const headerHeight = 70;
 
-    // Header background with accent color
-    doc.rect(0, 0, pageWidth, headerHeight)
-      .fillColor(primaryColor)
-      .fill();
-
-    // Logo (Left side) - smaller
-    let logoX = margin;
-    let logoY = 3;
-    let logoHeight = 38;
+    // Logo (Left)
+    let logoSize = 60;
+    let hasLogo = false;
 
     if (data.user.company_logo_url) {
       const logoBuffer = await this.fetchImageBuffer(data.user.company_logo_url);
       if (logoBuffer) {
-        doc.image(logoBuffer, logoX, logoY, { height: logoHeight, fit: [logoHeight, logoHeight] });
-        logoX += logoHeight + 15;
-      }
-    } else {
-      try {
-        let logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.jpg');
         try {
-          await fs.access(logoPath);
-        } catch {
-          logoPath = path.join(process.cwd(), 'assets', 'logo.jpg');
+          doc.image(logoBuffer, margin, y, { fit: [logoSize, logoSize] });
+          hasLogo = true;
+        } catch (e) {
+          console.error('Logo render error:', e);
         }
-        const logoBuffer = await fs.readFile(logoPath);
-        doc.image(logoBuffer, logoX, logoY, { height: logoHeight, fit: [logoHeight, logoHeight] });
-        logoX += logoHeight + 15;
-      } catch (error) {
-        console.warn('Could not load default logo:', error);
       }
     }
 
-    // Company Name (Next to logo, white text) - smaller
-    doc.fontSize(14)
+    // Company Details (Right Aligned)
+    const infoX = pageWidth - margin;
+    let infoY = y;
+
+    doc.fontSize(16)
       .font('Helvetica-Bold')
-      .fillColor('#ffffff')
-      .text(data.user.company_name || 'OnSite', logoX, logoY + 8);
+      .fillColor(primaryColor)
+      .text(data.user.company_name || 'OnSite', margin + (hasLogo ? 75 : 0), y + 10);
 
-    // Company Info (Right Aligned, white text) - compact
-    const companyInfoX = pageWidth - margin;
-    let companyInfoY = logoY + 3;
-
-    doc.fontSize(7)
+    doc.fontSize(9)
       .font('Helvetica')
-      .fillColor('#ffffff');
+      .fillColor('#64748b');
 
-    const companyAddress = [
+    const companyDetails = [
       data.user.company_address,
-      data.user.company_city && data.user.company_zip ? `${data.user.company_zip} ${data.user.company_city}` : (data.user.company_city || data.user.company_zip),
-      data.user.company_country
-    ].filter(Boolean).join(' • ');
+      [data.user.company_zip, data.user.company_city].filter(Boolean).join(' '),
+      data.user.company_phone,
+      data.user.company_website
+    ].filter(Boolean);
 
-    if (companyAddress) {
-      doc.text(companyAddress, companyInfoX, companyInfoY, { align: 'right', width: 200 });
-      companyInfoY += 10;
-    }
+    let detailsY = y + 5;
+    companyDetails.forEach(detail => {
+      doc.text(detail || '', infoX - 300, detailsY, { align: 'right', width: 300 });
+      detailsY += 12;
+    });
 
-    if (data.user.company_phone) {
-      doc.text(data.user.company_phone, companyInfoX, companyInfoY, { align: 'right', width: 200 });
-      companyInfoY += 10;
-    }
-    if (data.user.company_website) {
-      doc.text(data.user.company_website, companyInfoX, companyInfoY, { align: 'right', width: 200 });
-    }
+    y = Math.max(y + headerHeight, detailsY + 20);
 
-    y = headerHeight + 12;
+    // Decorative Line
+    doc.moveTo(margin, y)
+      .lineTo(pageWidth - margin, y)
+      .strokeColor('#e2e8f0')
+      .lineWidth(1)
+      .stroke();
+    y += 30;
 
-    // --- Compact Document Title Section ---
-    doc.fontSize(18)
+    // --- Document Title ---
+    doc.fontSize(24)
       .font('Helvetica-Bold')
       .fillColor(primaryColor)
       .text(data.template.name, margin, y);
-    y += 18;
 
-    // Decorative line under title - thinner
-    doc.moveTo(margin, y)
-      .lineTo(pageWidth - margin, y)
-      .strokeColor(accentColor)
-      .lineWidth(1.5)
-      .stroke();
-    y += 10;
+    doc.fontSize(10)
+      .font('Helvetica')
+      .fillColor(accentColor)
+      .text(`BELEGDATUM: ${new Date(data.submitted_at || data.created_at).toLocaleDateString('de-DE')}`, margin, y + 30);
 
-    // Check if template has a KUNDENDATEN section field to avoid duplication
+    y += 60;
+
+    // --- Customer Section ---
     const hasKundenSection = data.template.fields.some(f =>
       f.type === 'section' && f.label.toLowerCase().includes('kunden')
     );
 
-    // --- Compact Professional Customer Info Box (only if no KUNDENDATEN section in fields) ---
     if (!hasKundenSection) {
-      const customerBoxHeight = 45;
-      const customerBoxY = y;
-
-      // Box with border and subtle background
-      doc.rect(margin, customerBoxY, pageWidth - (margin * 2), customerBoxHeight)
-        .fillColor('#f9fafb')
+      doc.rect(margin, y, pageWidth - (margin * 2), 65)
+        .fillColor('#f8fafc')
         .fill()
-        .strokeColor('#e5e7eb')
-        .lineWidth(1)
+        .strokeColor('#e2e8f0')
         .stroke();
 
-      // Section label with accent background - smaller
-      doc.rect(margin, customerBoxY, 100, 15)
-        .fillColor(accentColor)
-        .fill();
-
-      doc.fontSize(7)
+      doc.fontSize(8)
         .font('Helvetica-Bold')
-        .fillColor('#ffffff')
-        .text('KUNDENDATEN', margin + 6, customerBoxY + 4);
+        .fillColor(accentColor)
+        .text('KUNDE / AUFTRAGGEBER', margin + 20, y + 12);
 
-      let infoY = customerBoxY + 18;
-      const leftColX = margin + 12;
-      const rightColX = pageWidth / 2 + 5;
+      doc.fontSize(11)
+        .font('Helvetica-Bold')
+        .fillColor(primaryColor)
+        .text(data.customer_name || '-', margin + 20, y + 25);
 
-      // Customer Name (prominent but compact)
-      if (data.customer_name) {
-        let nameText = data.customer_name;
-        if (data.customer_company) nameText += ` (${data.customer_company})`;
+      const customerDetails = [
+        data.customer_address,
+        data.customer_email,
+        data.customer_phone
+      ].filter(Boolean).join('  |  ');
+
+      doc.fontSize(9)
+        .font('Helvetica')
+        .fillColor('#64748b')
+        .text(customerDetails || '-', margin + 20, y + 40);
+
+      y += 95;
+    }
+
+    // --- Content Sections ---
+    const fieldGap = 15;
+    const fieldWidth = (pageWidth - (margin * 2) - fieldGap) / 2;
+    let currentCol = 0;
+    let rowMaxY = y;
+
+    for (const field of data.template.fields) {
+      const value = data.field_values[field.id];
+      const isFullWidth = field.type === 'section' || field.type === 'notes' || field.type === 'photo' || field.type === 'signature';
+
+      if (isFullWidth && currentCol === 1) {
+        y = rowMaxY + 15;
+        currentCol = 0;
+      }
+
+      const x = margin + (currentCol * (fieldWidth + fieldGap));
+      const currentWidth = isFullWidth ? pageWidth - (margin * 2) : fieldWidth;
+
+      // Special handling for Section
+      if (field.type === 'section') {
+        if (y > pageHeight - 120) {
+          doc.addPage();
+          y = margin;
+        }
+        y += 10;
+        doc.rect(margin, y, pageWidth - (margin * 2), 22)
+          .fillColor(primaryColor)
+          .fill();
 
         doc.fontSize(10)
           .font('Helvetica-Bold')
-          .fillColor(primaryColor)
-          .text(nameText, leftColX, infoY);
-        infoY += 11;
-      }
+          .fillColor('#ffffff')
+          .text(field.label.toUpperCase(), margin + 12, y + 7);
 
-      doc.fontSize(7)
-        .font('Helvetica')
-        .fillColor('#4b5563');
-
-      // Two column layout for contact info - compact
-      if (data.customer_email) {
-        doc.text(`E-Mail: ${data.customer_email}`, leftColX, infoY, { width: 200 });
-      }
-      if (data.customer_phone) {
-        doc.text(`Tel: ${data.customer_phone}`, rightColX, infoY, { width: 200 });
-      }
-      infoY += 10;
-
-      if (data.customer_address) {
-        doc.text(`Adresse: ${data.customer_address}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 24 });
-        infoY += 10;
-      }
-
-      if (data.customer_notes) {
-        doc.fontSize(6).font('Helvetica-Oblique').text(`Notiz: ${data.customer_notes}`, leftColX, infoY, { width: pageWidth - (margin * 2) - 24 });
-      }
-
-      y = customerBoxY + customerBoxHeight + 10;
-    }
-
-    // --- Compact Professional Field Responses ---
-    // Use two-column layout for fields to save space
-    const fieldWidth = (pageWidth - (margin * 2) - 8) / 2;
-    let currentCol = 0;
-    let colX = margin;
-    const fieldHeight = 24; // Reduced from 28
-
-    for (const field of data.template.fields) {
-      // Prevent page break if we can fit content - be more aggressive
-      if (y > pageHeight - 60) {
-        // Try to fit on current page by reducing spacing
-        if (y > pageHeight - 40) {
-          doc.addPage();
-          y = 25;
-          currentCol = 0;
-          colX = margin;
-        }
-      }
-      // Track current page as having content
-      lastContentPage = doc.page.number - 1;
-
-      const value = data.field_values[field.id];
-
-      if (field.type === 'section' || field.type === 'page') {
-        // Section/Page takes full width
-        currentCol = 0;
-        colX = margin;
-
-        const isPage = field.type === 'page';
-        y += isPage ? 10 : 5;
-
-        // Header with background
-        doc.rect(margin, y, pageWidth - (margin * 2), isPage ? 20 : 15)
-          .fillColor(isPage ? primaryColor : '#f3f4f6')
-          .fill();
-
-        doc.fontSize(isPage ? 10 : 9)
-          .font('Helvetica-Bold')
-          .fillColor(isPage ? '#ffffff' : primaryColor)
-          .text(field.label.toUpperCase(), margin + 6, y + (isPage ? 5 : 3));
-
-        y += isPage ? 24 : 18;
+        y += 35;
+        rowMaxY = y;
         continue;
       }
 
-      if (field.type === 'divider') {
-        currentCol = 0;
-        colX = margin;
-        y += 5;
-        doc.moveTo(margin, y)
-          .lineTo(pageWidth - margin, y)
-          .strokeColor('#e5e7eb')
-          .lineWidth(0.5)
-          .stroke();
-        y += 10;
-        continue;
+      // Calculate Field Height Dynamically
+      const formatted = this.formatValue(field.type, value, field.label);
+      const labelHeight = doc.heightOfString(field.label.toUpperCase(), { width: currentWidth - 20, size: 7 });
+
+      let contentHeight = 0;
+      if (field.type === 'signature' && value) {
+        contentHeight = 45;
+      } else if (field.type === 'photo' && value) {
+        contentHeight = 120;
+      } else {
+        contentHeight = doc.heightOfString(formatted, { width: currentWidth - 20, size: 9 });
       }
 
-      // Use two columns for regular fields, full width for signature/photo
-      if (field.type === 'signature' || field.type === 'photo') {
-        colX = margin;
+      const fieldHeight = Math.max(40, labelHeight + contentHeight + 20);
+
+      if (y + fieldHeight > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+        rowMaxY = y;
+        // If we move to a new page, ensure we are at col 0
         currentCol = 0;
       }
 
-      doc.rect(colX, y, field.type === 'signature' || field.type === 'photo' ? pageWidth - (margin * 2) : fieldWidth, fieldHeight)
+      // Draw Field Box
+      doc.rect(x, y, currentWidth, fieldHeight)
         .fillColor('#ffffff')
         .fill()
-        .strokeColor('#e5e7eb')
-        .lineWidth(0.5)
+        .strokeColor('#f1f5f9')
         .stroke();
 
-      // Field Label (top, smaller, gray) - more compact
-      doc.fontSize(6)
+      doc.fontSize(7)
         .font('Helvetica-Bold')
-        .fillColor('#6b7280')
-        .text(field.label, colX + 5, y + 3);
+        .fillColor('#94a3b8')
+        .text(field.label.toUpperCase(), x + 10, y + 8);
 
-      // Field Value (below label, compact)
-      const valueY = y + 10;
-      const valueWidth = (field.type === 'signature' || field.type === 'photo') ? pageWidth - (margin * 2) - 10 : fieldWidth - 10;
+      const contentY = y + labelHeight + 12;
 
-      if (field.type === 'photo' && value) {
-        const photoBuffer = await this.fetchImageBuffer(value);
-        if (photoBuffer) {
-          if (y > pageHeight - 120) {
-            doc.addPage();
-            y = 25;
-          }
-          doc.image(photoBuffer, colX + 5, valueY, { fit: [80, 80] });
-          lastContentPage = doc.page.number - 1;
-          y += 90;
-          currentCol = 0;
-          colX = margin;
-          continue;
-        } else {
-          doc.fontSize(7)
-            .font('Helvetica')
-            .fillColor('#ef4444')
-            .text('[Bild nicht geladen]', colX + 5, valueY);
-        }
-      } else if (field.type === 'signature' && value) {
+      if (field.type === 'signature' && value) {
         const sigBuffer = await this.fetchImageBuffer(value);
         if (sigBuffer) {
-          doc.image(sigBuffer, colX + 5, valueY, { height: 25 });
-        } else {
-          doc.fontSize(7)
-            .font('Helvetica-Oblique')
-            .fillColor('#9ca3af')
-            .text('-', colX + 5, valueY);
+          doc.image(sigBuffer, x + 10, contentY, { height: 40 });
+        }
+      } else if (field.type === 'photo' && value) {
+        const imgBuffer = await this.fetchImageBuffer(value);
+        if (imgBuffer) {
+          doc.image(imgBuffer, x + 10, contentY, { fit: [currentWidth - 20, 100] });
         }
       } else {
-        const formatted = this.formatValue(field.type, value, field.label);
-        doc.fontSize(8)
+        doc.fontSize(10)
           .font('Helvetica')
-          .fillColor('#111827')
-          .text(formatted, colX + 5, valueY, {
-            width: valueWidth
-          });
+          .fillColor('#1e293b')
+          .text(formatted || '-', x + 10, contentY, { width: currentWidth - 20 });
       }
 
-      // Move to next column or next row - reduced spacing
-      if (field.type === 'signature' || field.type === 'photo') {
-        y += fieldHeight + 4;
+      if (isFullWidth) {
+        y += fieldHeight + 15;
+        rowMaxY = y;
         currentCol = 0;
-        colX = margin;
       } else {
-        if (currentCol === 0) {
-          currentCol = 1;
-          colX = margin + fieldWidth + 8;
-        } else {
+        rowMaxY = Math.max(rowMaxY, y + fieldHeight);
+        if (currentCol === 1) {
+          y = rowMaxY + 15;
           currentCol = 0;
-          colX = margin;
-          y += fieldHeight + 4;
+        } else {
+          currentCol = 1;
         }
       }
-
-      // Track current page as having content
-      lastContentPage = doc.page.number - 1;
     }
 
-    // If we ended on the first column, move to next row
-    if (currentCol === 1) {
-      y += fieldHeight + 4;
-    }
-
-    // --- Compact Signature Section (if not already included in fields) ---
-    const hasSignatureField = data.template.fields.some(f => f.type === 'signature');
-
-    if (!hasSignatureField && data.signature_url) {
-      // Only add if we have space on current page
-      if (y > pageHeight - 45) {
-        // Don't add new page, just skip or add inline
-        // Try to fit it
+    // Final Signature Block (Global)
+    if (!data.template.fields.some(f => f.type === 'signature') && data.signature_url) {
+      if (y > pageHeight - 120) {
+        doc.addPage();
+        y = margin;
       }
-
-      y += 5;
-
-      // Very compact signature box
-      const signatureBoxHeight = 35;
-      doc.rect(margin, y, pageWidth - (margin * 2), signatureBoxHeight)
-        .fillColor('#ffffff')
-        .fill()
-        .strokeColor('#e5e7eb')
-        .lineWidth(1)
-        .stroke();
-
-      doc.fontSize(7)
-        .font('Helvetica-Bold')
-        .fillColor(primaryColor)
-        .text('Unterschrift', margin + 6, y + 4);
-
+      y += 30;
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(primaryColor).text('RECHTSVERBINDLICHE UNTERSCHRIFT', margin, y);
       const sigBuffer = await this.fetchImageBuffer(data.signature_url);
       if (sigBuffer) {
-        doc.image(sigBuffer, margin + 6, y + 12, { height: 20 });
+        doc.image(sigBuffer, margin, y + 20, { height: 50 });
       }
-
-      y += signatureBoxHeight + 5;
     }
 
-    // Update last content page to current page
-    lastContentPage = doc.page.number - 1;
-
-    // --- Professional Footer on all pages with content only ---
-    // Use the tracked last content page to determine total pages
-    // This ensures we only add footers to pages that actually have content
-    const totalPages = lastContentPage + 1;
-
-    // Only add footers to pages that have content (0-indexed)
+    // --- Footer for all pages ---
+    const totalPages = doc.bufferedPageRange().count;
     for (let i = 0; i < totalPages; i++) {
       doc.switchToPage(i);
 
-      // Footer background
-      doc.rect(0, pageHeight - 40, pageWidth, 40)
-        .fillColor('#f9fafb')
-        .fill();
-
-      // Footer text
-      const footerText = `Generiert durch ${data.user.company_name || 'OnSite'} - ${new Date(data.created_at).toLocaleDateString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      })}`;
-
       doc.fontSize(8)
         .font('Helvetica')
-        .fillColor('#6b7280')
-        .text(footerText, margin, pageHeight - 25, { align: 'center' });
-
-      // Page number - use actual total pages with content
-      doc.text(`Seite ${i + 1} von ${totalPages}`, pageWidth - margin - 50, pageHeight - 25, { align: 'right' });
+        .fillColor('#94a3b8')
+        .text(
+          `Generiert von ${data.user.company_name || 'OnSite'}  |  Seite ${i + 1} von ${totalPages}`,
+          margin,
+          pageHeight - 35,
+          { align: 'center', width: pageWidth - (margin * 2) }
+        );
     }
   }
 

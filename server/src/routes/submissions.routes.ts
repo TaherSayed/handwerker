@@ -280,7 +280,7 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
     try {
       const { data: profileData } = await userClient
         .from('user_profiles')
-        .select('company_name, company_logo_url, company_address, company_city, company_zip, company_country')
+        .select('company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
         .eq('id', userId)
         .single();
       if (profileData) {
@@ -314,6 +314,10 @@ router.post('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
         company_city: companyData.company_city || null,
         company_zip: companyData.company_zip || null,
         company_country: companyData.company_country || null,
+        company_phone: companyData.company_phone || null,
+        company_website: companyData.company_website || null,
+        primary_color: companyData.primary_color || null,
+        accent_color: companyData.accent_color || null,
       },
     };
 
@@ -376,7 +380,7 @@ router.get('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
     try {
       const { data: profileData } = await userClient
         .from('user_profiles')
-        .select('company_name, company_logo_url, company_address, company_city, company_zip, company_country')
+        .select('company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color')
         .eq('id', userId)
         .single();
       if (profileData) companyData = profileData;
@@ -408,6 +412,10 @@ router.get('/:id/pdf', authMiddleware, async (req: AuthRequest, res) => {
         company_city: companyData.company_city || null,
         company_zip: companyData.company_zip || null,
         company_country: companyData.company_country || null,
+        company_phone: companyData.company_phone || null,
+        company_website: companyData.company_website || null,
+        primary_color: companyData.primary_color || null,
+        accent_color: companyData.accent_color || null,
       },
     });
 
