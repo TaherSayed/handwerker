@@ -14,7 +14,7 @@ import { supabase } from '../services/supabase';
 type Tab = 'hub' | 'profile' | 'company' | 'general' | 'data' | 'health';
 
 const Settings: React.FC = () => {
-  const { profile, user, signOut, refreshProfile } = useAuthStore();
+  const { profile, user, signOut } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const { success, error: notifyError } = useNotificationStore();
   const [activeTab, setActiveTab] = useState<Tab>(window.innerWidth < 768 ? 'hub' : 'profile');
