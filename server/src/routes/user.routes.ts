@@ -63,7 +63,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     };
 
     const fullProfile = {
-      ...profile,
+      ...(profile || {}),
       email: profile.email || req.user!.email, // Ensure email is included
       avatar_url: profile.avatar_url || googleAvatar, // Include avatar_url from profile or Google
       workspaces: workspace ? [workspace] : [],
@@ -140,7 +140,7 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     // 3. Return full requested data (including simulated success for missing columns)
     // but add a warning so the UI can notify the user
     res.json({
-      ...(updatedData || {}),
+      ...(updatedData as any || {}),
       ...inputFields, // Ensure returned object has what user sent
       _missing_columns: missingColumns.length > 0 ? missingColumns : undefined,
       _needs_repair: missingColumns.length > 0
