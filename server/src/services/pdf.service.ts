@@ -1,8 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { supabase } from './supabase.service.js';
 import axios from 'axios';
-import fs from 'fs/promises';
-import path from 'path';
 
 interface SubmissionData {
   id: string;
