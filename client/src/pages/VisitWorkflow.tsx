@@ -128,20 +128,29 @@ export default function VisitWorkflow() {
                 if (label.includes('wunsch') || label.includes('bemerkung') || label.includes('notiz') || label.includes('bezeichnung') || label.includes('beschreibung')) {
                     // Skip mapping for these
                 } else {
-                    // 1. First Name
-                    if (label.includes('vorname')) {
+                    // 1. Vorname / First Name
+                    if (label.includes('vorname') || label.includes('givenname') || label.includes('first name')) {
                         initialValues[f.id] = (customerData as any).firstName || '';
                         if (initialValues[f.id]) return;
                     }
 
-                    // 2. Last Name / Nachname
-                    if (label.includes('nachname') || label.includes('familienname')) {
+                    // 2. Nachname / Last Name / Name
+                    // Handle "Nachname", "Familienname", or "Name" (if it's not a full name field)
+                    if (label.includes('nachname') || label.includes('familienname') || label.includes('surname') || label.includes('last name')) {
                         initialValues[f.id] = (customerData as any).lastName || '';
                         if (initialValues[f.id]) return;
                     }
 
-                    // 3. Full Name (only if not already filled by specific first/last name fields)
-                    if (f.type === 'fullname' || label === 'name' || label === 'kundenname' || label === 'kunde' || label.includes('name (kunde)')) {
+                    // 3. Full Name / Kunde (Name) / Project
+                    // Matches "Kunde", "Kundenname", "Name (Kunde)", "Kunde (Name)", etc.
+                    if (
+                        f.type === 'fullname' ||
+                        label === 'name' ||
+                        label === 'kunde' ||
+                        label.includes('kundenname') ||
+                        (label.includes('kunde') && label.includes('name')) ||
+                        label.includes('projekt')
+                    ) {
                         initialValues[f.id] = customerData.name || '';
                         if (initialValues[f.id]) return;
                     }
@@ -159,13 +168,13 @@ export default function VisitWorkflow() {
                     }
 
                     // 6. Street / Hausnummer
-                    if (label.includes('strasse') || label.includes('straße') || label.includes('hausnummer')) {
-                        initialValues[f.id] = (customerData as any).street || '';
+                    if (label.includes('strasse') || label.includes('straße') || label.includes('hausnummer') || label.includes('anschrift')) {
+                        initialValues[f.id] = (customerData as any).street || customerData.address || '';
                         if (initialValues[f.id]) return;
                     }
 
                     // 7. City / Ort
-                    if (label.includes('ort') || label.includes('stadt') || label.includes('wohnort')) {
+                    if (label.includes('ort') || label.includes('stadt') || label.includes('wohnort') || label.includes('city')) {
                         initialValues[f.id] = (customerData as any).city || '';
                         if (initialValues[f.id]) return;
                     }
@@ -176,14 +185,8 @@ export default function VisitWorkflow() {
                         if (initialValues[f.id]) return;
                     }
 
-                    // 9. Full Address (fallback)
-                    if (f.type === 'address' || label.includes('anschrift') || label.includes('adresse')) {
-                        initialValues[f.id] = customerData.address || '';
-                        if (initialValues[f.id]) return;
-                    }
-
                     // 10. Company / Firma
-                    if ((label.includes('firma') || label.includes('betrieb')) && !label.includes('anschrift')) {
+                    if ((label.includes('firma') || label.includes('betrieb') || label.includes('company')) && !label.includes('anschrift')) {
                         initialValues[f.id] = (customerData as any).company || '';
                         if (initialValues[f.id]) return;
                     }
