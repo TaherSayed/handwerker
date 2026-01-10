@@ -4,9 +4,14 @@ import { db, LocalContact } from './db.service';
 interface GoogleContact {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   address?: string;
+  street?: string;
+  city?: string;
+  zip?: string;
   company?: string;
   notes?: string;
 }

@@ -32,9 +32,17 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     // Map to simple structure
     const contacts = connections.map((person: any) => {
       const name = person.names?.[0]?.displayName || 'Unknown';
+      const firstName = person.names?.[0]?.givenName || '';
+      const lastName = person.names?.[0]?.familyName || '';
       const email = person.emailAddresses?.[0]?.value || '';
       const phone = person.phoneNumbers?.[0]?.value || '';
-      const address = person.addresses?.[0]?.formattedValue || '';
+
+      const firstAddress = person.addresses?.[0] || {};
+      const address = firstAddress.formattedValue || '';
+      const street = firstAddress.streetAddress || '';
+      const city = firstAddress.city || '';
+      const zip = firstAddress.postalCode || '';
+
       const organization = person.organizations?.[0]?.name || '';
       const notes = person.biographies?.[0]?.value || '';
       const googleId = person.metadata?.sources?.[0]?.id || '';
@@ -43,9 +51,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
         id: googleId,
         google_contact_id: googleId,
         name,
+        firstName,
+        lastName,
         email,
         phone,
         address,
+        street,
+        city,
+        zip,
         company: organization,
         notes,
       };

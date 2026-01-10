@@ -121,33 +121,72 @@ export default function VisitWorkflow() {
         const customerData = isManualCustomer ? manualCustomer : customer;
 
         template.fields?.forEach((f: any) => {
-            // Priority 1: Map by Field Type (Reliable)
             if (customerData) {
-                switch (f.type) {
-                    case 'fullname':
-                        initialValues[f.id] = customerData.name || '';
-                        return; // Done
-                    case 'email':
-                        initialValues[f.id] = customerData.email || '';
-                        return; // Done
-                    case 'phone':
-                        initialValues[f.id] = customerData.phone || '';
-                        return; // Done
-                    case 'address':
-                        initialValues[f.id] = customerData.address || '';
-                        return; // Done
-                }
-
-                // Priority 2: Map by Label (Fallback, but stricter)
                 const label = f.label?.toLowerCase() || '';
-                
-                // Exclude "Kundenwunsch" or other non-identity fields
-                if (label.includes('wunsch') || label.includes('bemerkung') || label.includes('notiz')) {
-                    // Do not map identity data to notes/requests
-                } else if (label === 'name' || label === 'kundenname' || label === 'kunde') {
-                     initialValues[f.id] = customerData.name || '';
-                } else if ((label.includes('firma') || label.includes('betrieb')) && !label.includes('anschrift')) {
-                     initialValues[f.id] = (customerData as any).company || '';
+
+                // Skip non-identity fields to avoid filling notes with contact info
+                if (label.includes('wunsch') || label.includes('bemerkung') || label.includes('notiz') || label.includes('bezeichnung') || label.includes('beschreibung')) {
+                    // Skip mapping for these
+                } else {
+                    // 1. First Name
+                    if (label.includes('vorname')) {
+                        initialValues[f.id] = (customerData as any).firstName || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 2. Last Name / Nachname
+                    if (label.includes('nachname') || label.includes('familienname')) {
+                        initialValues[f.id] = (customerData as any).lastName || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 3. Full Name (only if not already filled by specific first/last name fields)
+                    if (f.type === 'fullname' || label === 'name' || label === 'kundenname' || label === 'kunde' || label.includes('name (kunde)')) {
+                        initialValues[f.id] = customerData.name || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 4. Email
+                    if (f.type === 'email' || label.includes('email') || label.includes('e-mail')) {
+                        initialValues[f.id] = customerData.email || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 5. Phone / Mobil
+                    if (f.type === 'phone' || label.includes('telefon') || label.includes('mobil') || label.includes('phone') || label.includes('handy') || label.includes('tel.')) {
+                        initialValues[f.id] = customerData.phone || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 6. Street / Hausnummer
+                    if (label.includes('strasse') || label.includes('straße') || label.includes('hausnummer')) {
+                        initialValues[f.id] = (customerData as any).street || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 7. City / Ort
+                    if (label.includes('ort') || label.includes('stadt') || label.includes('wohnort')) {
+                        initialValues[f.id] = (customerData as any).city || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 8. ZIP / PLZ
+                    if (label.includes('plz') || label.includes('postleitzahl') || label.includes('zip')) {
+                        initialValues[f.id] = (customerData as any).zip || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 9. Full Address (fallback)
+                    if (f.type === 'address' || label.includes('anschrift') || label.includes('adresse')) {
+                        initialValues[f.id] = customerData.address || '';
+                        if (initialValues[f.id]) return;
+                    }
+
+                    // 10. Company / Firma
+                    if ((label.includes('firma') || label.includes('betrieb')) && !label.includes('anschrift')) {
+                        initialValues[f.id] = (customerData as any).company || '';
+                        if (initialValues[f.id]) return;
+                    }
                 }
             }
 
@@ -161,7 +200,7 @@ export default function VisitWorkflow() {
         setFieldValues(initialValues);
         setCurrentStep('form');
 
-        if (customerData) {
+        if (customerData && Object.keys(initialValues).length > 0) {
             useNotificationStore.getState().success('Daten übernommen', 'Kundendaten wurden automatisch in das Formular eingefügt.');
         }
     };
@@ -262,7 +301,7 @@ export default function VisitWorkflow() {
 
             case 'page':
                 return (
-                     <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-6 bg-primary-50/10 dark:bg-primary-500/5 -mx-4 px-4 rounded-t-3xl">
+                    <div className="pt-10 pb-4 border-b-4 border-primary-500 mb-6 bg-primary-50/10 dark:bg-primary-500/5 -mx-4 px-4 rounded-t-3xl">
                         <h2 className="text-2xl font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter flex items-center gap-3">
                             <span className="bg-primary-500 text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-lg shadow-primary-500/20">P</span>
                             {field.label || 'Neue Seite'}
@@ -294,7 +333,7 @@ export default function VisitWorkflow() {
                         placeholder={field.placeholder || `Enter ${field.label}`}
                     />
                 );
-            
+
             case 'address':
             case 'longtext':
             case 'paragraph':
@@ -335,11 +374,11 @@ export default function VisitWorkflow() {
                         ))}
                     </select>
                 );
-                
+
             case 'radio':
                 return (
                     <div className="space-y-2">
-                         {field.options?.map((option: string, i: number) => (
+                        {field.options?.map((option: string, i: number) => (
                             <label key={i} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-slate-50 dark:hover:bg-dark-highlight rounded-lg transition-colors">
                                 <input
                                     type="radio"
@@ -351,7 +390,7 @@ export default function VisitWorkflow() {
                                 />
                                 <span className="text-slate-700 dark:text-dark-text-body">{option}</span>
                             </label>
-                         ))}
+                        ))}
                     </div>
                 );
 
@@ -365,31 +404,31 @@ export default function VisitWorkflow() {
                         className={`input ${hasError ? 'border-red-500 bg-red-50' : ''}`}
                     />
                 );
-            
+
             case 'spinner':
-                 return (
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange(field.id, Math.max(0, (parseFloat(value) || 0) - 1))}
-                      className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-dark-highlight flex items-center justify-center text-xl font-bold text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value={value || 0}
-                      onChange={(e) => handleFieldChange(field.id, parseFloat(e.target.value) || 0)}
-                      className={`input flex-1 text-center h-12 font-bold ${hasError ? 'border-red-500' : ''}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange(field.id, (parseFloat(value) || 0) + 1)}
-                      className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-xl font-bold text-primary-600 dark:text-primary-400 active:scale-90 transition-transform"
-                    >
-                      +
-                    </button>
-                  </div>
+                return (
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => handleFieldChange(field.id, Math.max(0, (parseFloat(value) || 0) - 1))}
+                            className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-dark-highlight flex items-center justify-center text-xl font-bold text-slate-600 dark:text-slate-300 active:scale-90 transition-transform"
+                        >
+                            -
+                        </button>
+                        <input
+                            type="number"
+                            value={value || 0}
+                            onChange={(e) => handleFieldChange(field.id, parseFloat(e.target.value) || 0)}
+                            className={`input flex-1 text-center h-12 font-bold ${hasError ? 'border-red-500' : ''}`}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => handleFieldChange(field.id, (parseFloat(value) || 0) + 1)}
+                            className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-xl font-bold text-primary-600 dark:text-primary-400 active:scale-90 transition-transform"
+                        >
+                            +
+                        </button>
+                    </div>
                 );
 
             case 'notes':
@@ -430,7 +469,7 @@ export default function VisitWorkflow() {
                 );
 
             case 'photo':
-            case 'fileupload': 
+            case 'fileupload':
                 // fileupload treated same as photo for now (input type=file)
                 return (
                     <div className="space-y-4">
@@ -479,48 +518,48 @@ export default function VisitWorkflow() {
                         </div>
                     </div>
                 );
-            
+
             case 'starrating':
-                 return (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => handleFieldChange(field.id, star)}
-                          className={`text-3xl transition-all duration-200 ${(parseFloat(value) || 0) >= star ? 'text-yellow-400 scale-110' : 'text-slate-200 dark:text-dark-highlight hover:text-yellow-400/50'
-                            }`}
-                        >
-                          ★
-                        </button>
-                      ))}
+                return (
+                    <div className="flex flex-col gap-3">
+                        <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => handleFieldChange(field.id, star)}
+                                    className={`text-3xl transition-all duration-200 ${(parseFloat(value) || 0) >= star ? 'text-yellow-400 scale-110' : 'text-slate-200 dark:text-dark-highlight hover:text-yellow-400/50'
+                                        }`}
+                                >
+                                    ★
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                  </div>
                 );
 
             case 'scalerating':
-                 return (
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-widest">
-                      <span>{field.options?.[0] || 'Garnicht'}</span>
-                      <span>{field.options?.[1] || 'Sehr'}</span>
+                return (
+                    <div className="space-y-4">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-widest">
+                            <span>{field.options?.[0] || 'Garnicht'}</span>
+                            <span>{field.options?.[1] || 'Sehr'}</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            step="1"
+                            value={value || 5}
+                            onChange={(e) => handleFieldChange(field.id, parseInt(e.target.value))}
+                            className="w-full h-2 bg-slate-100 dark:bg-dark-highlight rounded-lg appearance-none cursor-pointer accent-primary-500"
+                        />
+                        <div className="flex justify-between px-1">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                                <span key={n} className={`text-[10px] font-bold ${parseInt(value) === n ? 'text-primary-500' : 'text-slate-300'}`}>{n}</span>
+                            ))}
+                        </div>
                     </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="1"
-                      value={value || 5}
-                      onChange={(e) => handleFieldChange(field.id, parseInt(e.target.value))}
-                      className="w-full h-2 bg-slate-100 dark:bg-dark-highlight rounded-lg appearance-none cursor-pointer accent-primary-500"
-                    />
-                    <div className="flex justify-between px-1">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                        <span key={n} className={`text-[10px] font-bold ${parseInt(value) === n ? 'text-primary-500' : 'text-slate-300'}`}>{n}</span>
-                      ))}
-                    </div>
-                  </div>
                 );
 
             default:
