@@ -111,6 +111,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (profile) {
         set({ profile });
         localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
+
+        // Persist logo URL for the login screen (survives logout)
+        const logoUrl = (profile as any).company_logo_url;
+        if (logoUrl) {
+          localStorage.setItem('onsite_last_company_logo', logoUrl);
+        } else {
+          localStorage.removeItem('onsite_last_company_logo');
+        }
       }
     } catch (error) {
       console.error('Refresh profile error:', error);

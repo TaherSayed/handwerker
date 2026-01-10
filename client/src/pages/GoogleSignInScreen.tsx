@@ -90,13 +90,22 @@ export default function GoogleSignInScreen() {
         <div className="flex flex-col items-center text-center space-y-8">
 
           {/* Logo Container */}
-          <div className="relative group p-4 bg-white rounded-3xl shadow-lg ring-4 ring-white/10">
+          <div className="relative group p-4 bg-white rounded-3xl shadow-lg ring-4 ring-white/10 overflow-hidden flex items-center justify-center min-h-[140px] w-full max-w-[240px] mx-auto">
             <div className="absolute inset-0 bg-cyan-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-3xl" />
-            <img
-              src="/logo-onsite.jpg"
-              alt="OnSite Handwerker App"
-              className="relative w-48 h-auto object-contain"
-            />
+
+            {localStorage.getItem('onsite_last_company_logo') ? (
+              <img
+                src={localStorage.getItem('onsite_last_company_logo') || ''}
+                alt="Company Logo"
+                className="relative w-full h-32 object-contain"
+              />
+            ) : (
+              <img
+                src="/logo-onsite.jpg"
+                alt="OnSite Handwerker App"
+                className="relative w-48 h-auto object-contain"
+              />
+            )}
           </div>
 
           {/* Login Button */}

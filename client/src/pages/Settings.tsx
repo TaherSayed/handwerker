@@ -176,6 +176,11 @@ const Settings: React.FC = () => {
       // Update global store directly to prevent race conditions with auto-save
       useAuthStore.setState({ profile: updatedProfile });
 
+      // Update persistent login logo
+      if (newLogoUrl) {
+        localStorage.setItem('onsite_last_company_logo', newLogoUrl);
+      }
+
       success('Logo gespeichert', 'Ihr Firmenlogo wurde erfolgreich aktualisiert.');
     } catch (error: any) {
       console.error('Logo upload error:', error);
@@ -196,6 +201,9 @@ const Settings: React.FC = () => {
       setFormData(updatedData);
       const updatedProfile = await apiService.updateProfile(updatedData);
       useAuthStore.setState({ profile: updatedProfile });
+
+      // Remove persistent login logo
+      localStorage.removeItem('onsite_last_company_logo');
       success('Logo entfernt', 'Das Firmenlogo wurde gelöscht.');
     } catch (error: any) {
       notifyError('Fehler', 'Das Logo konnte nicht entfernt werden.');
