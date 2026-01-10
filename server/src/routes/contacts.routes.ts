@@ -75,6 +75,17 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
         address = organizations.location;
       }
 
+      // 4. Fallback: Check userDefined fields for address-like labels
+      if (!address && person.userDefined) {
+        const addrField = person.userDefined.find((ud: any) => {
+          const key = (ud.key || '').toLowerCase();
+          return key.includes('addr') || key.includes('strasse') || key.includes('platz') || key.includes('anschrift');
+        });
+        if (addrField) {
+          address = addrField.value || '';
+        }
+      }
+
       const organizationName = organizations.name || '';
       const googleId = person.metadata?.sources?.find((s: any) => s.type === 'CONTACT')?.id || person.metadata?.sources?.[0]?.id || '';
 

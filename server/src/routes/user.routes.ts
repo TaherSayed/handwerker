@@ -240,6 +240,12 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
         const safeTyped = safeData as any;
         return res.json({
           ...safeData,
+          company_name: company_name !== undefined ? company_name : safeTyped?.company_name,
+          company_logo_url: company_logo_url !== undefined ? company_logo_url : safeTyped?.company_logo_url,
+          company_address: company_address !== undefined ? company_address : safeTyped?.company_address,
+          company_city: company_city !== undefined ? company_city : safeTyped?.company_city,
+          company_zip: company_zip !== undefined ? company_zip : safeTyped?.company_zip,
+          company_country: company_country !== undefined ? company_country : safeTyped?.company_country,
           company_phone: company_phone !== undefined ? company_phone : safeTyped?.company_phone,
           company_website: company_website !== undefined ? company_website : safeTyped?.company_website,
           primary_color: primary_color !== undefined ? primary_color : (safeTyped?.primary_color || '#2563eb'),

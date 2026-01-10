@@ -45,10 +45,13 @@ export default function Button({
         ${className}
       `}
             onMouseDown={(e) => {
-                if (!disabled && !loading) {
-                    e.currentTarget.classList.add('animate-mechanical-press');
+                const target = e.currentTarget;
+                if (!disabled && !loading && target && target.classList) {
+                    target.classList.add('animate-mechanical-press');
                     setTimeout(() => {
-                        e.currentTarget.classList.remove('animate-mechanical-press');
+                        if (target && target.classList) {
+                            target.classList.remove('animate-mechanical-press');
+                        }
                     }, 100);
                 }
             }}

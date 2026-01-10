@@ -94,6 +94,68 @@ export default function FormFilling() {
       notes: contact.notes || '',
       contact_id: contact.id,
     });
+
+    // Also auto-populate matching form fields
+    if (template && template.fields) {
+      const newFieldValues = { ...fieldValues };
+      let filledAny = false;
+
+      template.fields.forEach((f: any) => {
+        const label = f.label?.toLowerCase() || '';
+
+        // Skip non-identity fields
+        if (label.includes('wunsch') || label.includes('bemerkung') || label.includes('notiz') || label.includes('bezeichnung') || label.includes('beschreibung')) {
+          return;
+        }
+
+        // 1. Vorname
+        if (label.includes('vorname') || label.includes('givenname') || label.includes('first name')) {
+          const val = (contact as any).firstName || '';
+          if (val) { newFieldValues[f.id] = val; filledAny = true; }
+        }
+        // 2. Nachname
+        else if (label.includes('nachname') || label.includes('familienname') || label.includes('surname') || label.includes('last name')) {
+          const val = (contact as any).lastName || '';
+          if (val) { newFieldValues[f.id] = val; filledAny = true; }
+        }
+        // 3. Name / Kunde
+        else if (f.type === 'fullname' || label === 'name' || label === 'kunde' || label.includes('kundenname')) {
+          if (contact.name) { newFieldValues[f.id] = contact.name; filledAny = true; }
+        }
+        // 4. Email
+        else if (f.type === 'email' || label.includes('email') || label.includes('e-mail')) {
+          if (contact.email) { newFieldValues[f.id] = contact.email; filledAny = true; }
+        }
+        // 5. Phone
+        else if (f.type === 'phone' || label.includes('telefon') || label.includes('mobil') || label.includes('phone') || label.includes('handy') || label.includes('tel.')) {
+          if (contact.phone) { newFieldValues[f.id] = contact.phone; filledAny = true; }
+        }
+        // 6. Address / Street
+        else if (label.includes('adresse') || label.includes('address') || label.includes('strasse') || label.includes('straße') || label.includes('hausnummer') || label.includes('anschrift')) {
+          const val = (contact as any).street || contact.address || '';
+          if (val) { newFieldValues[f.id] = val; filledAny = true; }
+        }
+        // 7. City
+        else if (label.includes('ort') || label.includes('stadt') || label.includes('wohnort') || label.includes('city')) {
+          const val = (contact as any).city || '';
+          if (val) { newFieldValues[f.id] = val; filledAny = true; }
+        }
+        // 8. ZIP
+        else if (label.includes('plz') || label.includes('postleitzahl') || label.includes('zip')) {
+          const val = (contact as any).zip || '';
+          if (val) { newFieldValues[f.id] = val; filledAny = true; }
+        }
+        // 9. Company
+        else if (label.includes('firma') || label.includes('betrieb') || label.includes('company')) {
+          if (contact.company) { newFieldValues[f.id] = contact.company; filledAny = true; }
+        }
+      });
+
+      if (filledAny) {
+        setFieldValues(newFieldValues);
+        success('Daten übernommen', 'Kundendaten wurden automatisch in das Formular eingefügt.');
+      }
+    }
   };
 
   const handleFieldChange = (fieldId: string, value: any) => {

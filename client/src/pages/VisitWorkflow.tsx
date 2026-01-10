@@ -167,8 +167,8 @@ export default function VisitWorkflow() {
                         if (initialValues[f.id]) return;
                     }
 
-                    // 6. Street / Hausnummer
-                    if (label.includes('strasse') || label.includes('straße') || label.includes('hausnummer') || label.includes('anschrift')) {
+                    // 6. Street / Hausnummer / Adresse
+                    if (label.includes('adresse') || label.includes('address') || label.includes('strasse') || label.includes('straße') || label.includes('hausnummer') || label.includes('anschrift')) {
                         initialValues[f.id] = (customerData as any).street || customerData.address || '';
                         if (initialValues[f.id]) return;
                     }
