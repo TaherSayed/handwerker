@@ -6,7 +6,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
-
+  Plus,
   Bell,
   User as UserIcon,
 } from 'lucide-react';
@@ -37,6 +37,7 @@ export default function Layout() {
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Übersicht' },
     { to: '/templates', icon: FileText, label: 'Vorlagen' },
+    { to: '/visits/new', icon: Plus, label: 'Neu', isAction: true },
     { to: '/submissions', icon: ClipboardList, label: 'Verlauf' },
     { to: '/settings', icon: Settings, label: 'Optionen' },
   ];
@@ -71,9 +72,8 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Sidebar Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => (
+          {navItems.filter(item => !item.isAction).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -99,6 +99,19 @@ export default function Layout() {
               )}
             </NavLink>
           ))}
+
+          {/* Action Button in Sidebar (Desktop) */}
+          {sidebarOpen && (
+            <div className="px-3 py-4">
+              <button
+                onClick={() => navigate('/visits/new')}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow-md transition-all active:scale-95 font-bold text-sm"
+              >
+                <Plus className="w-5 h-5" />
+                Neuer Einsatz
+              </button>
+            </div>
+          )}
         </nav>
 
         {/* Sidebar Footer */}
@@ -222,9 +235,27 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation - Professional & Tappable */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-base dark:bg-dark-card border-t border-border-subtle dark:border-dark-stroke px-2 py-2 flex items-center justify-around z-sticky pb-safe shadow-sticky-nav">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-t border-border-subtle dark:border-dark-stroke px-1 py-1 flex items-end justify-around z-sticky pb-safe shadow-sticky-nav">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
+
+          if (item.isAction) {
+            return (
+              <button
+                key={item.to}
+                onClick={() => navigate(item.to)}
+                className="flex flex-col items-center justify-center -translate-y-4 mb-2"
+              >
+                <div className="w-14 h-14 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary-600/40 active:scale-90 transition-all border-4 border-white dark:border-dark-card">
+                  <Plus className="w-7 h-7 stroke-[3]" />
+                </div>
+                <span className="text-[10px] font-bold mt-1 text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.to}
@@ -242,10 +273,10 @@ export default function Layout() {
                   className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
                 />
                 {isActive && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary-500 dark:bg-primary-400"></span>
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-primary-400"></span>
                 )}
               </div>
-              <span className={`text-xs font-medium leading-none ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-text-tertiary dark:text-dark-text-muted'}`}>
+              <span className={`text-[10px] font-bold leading-none ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-text-tertiary dark:text-dark-text-muted'}`}>
                 {item.label}
               </span>
             </button>

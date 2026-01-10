@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api.service';
 import {
-  Search, CheckCircle2, Plus,
+  Search, CheckCircle2,
   Clock, ChevronRight, LayoutGrid,
   Settings2, Calendar, Database
 } from 'lucide-react';
@@ -158,14 +158,7 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* ⚡ Floating Action Button (FAB) */}
-        <button
-          onClick={() => navigate('/visits/new')}
-          className="fixed bottom-24 lg:bottom-10 left-1/2 -translate-x-1/2 z-50 h-16 px-8 bg-primary-600 hover:bg-primary-700 active:scale-[0.95] transition-all rounded-full flex items-center justify-center gap-3 text-white shadow-2xl shadow-primary-600/40 group border-4 border-white dark:border-dark-base"
-        >
-          <Plus className="w-6 h-6 stroke-[3] group-hover:rotate-90 transition-transform" />
-          <span className="font-black uppercase tracking-widest text-sm text-white whitespace-nowrap">Neuer Einsatz</span>
-        </button>
+        {/* ⚡ The action button has been moved to the Layout's bottom navigation to avoid obscuring content */}
 
         {/* 🔍 Unified Search & Filter */}
         <div className="space-y-4">
