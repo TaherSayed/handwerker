@@ -502,7 +502,7 @@ export default function FormFilling() {
         </div>
       </div>
 
-      <div className="p-4 md:p-10 max-w-4xl mx-auto w-full space-y-12">
+      <div className="p-4 md:p-10 max-w-4xl mx-auto w-full space-y-12 has-sticky-bar">
         {/* Desktop Header */}
         <div className="hidden lg:flex items-center gap-8 mb-16">
           <button
@@ -642,31 +642,29 @@ export default function FormFilling() {
             </div>
           </section>
 
-          {/* Action Bar (Mobile Floating / Desktop Inline) */}
-          <div className="fixed bottom-24 lg:bottom-0 left-0 right-0 p-4 lg:p-0 z-50 lg:z-auto pointer-events-none lg:pointer-events-auto">
-            <div className="max-w-4xl mx-auto flex gap-4 p-4 bg-white/95 dark:bg-dark-background/95 backdrop-blur-2xl rounded-[32px] border border-border-light dark:border-dark-stroke shadow-2xl lg:shadow-none lg:bg-transparent lg:backdrop-blur-none lg:border-none lg:justify-end pointer-events-auto">
-              <Button
-                type="button"
-                onClick={() => handleSave('draft')}
-                loading={saving}
-                disabled={submitting}
-                variant="secondary"
-                className="flex-1 lg:flex-none h-14 px-8 rounded-2xl bg-slate-100 dark:bg-dark-highlight hover:bg-slate-200 border-none font-semibold uppercase tracking-widest text-xs"
-                icon={<Save className="w-5 h-5" />}
-              >
-                Als Entwurf
-              </Button>
-              <Button
-                type="submit"
-                loading={submitting}
-                disabled={saving}
-                variant="primary"
-                className="flex-[2] lg:flex-none h-14 px-10 rounded-2xl shadow-xl shadow-primary-light/20 font-semibold uppercase tracking-widest text-xs"
-                icon={<Send className="w-5 h-5 fill-current" />}
-              >
-                Abschließen
-              </Button>
-            </div>
+          {/* Action Bar */}
+          <div className="sticky-action-bar flex gap-4">
+            <Button
+              type="button"
+              onClick={() => handleSave('draft')}
+              loading={saving}
+              disabled={submitting}
+              variant="secondary"
+              className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest text-xs"
+              icon={<Save className="w-5 h-5" />}
+            >
+              Als Entwurf
+            </Button>
+            <Button
+              type="submit"
+              loading={submitting}
+              disabled={saving}
+              variant="primary"
+              className="flex-[2] h-14 rounded-2xl shadow-xl font-semibold uppercase tracking-widest text-xs"
+              icon={<Send className="w-5 h-5 fill-current" />}
+            >
+              Abschließen
+            </Button>
           </div>
         </form>
       </div>

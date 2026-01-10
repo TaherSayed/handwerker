@@ -802,7 +802,7 @@ export default function VisitWorkflow() {
                 )}
 
                 {currentStep === 'form' && selectedTemplate && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 has-sticky-bar">
                         <div className="bg-white dark:bg-dark-card rounded-[2rem] p-5 md:p-8 space-y-8 border border-slate-100 dark:border-dark-stroke shadow-xl shadow-indigo-500/5">
                             <div className="pb-6 border-b border-slate-100 dark:border-dark-stroke flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black text-[9px] uppercase tracking-[0.2em]">
@@ -831,16 +831,20 @@ export default function VisitWorkflow() {
                         <div className="sticky-action-bar grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleSave('draft')}
-                                className="btn-secondary"
+                                className="btn-secondary flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-xs"
                             >
-                                <Save className="w-4 h-4" /> Entwurf
+                                <Save className="w-5 h-5" /> Entwurf
                             </button>
                             <button
                                 onClick={() => handleSave('submitted')}
                                 disabled={isSubmitting}
-                                className="btn-primary"
+                                className="btn-primary flex-1 h-14 rounded-2xl shadow-xl font-bold uppercase tracking-widest text-xs"
                             >
-                                {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
+                                {isSubmitting ? (
+                                    <Loader className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <Zap className="w-5 h-5 fill-current" />
+                                )}
                                 Abschließen
                             </button>
                         </div>

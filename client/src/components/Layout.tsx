@@ -23,6 +23,10 @@ export default function Layout() {
   const [sidebarOpen] = useState(window.innerWidth > 1024);
   const [scrolled, setScrolled] = useState(false);
 
+  const hideMobileNav = location.pathname === '/visits/new' ||
+    location.pathname.includes('/fill') ||
+    location.pathname.startsWith('/templates/') && location.pathname.includes('/fill');
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
@@ -235,54 +239,56 @@ export default function Layout() {
       </div>
 
       {/* Mobile Bottom Navigation - Professional & Tappable */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-t border-border-subtle dark:border-dark-stroke px-1 py-1 flex items-end justify-around z-sticky pb-safe shadow-sticky-nav">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.to;
+      {!hideMobileNav && (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-t border-border-subtle dark:border-dark-stroke px-1 py-1 flex items-end justify-around z-sticky pb-safe shadow-sticky-nav">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.to;
 
-          if (item.isAction) {
+            if (item.isAction) {
+              return (
+                <button
+                  key={item.to}
+                  onClick={() => navigate(item.to)}
+                  className="flex flex-col items-center justify-center -translate-y-4 mb-2"
+                >
+                  <div className="w-14 h-14 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary-600/40 active:scale-90 transition-all border-4 border-white dark:border-dark-card">
+                    <Plus className="w-7 h-7 stroke-[3]" />
+                  </div>
+                  <span className="text-[10px] font-bold mt-1 text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            }
+
             return (
               <button
                 key={item.to}
-                onClick={() => navigate(item.to)}
-                className="flex flex-col items-center justify-center -translate-y-4 mb-2"
+                onClick={() => {
+                  if (isActive) return;
+                  navigate(item.to);
+                }}
+                className={`flex flex-col items-center justify-center gap-1 w-full py-2 min-h-[56px] transition-all duration-200 ${isActive
+                  ? 'text-primary-500 dark:text-primary-400'
+                  : 'text-text-tertiary dark:text-dark-text-muted hover:text-text-primary dark:hover:text-dark-text-body'
+                  }`}
               >
-                <div className="w-14 h-14 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary-600/40 active:scale-90 transition-all border-4 border-white dark:border-dark-card">
-                  <Plus className="w-7 h-7 stroke-[3]" />
+                <div className={`relative ${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
+                  <item.icon
+                    className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
+                  />
+                  {isActive && (
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-primary-400"></span>
+                  )}
                 </div>
-                <span className="text-[10px] font-bold mt-1 text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
+                <span className={`text-[10px] font-bold leading-none ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-text-tertiary dark:text-dark-text-muted'}`}>
                   {item.label}
                 </span>
               </button>
             );
-          }
-
-          return (
-            <button
-              key={item.to}
-              onClick={() => {
-                if (isActive) return;
-                navigate(item.to);
-              }}
-              className={`flex flex-col items-center justify-center gap-1 w-full py-2 min-h-[56px] transition-all duration-200 ${isActive
-                ? 'text-primary-500 dark:text-primary-400'
-                : 'text-text-tertiary dark:text-dark-text-muted hover:text-text-primary dark:hover:text-dark-text-body'
-                }`}
-            >
-              <div className={`relative ${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
-                <item.icon
-                  className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
-                />
-                {isActive && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-primary-400"></span>
-                )}
-              </div>
-              <span className={`text-[10px] font-bold leading-none ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-text-tertiary dark:text-dark-text-muted'}`}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
+          })}
+        </nav>
+      )}
 
       <SyncStatus />
     </div >
