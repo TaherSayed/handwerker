@@ -85,178 +85,66 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res) => {
     const { full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color } = req.body;
 
     const userClient = supabase.getClientForUser(accessToken);
+    const adminClient = supabase.adminClient || userClient;
+
+    // 1. Fetch actual columns from information_schema to prevent schema cache errors
+    let availableColumns: string[] = ['id', 'email', 'full_name', 'created_at', 'updated_at'];
+    try {
+      // Use a direct query instead of RPC if it's not defined
+      const { data: cols, error: colError } = await adminClient
+        .from('user_profiles')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (cols) {
+        availableColumns = Object.keys(cols);
+      }
+    } catch (e) {
+      console.warn('[UserRoutes] Could not fetch columns, using minimal defaults');
+    }
 
     const updates: any = {};
-    if (full_name !== undefined) updates.full_name = full_name;
-    if (company_name !== undefined) updates.company_name = company_name;
-    if (company_logo_url !== undefined) updates.company_logo_url = company_logo_url;
-    if (company_address !== undefined) updates.company_address = company_address;
-    if (company_city !== undefined) updates.company_city = company_city;
-    if (company_zip !== undefined) updates.company_zip = company_zip;
-    if (company_country !== undefined) updates.company_country = company_country;
-    if (company_phone !== undefined) updates.company_phone = company_phone;
-    if (company_website !== undefined) updates.company_website = company_website;
+    const inputFields: any = {
+      full_name, company_name, company_logo_url, company_address,
+      company_city, company_zip, company_country, company_phone,
+      company_website, primary_color, accent_color
+    };
 
-    // Only update branding fields if they exist in the schema
-    // We'll try to update them, but handle errors gracefully
-    if (primary_color !== undefined) updates.primary_color = primary_color;
-    if (accent_color !== undefined) updates.accent_color = accent_color;
+    const missingColumns: string[] = [];
 
-    // Try to update, but handle schema cache errors gracefully
-    let data: any = null;
-    let error: any = null;
-
-    try {
-      const result = await userClient
-        .from('user_profiles')
-        .update(updates)
-        .eq('id', userId)
-        .select('id, email, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, company_phone, company_website, primary_color, accent_color, created_at, updated_at')
-        .single();
-
-      data = result.data;
-      error = result.error;
-
-      if (error) {
-        console.error(`[UserRoutes] PATCH /me primary update failed for ${userId}:`, error.message);
+    // Only add fields that exist in the DB
+    Object.entries(inputFields).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (availableColumns.includes(key)) {
+          updates[key] = value;
+        } else {
+          missingColumns.push(key);
+        }
       }
-    } catch (updateError: any) {
-      error = updateError;
+    });
+
+    // 2. Perform the update with only valid columns
+    const { data: updatedData, error: updateError } = await userClient
+      .from('user_profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select(availableColumns.join(','))
+      .single();
+
+    if (updateError) {
+      console.error(`[UserRoutes] PATCH /me failed:`, updateError.message);
+      return res.status(400).json({ error: updateError.message });
     }
 
-    if (error) {
-      // Check if error is about missing columns in schema cache
-      const isSchemaCacheError = error.message?.includes('schema cache') ||
-        error.message?.includes('column') ||
-        error.message?.includes('does not exist');
-
-      if (isSchemaCacheError) {
-        console.warn(`[UserRoutes] Schema cache error for ${userId}, trying defensive update:`, error.message);
-
-        // Build safe updates by trying to update in stages
-        const safeUpdates: any = {};
-        const problematicFields: string[] = [];
-
-        // Core fields (always exist)
-        if (full_name !== undefined) safeUpdates.full_name = full_name;
-        if (company_name !== undefined) safeUpdates.company_name = company_name;
-        if (company_logo_url !== undefined) safeUpdates.company_logo_url = company_logo_url;
-        if (company_address !== undefined) safeUpdates.company_address = company_address;
-        if (company_city !== undefined) safeUpdates.company_city = company_city;
-        if (company_zip !== undefined) safeUpdates.company_zip = company_zip;
-        if (company_country !== undefined) safeUpdates.company_country = company_country;
-
-        // Add default values for required fields if they are missing in the current profile but were sent
-        // This is a safety measure for schema-fallback mode
-
-        // Company fields that might not exist in schema cache
-        // Try to include them, but we'll handle errors
-        if (company_phone !== undefined) {
-          try {
-            safeUpdates.company_phone = company_phone;
-          } catch (e) {
-            problematicFields.push('company_phone');
-          }
-        }
-        if (company_website !== undefined) {
-          try {
-            safeUpdates.company_website = company_website;
-          } catch (e) {
-            problematicFields.push('company_website');
-          }
-        }
-
-        // Branding fields (might not exist)
-        if (primary_color !== undefined) {
-          try {
-            safeUpdates.primary_color = primary_color;
-          } catch (e) {
-            problematicFields.push('primary_color');
-          }
-        }
-        if (accent_color !== undefined) {
-          try {
-            safeUpdates.accent_color = accent_color;
-          } catch (e) {
-            problematicFields.push('accent_color');
-          }
-        }
-
-        // Try update with safe fields only (don't include problematic fields in SELECT)
-        const safeSelect = 'id, email, full_name, company_name, company_logo_url, company_address, company_city, company_zip, company_country, created_at, updated_at';
-        const { data: safeData, error: safeError } = await userClient
-          .from('user_profiles')
-          .update(safeUpdates)
-          .eq('id', userId)
-          .select(safeSelect)
-          .single();
-
-        if (safeError) {
-          // If still failing, try with even fewer fields - ONLY standard columns
-          const minimalSelect = 'id, email, full_name, created_at, updated_at';
-          const minimalUpdates: any = {};
-          if (full_name !== undefined) minimalUpdates.full_name = full_name;
-
-          // If no standard fields to update, just fetch
-          let minimalQuery: any = userClient.from('user_profiles');
-
-          if (Object.keys(minimalUpdates).length > 0) {
-            minimalQuery = minimalQuery.update(minimalUpdates);
-          } else {
-            // If nothing to update, just select
-            minimalQuery = minimalQuery.select(minimalSelect);
-          }
-
-          const { data: minimalData, error: minimalError } = await minimalQuery
-            .eq('id', userId)
-            .select(minimalSelect)
-            .single();
-
-          if (minimalError) {
-            console.error(`[UserRoutes] Even minimal update failed for ${userId}:`, minimalError.message);
-            return res.status(400).json({
-              error: `Could not update profile. Database schema may be out of sync. Please contact support.`
-            });
-          }
-
-          // Build return data manually since DB might be in flux
-          const minimalTyped = minimalData as any;
-          return res.json({
-            ...minimalData,
-            company_name: company_name !== undefined ? company_name : (minimalTyped?.company_name || ''),
-            company_logo_url: company_logo_url !== undefined ? company_logo_url : (minimalTyped?.company_logo_url || ''),
-            company_address: company_address !== undefined ? company_address : (minimalTyped?.company_address || ''),
-            company_city: company_city !== undefined ? company_city : (minimalTyped?.company_city || ''),
-            company_zip: company_zip !== undefined ? company_zip : (minimalTyped?.company_zip || ''),
-            company_country: company_country !== undefined ? company_country : (minimalTyped?.company_country || ''),
-            company_phone: company_phone !== undefined ? company_phone : (minimalTyped?.company_phone || ''),
-            company_website: company_website !== undefined ? company_website : (minimalTyped?.company_website || ''),
-            primary_color: primary_color !== undefined ? primary_color : (minimalTyped?.primary_color || '#2563eb'),
-            accent_color: accent_color !== undefined ? accent_color : (minimalTyped?.accent_color || '#1e40af'),
-          });
-        }
-
-        // Return data with requested values (even if some weren't saved due to schema issues)
-        const safeTyped = safeData as any;
-        return res.json({
-          ...safeData,
-          company_name: company_name !== undefined ? company_name : safeTyped?.company_name,
-          company_logo_url: company_logo_url !== undefined ? company_logo_url : safeTyped?.company_logo_url,
-          company_address: company_address !== undefined ? company_address : safeTyped?.company_address,
-          company_city: company_city !== undefined ? company_city : safeTyped?.company_city,
-          company_zip: company_zip !== undefined ? company_zip : safeTyped?.company_zip,
-          company_country: company_country !== undefined ? company_country : safeTyped?.company_country,
-          company_phone: company_phone !== undefined ? company_phone : safeTyped?.company_phone,
-          company_website: company_website !== undefined ? company_website : safeTyped?.company_website,
-          primary_color: primary_color !== undefined ? primary_color : (safeTyped?.primary_color || '#2563eb'),
-          accent_color: accent_color !== undefined ? accent_color : (safeTyped?.accent_color || '#1e40af'),
-        });
-      }
-
-      return res.status(400).json({ error: error.message });
-    }
-
-    res.json(data);
+    // 3. Return full requested data (including simulated success for missing columns)
+    // but add a warning so the UI can notify the user
+    res.json({
+      ...updatedData,
+      ...inputFields, // Ensure returned object has what user sent
+      _missing_columns: missingColumns.length > 0 ? missingColumns : undefined,
+      _needs_repair: missingColumns.length > 0
+    });
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({ error: 'Failed to update user' });
