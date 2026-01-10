@@ -40,7 +40,6 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
 
     const primaryColor = '#1e3a8a';
     const secondaryColor = '#64748b';
-    const lightGrey = '#f8fafc';
 
     let currentY = 15;
 
