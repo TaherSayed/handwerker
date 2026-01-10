@@ -50,13 +50,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       const primaryAddr = person.addresses?.find((a: any) => a.metadata?.primary) || person.addresses?.[0];
 
       if (primaryAddr) {
-        street = primaryAddr.streetAddress || '';
+        // streetAddress can be multiline (e.g. "Street 1\nStreet 2")
+        street = (primaryAddr.streetAddress || '').replace(/\n/g, ', ').trim();
         city = primaryAddr.city || '';
         zip = primaryAddr.postalCode || '';
 
-        // Construct address from parts if formattedValue is not ideal
+        // Construct a clean full address if Google doesn't provide a good formattedValue
         const parts = [street, [zip, city].filter(Boolean).join(' ')].filter(Boolean);
-        address = primaryAddr.formattedValue || parts.join(', ');
+        address = (primaryAddr.formattedValue || parts.join(', ')).replace(/\n/g, ' ').trim();
 
         if (!address && parts.length > 0) {
           address = parts.join(', ');
