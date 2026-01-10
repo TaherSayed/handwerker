@@ -63,7 +63,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     };
 
     const fullProfile = {
-      ...(profile || {}),
+      ...(profile as any || {}),
       email: profile.email || req.user!.email, // Ensure email is included
       avatar_url: profile.avatar_url || googleAvatar, // Include avatar_url from profile or Google
       workspaces: workspace ? [workspace] : [],
