@@ -388,7 +388,7 @@ export class PDFService {
             .text('-', colX + 5, valueY);
         }
       } else {
-        const formatted = this.formatValue(field.type, value);
+        const formatted = this.formatValue(field.type, value, field.label);
         doc.fontSize(8)
           .font('Helvetica')
           .fillColor('#111827')
@@ -490,7 +490,7 @@ export class PDFService {
     }
   }
 
-  private formatValue(type: string, value: any): string {
+  private formatValue(type: string, value: any, label?: string): string {
     if (value === undefined || value === null || value === '') return '-';
 
     if (type === 'checkbox' || type === 'toggle') {
@@ -509,7 +509,13 @@ export class PDFService {
       return JSON.stringify(value);
     }
 
-    return String(value);
+    const strValue = String(value);
+    const lowerLabel = label?.toLowerCase() || '';
+    if (lowerLabel.includes('preis') || lowerLabel.includes('price')) {
+      return `${strValue} €`;
+    }
+
+    return strValue;
   }
 }
 

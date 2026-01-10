@@ -327,14 +327,22 @@ export default function VisitWorkflow() {
             case 'phone':
             case 'fullname':
             case 'fillblank':
+                const isPrice = field.label?.toLowerCase().includes('preis') || field.label?.toLowerCase().includes('price');
                 return (
-                    <input
-                        type={field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                        value={value || ''}
-                        onChange={(e) => handleFieldChange(field.id, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
-                        className={`input ${hasError ? 'border-red-500 bg-red-50' : ''}`}
-                        placeholder={field.placeholder || `Enter ${field.label}`}
-                    />
+                    <div className="relative">
+                        <input
+                            type={field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                            value={value || ''}
+                            onChange={(e) => handleFieldChange(field.id, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                            className={`input ${isPrice ? 'pr-12' : ''} ${hasError ? 'border-red-500 bg-red-50' : ''}`}
+                            placeholder={field.placeholder || `${field.label} eingeben...`}
+                        />
+                        {isPrice && (
+                            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-black pointer-events-none">
+                                €
+                            </div>
+                        )}
+                    </div>
                 );
 
             case 'address':
@@ -366,16 +374,21 @@ export default function VisitWorkflow() {
 
             case 'dropdown':
                 return (
-                    <select
-                        value={value || ''}
-                        onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        className={`input ${hasError ? 'border-red-500 bg-red-50' : ''}`}
-                    >
-                        <option value="">Option wählen</option>
-                        {field.options?.map((option: string) => (
-                            <option key={option} value={option}>{option}</option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={value || ''}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            className={`input appearance-none ${hasError ? 'border-red-500 bg-red-50' : ''}`}
+                        >
+                            <option value="">Option wählen</option>
+                            {field.options?.map((option: string) => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <Zap className="w-4 h-4" />
+                        </div>
+                    </div>
                 );
 
             case 'radio':
@@ -452,12 +465,15 @@ export default function VisitWorkflow() {
             case 'signature':
                 return (
                     <div className="space-y-3">
-                        {signature ? (
+                        {value || signature ? (
                             <div className="relative overflow-hidden rounded-[2rem] border-2 border-slate-100 dark:border-dark-stroke bg-white dark:bg-dark-input shadow-inner">
-                                <img src={signature} alt="Signature" className="w-full h-40 object-contain p-4 dark:brightness-90 dark:invert" />
+                                <img src={value || signature} alt="Signature" className="w-full h-40 object-contain p-4 dark:brightness-90 dark:invert" />
                                 <button
                                     type="button"
-                                    onClick={() => setSignature(null)}
+                                    onClick={() => {
+                                        handleFieldChange(field.id, null);
+                                        if (signature) setSignature(null);
+                                    }}
                                     className="absolute top-4 right-4 p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                 >
                                     <Trash2 className="w-5 h-5" />
@@ -465,7 +481,10 @@ export default function VisitWorkflow() {
                             </div>
                         ) : (
                             <div className="card p-0 overflow-hidden border-2 border-slate-100 bg-white focus-within:border-indigo-500 transition-colors">
-                                <SignaturePad onCapture={setSignature} />
+                                <SignaturePad onCapture={(data) => {
+                                    handleFieldChange(field.id, data);
+                                    setSignature(data); // Also set global signature for fallback
+                                }} />
                             </div>
                         )}
                     </div>
@@ -1126,77 +1145,87 @@ function FinishStep({ submissionResult, onBack }: { submissionResult: any; onBac
 function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
+    const [isEmpty, setIsEmpty] = useState(true);
 
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        // Handle high DPI displays
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        ctx.strokeStyle = '#1e1b4b'; // indigo-950
-        ctx.lineWidth = 3;
+        ctx.scale(dpr, dpr);
+        ctx.strokeStyle = '#0f172a'; // slate-900
+        ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-
-        // Resize to container
-        const resize = () => {
-            const parent = canvas.parentElement;
-            if (parent) {
-                canvas.width = parent.clientWidth;
-                canvas.height = parent.clientHeight || 200;
-            }
-        };
-        resize();
-        window.addEventListener('resize', resize);
-        return () => window.removeEventListener('resize', resize);
     }, []);
 
-    const getPos = (e: any) => {
+    const getPos = (e: React.MouseEvent | React.TouchEvent | any) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
         return {
             x: clientX - rect.left,
             y: clientY - rect.top
         };
     };
 
-    const startDrawing = (e: any) => {
+    const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
         setIsDrawing(true);
-        const pos = getPos(e);
-        const ctx = canvasRef.current?.getContext('2d');
-        if (ctx) {
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+        setIsEmpty(false);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const { x, y } = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
     };
 
-    const draw = (e: any) => {
+    const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
         if (!isDrawing) return;
-        const pos = getPos(e);
-        const ctx = canvasRef.current?.getContext('2d');
-        if (ctx) {
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!ctx) return;
+
+        const { x, y } = getPos(e);
+        ctx.lineTo(x, y);
+        ctx.stroke();
     };
 
     const stopDrawing = () => {
+        if (!isDrawing) return;
         setIsDrawing(false);
         const canvas = canvasRef.current;
-        if (canvas) {
-            onCapture(canvas.toDataURL());
-        }
+        if (!canvas) return;
+        const dataUrl = canvas.toDataURL();
+        onCapture(dataUrl);
+    };
+
+    const clear = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!ctx || !canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setIsEmpty(true);
+        onCapture('');
     };
 
     return (
-        <div className="w-full h-48 relative bg-white rounded-[2rem] overflow-hidden">
+        <div className="relative border-2 border-slate-100 rounded-[2rem] bg-slate-50/50 overflow-hidden group/pad transition-all hover:border-indigo-100">
             <canvas
                 ref={canvasRef}
-                className="w-full h-full cursor-crosshair touch-none"
+                className="w-full h-56 cursor-crosshair touch-none bg-transparent"
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
@@ -1205,9 +1234,26 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
                 onTouchMove={draw}
                 onTouchEnd={stopDrawing}
             />
-            <div className="absolute bottom-4 left-0 right-0 pointer-events-none flex justify-center">
-                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Unterschrift</span>
+
+            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/pad:opacity-100 transition-opacity">
+                <button
+                    type="button"
+                    onClick={clear}
+                    className="bg-white/90 backdrop-blur-sm text-slate-400 hover:text-red-500 p-3 rounded-2xl shadow-lg border border-slate-100 transition-all active:scale-95"
+                    title="Löschen"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
             </div>
+
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
+                <p className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-500 ${isEmpty ? 'text-slate-400 opacity-60' : 'text-indigo-500 opacity-0 translate-y-2'
+                    }`}>
+                    Kunde hier unterschreiben
+                </p>
+            </div>
+
+            <div className="absolute bottom-10 left-8 right-8 h-[1px] bg-slate-200/50 pointer-events-none" />
         </div>
     );
 }

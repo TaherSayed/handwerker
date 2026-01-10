@@ -222,7 +222,12 @@ export default function SubmissionDetail() {
           </div>
         );
       default:
-        return <span className="text-slate-900 dark:text-slate-100 font-medium break-words">{value}</span>;
+        const isPrice = field.label?.toLowerCase().includes('preis') || field.label?.toLowerCase().includes('price');
+        return (
+          <span className="text-slate-900 dark:text-slate-100 font-semibold break-words">
+            {value}{isPrice && ' €'}
+          </span>
+        );
     }
   };
 
@@ -297,7 +302,7 @@ export default function SubmissionDetail() {
         <div className="flex gap-2">
           {submission.status === 'draft' && (
             <button
-              onClick={() => navigate(`/fill/${submission.template_id}?edit=${submission.id}`)}
+              onClick={() => navigate(`/templates/${submission.template_id}/fill?edit=${submission.id}`)}
               className="p-2.5 text-primary-light hover:bg-primary-light/10 dark:text-primary-dark dark:hover:bg-primary-dark/10 rounded-2xl transition-colors"
               title="Bearbeiten"
             >

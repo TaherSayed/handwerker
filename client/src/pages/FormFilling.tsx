@@ -100,9 +100,6 @@ export default function FormFilling() {
     setFieldValues({ ...fieldValues, [fieldId]: value });
   };
 
-  const handleSignatureCapture = (dataUrl: string) => {
-    setSignature(dataUrl);
-  };
 
   const validateForm = (): boolean => {
     if (!template) return false;
@@ -219,25 +216,23 @@ export default function FormFilling() {
         );
 
       case 'text':
-        return (
-          <input
-            type="text"
-            value={value || ''}
-            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-            className={`input ${hasError ? 'border-red-500' : ''}`}
-            placeholder={field.placeholder || `${field.label} eingeben...`}
-          />
-        );
-
       case 'number':
+        const isPrice = field.label?.toLowerCase().includes('preis') || field.label?.toLowerCase().includes('price');
         return (
-          <input
-            type="number"
-            value={value || ''}
-            onChange={(e) => handleFieldChange(field.id, parseFloat(e.target.value) || 0)}
-            className={`input ${hasError ? 'border-red-500' : ''}`}
-            placeholder={field.placeholder || `${field.label} eingeben...`}
-          />
+          <div className="relative">
+            <input
+              type={field.type === 'number' ? 'number' : 'text'}
+              value={value || ''}
+              onChange={(e) => handleFieldChange(field.id, field.type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+              className={`input ${isPrice ? 'pr-12' : ''} ${hasError ? 'border-red-500' : ''}`}
+              placeholder={field.placeholder || `${field.label} eingeben...`}
+            />
+            {isPrice && (
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-black pointer-events-none">
+                €
+              </div>
+            )}
+          </div>
         );
 
       case 'spinner':
@@ -382,19 +377,25 @@ export default function FormFilling() {
       case 'signature':
         return (
           <div className="space-y-3">
-            {signature ? (
+            {value || signature ? (
               <div className="relative group/sig">
-                <img src={signature} alt="Unterschrift" className="w-full max-w-md h-32 object-contain border-2 border-slate-100 rounded-[1.5rem] bg-white shadow-sm" />
+                <img src={value || signature} alt="Unterschrift" className="w-full max-w-md h-32 object-contain border-2 border-slate-100 rounded-[1.5rem] bg-white shadow-sm" />
                 <button
                   type="button"
-                  onClick={() => setSignature(null)}
+                  onClick={() => {
+                    handleFieldChange(field.id, null);
+                    if (!value) setSignature(null);
+                  }}
                   className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-xl shadow-lg opacity-0 group-hover/sig:opacity-100 transition-opacity hover:bg-red-600"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <SignaturePad onCapture={handleSignatureCapture} />
+              <SignaturePad onCapture={(data) => {
+                handleFieldChange(field.id, data);
+                setSignature(data);
+              }} />
             )}
           </div>
         );
