@@ -123,7 +123,7 @@ export class PDFService {
     let y = 35;
 
     // --- Premium Header Section ---
-    const headerHeight = 70;
+    const headerHeight = 55;
 
     // Logo (Left)
     let logoSize = 60;
@@ -174,7 +174,7 @@ export class PDFService {
       .strokeColor('#e2e8f0')
       .lineWidth(1)
       .stroke();
-    y += 30;
+    y += 15;
 
     // --- Document Title ---
     doc.fontSize(24)
@@ -187,7 +187,7 @@ export class PDFService {
       .fillColor(accentColor)
       .text(`BELEGDATUM: ${new Date(data.submitted_at || data.created_at).toLocaleDateString('de-DE')}`, margin, y + 30);
 
-    y += 60;
+    y += 45;
 
     // --- Customer Section ---
     const hasKundenSection = data.template.fields.some(f =>
@@ -222,7 +222,7 @@ export class PDFService {
         .fillColor('#64748b')
         .text(customerDetails || '-', margin + 20, y + 40);
 
-      y += 95;
+      y += 80;
     }
 
     // --- Content Sections ---
@@ -277,7 +277,7 @@ export class PDFService {
         contentHeight = doc.heightOfString(formatted, { width: currentWidth - 20, size: 9 });
       }
 
-      const fieldHeight = Math.max(40, labelHeight + contentHeight + 20);
+      const fieldHeight = Math.max(30, labelHeight + contentHeight + 15);
 
       if (y + fieldHeight > pageHeight - margin) {
         doc.addPage();
@@ -319,13 +319,13 @@ export class PDFService {
       }
 
       if (isFullWidth) {
-        y += fieldHeight + 15;
+        y += fieldHeight + 8;
         rowMaxY = y;
         currentCol = 0;
       } else {
         rowMaxY = Math.max(rowMaxY, y + fieldHeight);
         if (currentCol === 1) {
-          y = rowMaxY + 15;
+          y = rowMaxY + 8;
           currentCol = 0;
         } else {
           currentCol = 1;

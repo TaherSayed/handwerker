@@ -114,7 +114,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     }
 
     // Title & Subject
-    currentY += 40;
+    currentY += 25;
     doc.setFontSize(22);
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
@@ -138,7 +138,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     const reportId = submission.id ? submission.id.slice(0, 8).toUpperCase() : 'UNKNOWN';
     doc.text(`#${reportId}`, pageWidth - margin - 55, currentY + 8);
 
-    currentY += 25;
+    currentY += 15;
 
     // --- Customer Block ---
     doc.setFillColor('#f1f5f9'); // Slate 100
@@ -178,7 +178,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.setTextColor(secondaryColor);
     doc.text(`Datum: ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`, pageWidth - margin - 5, currentY + 16, { align: 'right' });
 
-    currentY += 45;
+    currentY += 30;
 
     // --- Content Table ---
     const fields = submission.form_templates?.fields || [];
