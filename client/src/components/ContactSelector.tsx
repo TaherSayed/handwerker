@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { googleContactsService, GoogleContact } from '../services/google-contacts.service';
 import { useAuthStore } from '../store/authStore';
 import { Search, User, Mail, Phone, MapPin, X, AlertCircle, RefreshCw, Key, ChevronRight, Contact2, ShieldCheck } from 'lucide-react';
 import Button from './common/Button';
 import { useNotificationStore } from '../store/notificationStore';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../services/db.service';
 
 interface ContactSelectorProps {
   onSelect: (contact: GoogleContact) => void;
@@ -12,39 +14,31 @@ interface ContactSelectorProps {
 }
 
 export default function ContactSelector({ onSelect, onClose }: ContactSelectorProps) {
-  const [contacts, setContacts] = useState<GoogleContact[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<GoogleContact[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Background sync handles loading state
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { signIn } = useAuthStore();
-  const { success, error: notifyError } = useNotificationStore();
+  const { error: notifyError } = useNotificationStore();
 
-  useEffect(() => {
-    loadContacts();
-  }, []);
+  // Use Live Query for automatic updates from background sync
+  const contacts = useLiveQuery(() => db.contacts.toArray()) || [];
 
-  useEffect(() => {
-    const lowerQuery = searchQuery.toLowerCase();
-    const filtered = contacts.filter(
-      (contact) =>
-        contact.name?.toLowerCase().includes(lowerQuery) ||
-        contact.email?.toLowerCase().includes(lowerQuery) ||
-        contact.phone?.includes(searchQuery)
-    );
-    setFilteredContacts(filtered);
-  }, [searchQuery, contacts]);
+  const lowerQuery = searchQuery.toLowerCase();
+  const filteredContacts = contacts.filter(
+    (contact) =>
+      contact.name?.toLowerCase().includes(lowerQuery) ||
+      contact.email?.toLowerCase().includes(lowerQuery) ||
+      contact.phone?.includes(searchQuery)
+  );
 
-  const loadContacts = async (force = false) => {
+  const loadContacts = async (force = true) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await googleContactsService.fetchContacts(force);
-      setContacts(data);
-      if (force) success('Kontakte aktualisiert', 'Ihre Google-Kontakte wurden erfolgreich synchronisiert.');
+      await googleContactsService.fetchContacts(force);
     } catch (err: any) {
-      console.error('Load contacts error:', err);
-      setError(err.message || 'Synchronisierung der Google-Kontakte fehlgeschlagen');
+      console.error('Manual refresh error:', err);
+      setError(err.message || 'Synchronisierung fehlgeschlagen');
       notifyError('Sync-Fehler', 'Google-Kontakte konnten nicht geladen werden.');
     } finally {
       setLoading(false);

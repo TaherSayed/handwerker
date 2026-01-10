@@ -8,6 +8,7 @@ import { useThemeStore } from './store/themeStore';
 import { WifiOff } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/common/LoadingScreen';
+import { googleContactsService } from './services/google-contacts.service';
 
 // Lazy load sync service to avoid blocking initial load
 let syncServiceLoaded = false;
@@ -102,12 +103,20 @@ function App() {
     // Initial sync service load
     const syncTimeout = setTimeout(() => loadSyncService(), 2000);
 
+    // Start/Stop Google Contacts Auto-sync
+    if (user && initialized) {
+      googleContactsService.startAutoSync();
+    } else {
+      googleContactsService.stopAutoSync();
+    }
+
     return () => {
       clearTimeout(syncTimeout);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      googleContactsService.stopAutoSync();
     };
-  }, [initialize, warn, notifySuccess]);
+  }, [initialize, warn, notifySuccess, user, initialized]);
 
   // Theme support
   const { theme } = useThemeStore();

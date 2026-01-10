@@ -24,7 +24,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     const response = await people.people.connections.list({
       resourceName: 'people/me',
       pageSize: 1000,
-      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata,organizations,biographies',
+      personFields: 'names,emailAddresses,phoneNumbers,addresses,metadata,organizations,biographies,userDefined',
     });
 
     const connections = response.data.connections || [];
@@ -34,18 +34,49 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       const name = person.names?.[0]?.displayName || 'Unknown';
       const firstName = person.names?.[0]?.givenName || '';
       const lastName = person.names?.[0]?.familyName || '';
-      const email = person.emailAddresses?.[0]?.value || '';
-      const phone = person.phoneNumbers?.[0]?.value || '';
+      const email = person.emailAddresses?.find((e: any) => e.metadata?.primary)?.value || person.emailAddresses?.[0]?.value || '';
+      const phone = person.phoneNumbers?.find((p: any) => p.metadata?.primary)?.value || person.phoneNumbers?.[0]?.value || '';
 
-      const firstAddress = person.addresses?.[0] || {};
-      const address = firstAddress.formattedValue || '';
-      const street = firstAddress.streetAddress || '';
-      const city = firstAddress.city || '';
-      const zip = firstAddress.postalCode || '';
+      // Advanced Address Mapping
+      const biographies = person.biographies?.[0]?.value || '';
+      const organizations = person.organizations?.[0] || {};
 
-      const organization = person.organizations?.[0]?.name || '';
-      const notes = person.biographies?.[0]?.value || '';
-      const googleId = person.metadata?.sources?.[0]?.id || '';
+      let address = '';
+      let street = '';
+      let city = '';
+      let zip = '';
+
+      // 1. Try to find a primary address or just the first one
+      const primaryAddr = person.addresses?.find((a: any) => a.metadata?.primary) || person.addresses?.[0];
+
+      if (primaryAddr) {
+        address = primaryAddr.formattedValue || '';
+        street = primaryAddr.streetAddress || '';
+        city = primaryAddr.city || '';
+        zip = primaryAddr.postalCode || '';
+
+        // If formattedValue exists but street/city are empty, try to parse or just use formattedValue
+        if (address && !street && !city) {
+          // Keep it as is, client will use 'address' field
+        }
+      }
+
+      // 2. Fallback: If no address but we have a biography that looks like an address (heuristic)
+      // Or if the user explicitly mentioned it's in the "wrong field", they might mean notes.
+      if (!address && biographies) {
+        // Simple check: if biography contains a newline and numbers (common for addresses)
+        if (biographies.includes('\n') || /\d{5}/.test(biographies)) {
+          address = biographies;
+        }
+      }
+
+      // 3. Fallback: Check organization location
+      if (!address && organizations.location) {
+        address = organizations.location;
+      }
+
+      const organizationName = organizations.name || '';
+      const googleId = person.metadata?.sources?.find((s: any) => s.type === 'CONTACT')?.id || person.metadata?.sources?.[0]?.id || '';
 
       return {
         id: googleId,
@@ -55,12 +86,12 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
         lastName,
         email,
         phone,
-        address,
-        street,
-        city,
-        zip,
-        company: organization,
-        notes,
+        address: address.trim(),
+        street: street.trim(),
+        city: city.trim(),
+        zip: zip.trim(),
+        company: organizationName,
+        notes: biographies,
       };
     });
 

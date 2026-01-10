@@ -17,14 +17,16 @@ interface GoogleContact {
 }
 
 class GoogleContactsService {
+  private syncInterval: any = null;
+
   async fetchContacts(forceRefresh = false): Promise<GoogleContact[]> {
     try {
       if (!forceRefresh) {
         const localContacts = await db.contacts.toArray();
         if (localContacts.length > 0) {
-          // Check if cache is fresh (e.g., < 1 hour)
+          // Check if cache is fresh (e.g., < 1 hour for passive use)
           const firstContact = localContacts[0] as LocalContact;
-          if (Date.now() - firstContact.synced_at < 3600000) {
+          if (Date.now() - (firstContact as any).synced_at < 3600000) {
             return localContacts;
           }
         }
@@ -45,10 +47,39 @@ class GoogleContactsService {
       return contacts || [];
     } catch (error: any) {
       console.error('Fetch contacts error:', error);
+
       // Fallback to local data on error
       const localContacts = await db.contacts.toArray();
+
+      // If error is 401/403, we should probably stop sync
+      if (error.message?.includes('401') || error.message?.includes('403')) {
+        this.stopAutoSync();
+      }
+
       if (localContacts.length > 0) return localContacts;
       throw new Error(error.message || 'Failed to load Google Contacts');
+    }
+  }
+
+  startAutoSync(intervalMs = 30000) {
+    if (this.syncInterval) return;
+
+    console.log('[ContactsSync] Starting background sync every', intervalMs / 1000, 'seconds');
+    this.syncInterval = setInterval(() => {
+      // Small optimization: only sync if window is active and user is online
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        this.fetchContacts(true).catch(err => {
+          console.warn('[ContactsSync] Background sync failed:', err.message);
+        });
+      }
+    }, intervalMs);
+  }
+
+  stopAutoSync() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
+      console.log('[ContactsSync] Background sync stopped');
     }
   }
 
@@ -79,4 +110,3 @@ class GoogleContactsService {
 
 export const googleContactsService = new GoogleContactsService();
 export type { GoogleContact };
-
