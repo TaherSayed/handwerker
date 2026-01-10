@@ -4,9 +4,16 @@ export interface LocalContact {
   id: string; // Google ID or UUID
   google_contact_id?: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   address?: string;
+  street?: string;
+  city?: string;
+  zip?: string;
+  company?: string;
+  notes?: string;
   synced_at: number;
 }
 
