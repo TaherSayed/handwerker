@@ -36,279 +36,139 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
-    const margin = 20;
+    const margin = 15; // More compact margin
 
-    // Color Palette (Professional Blue/Grey)
-    const primaryColor = '#1e3a8a'; // Blue 900
-    const secondaryColor = '#64748b'; // Slate 500
-    const lightGrey = '#f8fafc'; // Slate 50
+    const primaryColor = '#1e3a8a';
+    const secondaryColor = '#64748b';
+    const lightGrey = '#f8fafc';
 
-    let currentY = 20;
+    let currentY = 15;
 
-    // --- Header Section ---
-
-    // Company Logo (Left)
-    // Company Logo (Left)
+    // --- Header ---
     if (companySettings?.company_logo_url) {
         try {
             let imgData = companySettings.company_logo_url;
-
-            // If it's a remote URL, fetch it and convert to DataURI
             if (imgData.startsWith('http')) {
-                try {
-                    const response = await fetch(imgData);
-                    const blob = await response.blob();
-                    imgData = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.readAsDataURL(blob);
-                    });
-                } catch (fetchErr) {
-                    console.warn('Failed to fetch remote logo for PDF', fetchErr);
-                    // Fallback: don't loop or retry, just proceed with original if possible or skip
-                }
+                const response = await fetch(imgData);
+                const blob = await response.blob();
+                imgData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(blob);
+                });
             }
-
             if (imgData && imgData.startsWith('data:')) {
-                // Determine format
                 const format = imgData.includes('image/png') ? 'PNG' : 'JPEG';
-                doc.addImage(imgData, format, margin, currentY, 25, 25);
+                doc.addImage(imgData, format, margin, currentY, 20, 20);
             }
-        } catch (e) {
-            console.warn('Could not add logo to PDF', e);
-        }
+        } catch (e) { }
     }
 
-    // Company Info (Right)
-    doc.setFontSize(8);
-    doc.setTextColor(secondaryColor);
-    doc.text(companySettings?.company_name || 'Mein Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
+    doc.setFontSize(10).setTextColor(secondaryColor).setFont('helvetica', 'bold');
+    doc.text(companySettings?.company_name || 'Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
 
+    doc.setFontSize(7).setFont('helvetica', 'normal');
     let headerY = currentY + 10;
+    const details = [
+        companySettings?.company_address,
+        [companySettings?.company_zip, companySettings?.company_city].filter(Boolean).join(' '),
+        companySettings?.company_phone,
+        companySettings?.company_website
+    ].filter(Boolean);
 
-    if (companySettings?.company_address) {
-        doc.text(companySettings.company_address, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
+    details.forEach(line => {
+        doc.text(line || '', pageWidth - margin, headerY, { align: 'right' });
+        headerY += 4;
+    });
 
-    if (companySettings?.company_zip || companySettings?.company_city) {
-        const zip = companySettings?.company_zip || '';
-        const city = companySettings?.company_city || '';
-        doc.text(`${zip} ${city}`.trim(), pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
+    currentY = Math.max(currentY + 25, headerY + 5);
+    doc.setDrawColor(226, 232, 240).line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 10;
 
-    if (companySettings?.company_phone) {
-        doc.text(`Tel: ${companySettings.company_phone}`, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-
-    if (companySettings?.email) {
-        doc.text(companySettings.email, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-
-    if (companySettings?.company_website) {
-        doc.text(companySettings.company_website, pageWidth - margin, headerY, { align: 'right' });
-        headerY += 5;
-    }
-
-    // Title & Subject
-    currentY += 25;
-    doc.setFontSize(22);
-    doc.setTextColor(primaryColor);
-    doc.setFont('helvetica', 'bold');
+    // --- Title ---
+    doc.setFontSize(18).setTextColor(primaryColor).setFont('helvetica', 'bold');
     doc.text('Einsatzbericht', margin, currentY);
+    doc.setFontSize(9).setTextColor(secondaryColor).setFont('helvetica', 'normal');
+    doc.text(submission.form_templates?.name || 'Bericht', margin, currentY + 6);
 
-    doc.setFontSize(12);
-    doc.setTextColor(secondaryColor);
-    doc.setFont('helvetica', 'normal');
-    doc.text(submission.form_templates?.name || 'Einsatzbericht', margin, currentY + 7);
-
-    // Meta Data Ticket Badge
-    doc.setFillColor(lightGrey);
-    doc.setDrawColor(secondaryColor);
-    doc.roundedRect(pageWidth - margin - 60, currentY - 5, 60, 20, 2, 2, 'F');
-    doc.setFontSize(9);
-    doc.setTextColor(secondaryColor);
-    doc.text('Bericht Nr.', pageWidth - margin - 55, currentY + 2);
-    doc.setFontSize(11);
-    doc.setTextColor('#0f172a'); // Slate 900
-    doc.setFont('helvetica', 'bold');
-    const reportId = submission.id ? submission.id.slice(0, 8).toUpperCase() : 'UNKNOWN';
-    doc.text(`#${reportId}`, pageWidth - margin - 55, currentY + 8);
-
+    const reportId = submission.id ? submission.id.slice(0, 8).toUpperCase() : 'N/A';
+    doc.setFontSize(8).text(`#${reportId}`, pageWidth - margin, currentY, { align: 'right' });
     currentY += 15;
 
-    // --- Customer Block ---
-    doc.setFillColor('#f1f5f9'); // Slate 100
-    doc.rect(margin, currentY, pageWidth - (margin * 2), 35, 'F');
+    // --- Customer Box ---
+    doc.setFillColor(248, 250, 252).rect(margin, currentY, pageWidth - (margin * 2), 25, 'F');
+    doc.setFontSize(7).setTextColor(secondaryColor).setFont('helvetica', 'bold').text('KUNDE', margin + 5, currentY + 6);
+    doc.setFontSize(9).setTextColor('#334155').text(submission.customer_name || '-', margin + 5, currentY + 14);
 
-    doc.setFontSize(10);
-    doc.setTextColor(secondaryColor);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Kundeninformationen', margin + 5, currentY + 8);
+    const customerInfo = [submission.customer_address, submission.customer_phone, submission.customer_email].filter(Boolean).join('  •  ');
+    doc.setFontSize(8).setFont('helvetica', 'normal').text(customerInfo || '-', margin + 5, currentY + 20);
 
-    doc.setFontSize(11);
-    doc.setTextColor('#334155');
-    doc.setFont('helvetica', 'bold');
-    let customerName = submission.customer_name;
-    if (submission.customer_company) customerName += ` (${submission.customer_company})`;
-    doc.text(customerName, margin + 5, currentY + 16);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    let addressLine = submission.customer_address || '';
-    if (submission.customer_address) doc.text(addressLine, margin + 5, currentY + 22);
-
-    let contactInfo = [];
-    if (submission.customer_phone) contactInfo.push(submission.customer_phone);
-    if (submission.customer_email) contactInfo.push(submission.customer_email);
-    if (contactInfo.length > 0) doc.text(contactInfo.join('  •  '), margin + 5, currentY + 28);
-
-    // Notes if present
-    if (submission.customer_notes) {
-        doc.setFontSize(8);
-        doc.setTextColor(secondaryColor);
-        doc.text(`Notiz: ${submission.customer_notes}`, margin + 5, currentY + 33);
-    }
-
-    // Date
-    doc.setFontSize(10);
-    doc.setTextColor(secondaryColor);
-    doc.text(`Datum: ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`, pageWidth - margin - 5, currentY + 16, { align: 'right' });
-
+    doc.text(`Datum: ${format(new Date(submission.created_at), 'dd.MM.yyyy')}`, pageWidth - margin - 5, currentY + 14, { align: 'right' });
     currentY += 30;
 
-    // --- Content Table ---
+    // --- Table ---
     const fields = submission.form_templates?.fields || [];
     const tableBody = fields.map(field => {
         const value = submission.field_values?.[field.id];
+        if (field.type === 'section') return [{ content: field.label.toUpperCase(), colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 58, 138], fontSize: 8 } }];
 
-        // Skip sections in table body effectively, or render them as headers
-        if (field.type === 'section') {
-            return [{ content: field.label.toUpperCase(), colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 58, 138] } }];
-        }
-
-        let displayValue = value;
-        if (value === true) displayValue = 'Ja';
-        if (value === false) displayValue = 'Nein';
-        if (field.type === 'date' && value) displayValue = format(new Date(value), 'dd.MM.yyyy', { locale: de });
-        if (field.type === 'photo') displayValue = value ? 'Foto im Anhang' : '-';
-        if (field.type === 'signature') displayValue = value ? 'Unterschrieben' : '-';
-        if (!value) displayValue = '-';
-
-        return [field.label, displayValue];
+        let display = value === true ? 'Ja' : value === false ? 'Nein' : (value || '-');
+        if (field.type === 'date' && value) display = format(new Date(value), 'dd.MM.yyyy', { locale: de });
+        return [field.label, display];
     });
 
     autoTable(doc, {
         startY: currentY,
-        head: [['Beschreibung', 'Wert / Details']],
+        head: [['Bezeichnung', 'Details']],
         body: tableBody,
         theme: 'grid',
-        headStyles: { fillColor: primaryColor, textColor: '#ffffff', fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 5, lineColor: [226, 232, 240] },
-        alternateRowStyles: { fillColor: '#ffffff' },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
-        margin: { left: margin, right: margin }
+        headStyles: { fillColor: primaryColor, textColor: 255, fontSize: 8, cellPadding: 2 },
+        styles: { fontSize: 8, cellPadding: 3, lineColor: [226, 232, 240] },
+        margin: { left: margin, right: margin, bottom: 15 }
     });
 
-    currentY = (doc as any).lastAutoTable.finalY + 20;
+    currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    // --- Photos Section ---
-    const photoFields = fields.filter(f => f.type === 'photo' && submission.field_values?.[f.id]);
-
-    if (photoFields.length > 0) {
-        if (currentY + 40 > pageHeight) { doc.addPage(); currentY = 20; }
-
-        doc.setFontSize(12);
-        doc.setTextColor(primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Foto-Dokumentation', margin, currentY);
-        currentY += 10;
-
-        let xOffset = margin;
-        photoFields.forEach((field) => {
-            const base64Img = submission.field_values[field.id];
-            if (base64Img && base64Img.startsWith('data:')) {
-                // Check fit
-                if (currentY + 50 > pageHeight) { doc.addPage(); currentY = 20; xOffset = margin; }
-
-                try {
-                    doc.addImage(base64Img, 'JPEG', xOffset, currentY, 45, 45, undefined, 'FAST');
-                    doc.setFontSize(8);
-                    doc.text(field.label, xOffset, currentY + 50);
-
-                    xOffset += 55;
-                    if (xOffset + 45 > pageWidth) {
-                        xOffset = margin;
-                        currentY += 60;
-                    }
-                } catch (e) {
-                    console.error('Error adding image to PDF', e);
-                }
+    // Photos
+    const photos = fields.filter(f => f.type === 'photo' && submission.field_values?.[f.id]);
+    if (photos.length > 0) {
+        if (currentY + 30 > pageHeight) { doc.addPage(); currentY = 15; }
+        doc.setFontSize(10).setTextColor(primaryColor).setFont('helvetica', 'bold').text('Dokumentation', margin, currentY);
+        currentY += 8;
+        let x = margin;
+        photos.forEach(f => {
+            const base64 = submission.field_values[f.id];
+            if (base64?.startsWith('data:')) {
+                if (currentY + 40 > pageHeight) { doc.addPage(); currentY = 15; x = margin; }
+                try { doc.addImage(base64, 'JPEG', x, currentY, 35, 35); x += 40; if (x + 35 > pageWidth) { x = margin; currentY += 40; } } catch (e) { }
             }
         });
-        currentY += 60;
+        currentY += 45;
     }
 
-    // --- Signatures Section ---
-    if (currentY + 40 > pageHeight) { doc.addPage(); currentY = 20; }
+    // Signatures
+    if (currentY + 30 > pageHeight) { doc.addPage(); currentY = 15; }
+    doc.setFontSize(9).setTextColor(primaryColor).setFont('helvetica', 'bold').text('Unterschriften', margin, currentY);
+    currentY += 5;
 
-    doc.setFontSize(12);
-    doc.setTextColor(primaryColor);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Unterschriften', margin, currentY);
-    currentY += 10;
+    doc.setDrawColor(203, 213, 225).rect(margin, currentY, 60, 20);
+    doc.setFontSize(6).text('Kunde', margin + 2, currentY + 4);
 
-    // Technician Signature (Placeholder or User Profile Sig if we had it)
-    // For now just a line
+    const sigUrl = submission.signature_url || submission.field_values?.['signature_customer'];
+    if (sigUrl?.startsWith('data:')) doc.addImage(sigUrl, 'PNG', margin + 5, currentY + 5, 50, 12);
 
-    // Customer Signature
-    const signatureField = fields.find(f => f.type === 'signature' && submission.field_values?.[f.id]);
-    const customerSigUrl = submission.signature_url || submission.field_values?.['signature_customer'] ||
-        (signatureField ? submission.field_values?.[signatureField.id] : null);
+    doc.rect(pageWidth - margin - 60, currentY, 60, 20);
+    doc.text('Techniker', pageWidth - margin - 58, currentY + 4);
 
-    const sigBoxY = currentY;
-
-    // Box 1: Auftraggeber / Kunde
-    doc.setDrawColor('#cbd5e1');
-    doc.rect(margin, sigBoxY, 80, 40);
-    doc.setFontSize(8);
-    doc.setTextColor(secondaryColor);
-    doc.text('Auftraggeber / Kunde', margin + 2, sigBoxY + 5);
-
-    if (customerSigUrl && customerSigUrl.startsWith('data:')) {
-        doc.addImage(customerSigUrl, 'PNG', margin + 5, sigBoxY + 10, 70, 25);
-    }
-
-    // Box 2: Auftragnehmer
-    const leftX = pageWidth - margin - 80;
-    doc.rect(leftX, sigBoxY, 80, 40);
-    doc.text('Auftragnehmer / Monteur', leftX + 2, sigBoxY + 5);
-
-    // --- Footer for all pages ---
-    const totalPages = (doc as any).internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
+    // Footer all pages
+    const total = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor('#94a3b8');
-        doc.setFont('helvetica', 'normal');
-
-        const footerY = pageHeight - 10;
-        doc.text(
-            `Generiert mit OnSite Formulare am ${format(new Date(), 'dd.MM.yyyy HH:mm')}`,
-            margin,
-            footerY
-        );
-        doc.text(
-            `Seite ${i} von ${totalPages}`,
-            pageWidth - margin,
-            footerY,
-            { align: 'right' }
+        doc.setFontSize(6).setTextColor(148, 163, 184).text(
+            `Generiert mit OnSite  |  ${format(new Date(), 'dd.MM.yyyy HH:mm')}  |  Seite ${i} von ${total}`,
+            pageWidth / 2, pageHeight - 10, { align: 'center' }
         );
     }
 
-    // Save
-    doc.save(`Einsatzbericht_${submission.customer_name.replace(/\s+/g, '_')}_${format(new Date(submission.created_at), 'yyyyMMdd')}.pdf`);
+    doc.save(`Bericht_${submission.customer_name.replace(/\s+/g, '_')}.pdf`);
 };
