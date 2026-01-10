@@ -141,8 +141,30 @@ export class PDFService {
       }
     }
 
-    // Company Name & Details removed as per user request (Only logo)
-    let detailsY = y;
+    // Company Name & Details (Right Aligned)
+    const infoX = pageWidth - margin;
+
+    doc.fontSize(14)
+      .font('Helvetica-Bold')
+      .fillColor(primaryColor)
+      .text(data.user.company_name || 'OnSite', margin, y + 5, { align: 'right', width: pageWidth - (margin * 2) });
+
+    doc.fontSize(8)
+      .font('Helvetica')
+      .fillColor('#64748b');
+
+    const companyDetails = [
+      data.user.company_address,
+      [data.user.company_zip, data.user.company_city].filter(Boolean).join(' '),
+      data.user.company_phone,
+      data.user.company_website
+    ].filter(Boolean);
+
+    let detailsY = y + 22;
+    companyDetails.forEach(detail => {
+      doc.text(detail || '', margin, detailsY, { align: 'right', width: pageWidth - (margin * 2) });
+      detailsY += 10;
+    });
 
     y = Math.max(y + headerHeight, detailsY + 20);
 

@@ -65,6 +65,12 @@ class GoogleContactsService {
     if (this.syncInterval) return;
 
     console.log('[ContactsSync] Starting background sync every', intervalMs / 1000, 'seconds');
+
+    // Perform initial sync immediately (don't wait for interval)
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+      this.fetchContacts(true).catch(err => console.warn('[ContactsSync] Initial sync failed:', err.message));
+    }
+
     this.syncInterval = setInterval(() => {
       // Small optimization: only sync if window is active and user is online
       if (document.visibilityState === 'visible' && navigator.onLine) {

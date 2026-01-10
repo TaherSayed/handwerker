@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { googleContactsService, GoogleContact } from '../services/google-contacts.service';
 import { useAuthStore } from '../store/authStore';
 import { Search, User, Mail, Phone, MapPin, X, AlertCircle, RefreshCw, Key, ChevronRight, Contact2, ShieldCheck } from 'lucide-react';
@@ -22,6 +22,11 @@ export default function ContactSelector({ onSelect, onClose }: ContactSelectorPr
 
   // Use Live Query for automatic updates from background sync
   const contacts = useLiveQuery(() => db.contacts.toArray()) || [];
+
+  // Proactive sync on mount
+  useEffect(() => {
+    loadContacts(false).catch(() => { });
+  }, []);
 
   const lowerQuery = searchQuery.toLowerCase();
   const filteredContacts = contacts.filter(

@@ -50,14 +50,16 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       const primaryAddr = person.addresses?.find((a: any) => a.metadata?.primary) || person.addresses?.[0];
 
       if (primaryAddr) {
-        address = primaryAddr.formattedValue || '';
         street = primaryAddr.streetAddress || '';
         city = primaryAddr.city || '';
         zip = primaryAddr.postalCode || '';
 
-        // If formattedValue exists but street/city are empty, try to parse or just use formattedValue
-        if (address && !street && !city) {
-          // Keep it as is, client will use 'address' field
+        // Construct address from parts if formattedValue is not ideal
+        const parts = [street, [zip, city].filter(Boolean).join(' ')].filter(Boolean);
+        address = primaryAddr.formattedValue || parts.join(', ');
+
+        if (!address && parts.length > 0) {
+          address = parts.join(', ');
         }
       }
 

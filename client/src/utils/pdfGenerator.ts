@@ -79,7 +79,39 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
         }
     }
 
-    // Company Info removed as per user request (Only logo)
+    // Company Info (Right)
+    doc.setFontSize(8);
+    doc.setTextColor(secondaryColor);
+    doc.text(companySettings?.company_name || 'Mein Handwerksbetrieb', pageWidth - margin, currentY + 5, { align: 'right' });
+
+    let headerY = currentY + 10;
+
+    if (companySettings?.company_address) {
+        doc.text(companySettings.company_address, pageWidth - margin, headerY, { align: 'right' });
+        headerY += 5;
+    }
+
+    if (companySettings?.company_zip || companySettings?.company_city) {
+        const zip = companySettings?.company_zip || '';
+        const city = companySettings?.company_city || '';
+        doc.text(`${zip} ${city}`.trim(), pageWidth - margin, headerY, { align: 'right' });
+        headerY += 5;
+    }
+
+    if (companySettings?.company_phone) {
+        doc.text(`Tel: ${companySettings.company_phone}`, pageWidth - margin, headerY, { align: 'right' });
+        headerY += 5;
+    }
+
+    if (companySettings?.email) {
+        doc.text(companySettings.email, pageWidth - margin, headerY, { align: 'right' });
+        headerY += 5;
+    }
+
+    if (companySettings?.company_website) {
+        doc.text(companySettings.company_website, pageWidth - margin, headerY, { align: 'right' });
+        headerY += 5;
+    }
 
     // Title & Subject
     currentY += 40;
@@ -187,7 +219,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     const photoFields = fields.filter(f => f.type === 'photo' && submission.field_values?.[f.id]);
 
     if (photoFields.length > 0) {
-        if (currentY + 60 > pageHeight) { doc.addPage(); currentY = 20; }
+        if (currentY + 40 > pageHeight) { doc.addPage(); currentY = 20; }
 
         doc.setFontSize(12);
         doc.setTextColor(primaryColor);
@@ -221,7 +253,7 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     }
 
     // --- Signatures Section ---
-    if (currentY + 60 > pageHeight) { doc.addPage(); currentY = 20; }
+    if (currentY + 40 > pageHeight) { doc.addPage(); currentY = 20; }
 
     doc.setFontSize(12);
     doc.setTextColor(primaryColor);
@@ -255,12 +287,27 @@ export const generatePDF = async (submission: Submission, companySettings?: Comp
     doc.rect(leftX, sigBoxY, 80, 40);
     doc.text('Auftragnehmer / Monteur', leftX + 2, sigBoxY + 5);
 
-    // Footer Stuff
-    currentY = pageHeight - 15;
-    doc.setFontSize(8);
-    doc.setTextColor('#94a3b8');
-    doc.text(`Generiert mit OnSite Formulare am ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, margin, currentY);
-    doc.text('Seite 1/1', pageWidth - margin, currentY, { align: 'right' }); // Todo simple page count
+    // --- Footer for all pages ---
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor('#94a3b8');
+        doc.setFont('helvetica', 'normal');
+
+        const footerY = pageHeight - 10;
+        doc.text(
+            `Generiert mit OnSite Formulare am ${format(new Date(), 'dd.MM.yyyy HH:mm')}`,
+            margin,
+            footerY
+        );
+        doc.text(
+            `Seite ${i} von ${totalPages}`,
+            pageWidth - margin,
+            footerY,
+            { align: 'right' }
+        );
+    }
 
     // Save
     doc.save(`Einsatzbericht_${submission.customer_name.replace(/\s+/g, '_')}_${format(new Date(submission.created_at), 'yyyyMMdd')}.pdf`);
